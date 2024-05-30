@@ -11,35 +11,6 @@ class _AddSimState extends State<AddSim> {
    @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(''),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop(); // Retour en arrière
-          },
-        ),
-        flexibleSpace: Align(
-          alignment: Alignment.bottomCenter,
-          child: Container(
-            width: double.infinity,
-            height: 80.0, // Hauteur du cadre contenant le texte
-            decoration: BoxDecoration(
-              color: Colors.orange,
-            ),
-            child: Center(
-              child: Text(
-                'KADOUS TRANSFERT',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [

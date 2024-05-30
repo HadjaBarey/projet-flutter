@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kadoustransfert/vue/AddSim.dart';
-import 'package:kadoustransfert/vue/Historique.dart';
-import 'package:kadoustransfert/vue/Operation.dart';
-import 'package:kadoustransfert/vue/Parametrage.dart';
 import 'package:kadoustransfert/vue/TransactionOrange.dart';
 
 class Operation extends StatefulWidget {
@@ -13,14 +9,6 @@ class Operation extends StatefulWidget {
 }
 
 class _OperationState extends State<Operation> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = [
-    Operation(),
-    Historique(),
-    AddSim(),
-    Parametrage(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -28,27 +16,6 @@ class _OperationState extends State<Operation> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: 500.0,
-                height: 90.0,
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                ),
-                child: Center(
-                  child: Text(
-                    'KADOUS TRANSFERT',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 27.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 13.0),
             Padding(
               padding: EdgeInsets.only(bottom: 20.0),
               child: Text(
@@ -189,37 +156,7 @@ class _OperationState extends State<Operation> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.ad_units_rounded),
-            label: 'Transaction',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.access_time),
-            label: 'Historique',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_box),
-            label: 'Ajouter Sim',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_system_daydream),
-            label: 'Paramètres',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
+      
     );
   }
 }
