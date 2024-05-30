@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TransactionOrange extends StatefulWidget {
-  const TransactionOrange({super.key});
+  const TransactionOrange({Key? key}) : super(key: key);
 
   @override
   State<TransactionOrange> createState() => _TransactionOrangeState();
@@ -40,24 +40,25 @@ class _TransactionOrangeState extends State<TransactionOrange> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          // Image de fond
-          Positioned.fill(
-            child: Image.asset(
-              'images/transactionorange.png',
-              fit: BoxFit.cover,
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/orangemoney.jpg'),
+            fit: BoxFit.cover,
           ),
-          // Contenu de la page
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // Ajoutez votre contenu ici
-              ],
+        ),
+        child: Stack(
+          children: [
+            // Contenu de la page
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Ajoutez votre contenu ici
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

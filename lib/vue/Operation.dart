@@ -5,14 +5,14 @@ import 'package:kadoustransfert/vue/Operation.dart';
 import 'package:kadoustransfert/vue/Parametrage.dart';
 import 'package:kadoustransfert/vue/TransactionOrange.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class Operation extends StatefulWidget {
+  const Operation({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<Operation> createState() => _OperationState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _OperationState extends State<Operation> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
