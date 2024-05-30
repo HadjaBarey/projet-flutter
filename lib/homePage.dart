@@ -14,13 +14,6 @@ class homePage extends StatefulWidget {
 class _homePageState extends State<homePage> {
   int _selectedIndex = 0;
   
-    final List<Widget> _pages = [
-
-      Historique(),
-      AddSim(),
-      Parametrage(),
-    ];
-
    void _onItemTapped(int index) {
   setState(() {
     _selectedIndex = index;

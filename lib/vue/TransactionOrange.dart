@@ -40,27 +40,24 @@ class _TransactionOrangeState extends State<TransactionOrange> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20.0), // Espacement pour descendre le contenu
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.0), // Espacement en bas
-              child: Center( // Centre le texte horizontalement
-                child: Text(
-                  'Transaction Orange Money',
-                  style: TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    // fontFamily: 'Nunito', // Changer la police ici (remplacer 'Nunito' par le nom de la police souhaitée)
-                  ),
-                ),
-              ),
+      body: Stack(
+        children: [
+          // Image de fond
+          Positioned.fill(
+            child: Image.asset(
+              'images/transactionorange.png',
+              fit: BoxFit.cover,
             ),
-            // Ajoutez votre contenu ici
-          ],
-        ),
+          ),
+          // Contenu de la page
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                // Ajoutez votre contenu ici
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
