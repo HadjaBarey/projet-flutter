@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/vue/AddSim.dart';
 import 'package:kadoustransfert/vue/Historique.dart';
-import 'package:kadoustransfert/vue/Operation.dart';
 import 'package:kadoustransfert/vue/Parametrage.dart';
 import 'package:kadoustransfert/vue/TransactionOrange.dart';
 
 class homePage extends StatefulWidget {
-    const homePage({super.key});
+  const homePage({super.key});
 
-    @override
-    State<homePage> createState() => _homePageState();
-  }
+  @override
+  State<homePage> createState() => _homePageState();
+}
 
-  class _homePageState extends State<homePage> {
-
+class _homePageState extends State<homePage> {
   int _selectedIndex = 0;
   
     final List<Widget> _pages = [
-      Operation(),
+
       Historique(),
       AddSim(),
       Parametrage(),
@@ -27,13 +25,6 @@ class homePage extends StatefulWidget {
   setState(() {
     _selectedIndex = index;
     switch(index) {
-      case 0:
-        // Naviguer vers la page d'opération
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Operation()), // Remplacez OperationPage() par votre propre widget de page d'opération
-        );
-        break;
       case 1:
         // Naviguer vers la page historique
         Navigator.push(
@@ -63,7 +54,7 @@ class homePage extends StatefulWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView( // Ajoutez un SingleChildScrollView ici
+      body: SingleChildScrollView(
         child: Column(
           children: [
             Align(
@@ -86,166 +77,153 @@ class homePage extends StatefulWidget {
                 ),
               ),
             ),
-            SizedBox(height: 13.0), // Ajoutez cet espace
-              Padding(
-                padding: EdgeInsets.only(bottom: 20.0), // Espacement en bas
-                child: Text(
-                  'Orange Monney / Moov Monney',
-                  style: TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  // fontFamily: 'Nunito', // Changer la police ici (remplacer 'Nunito' par le nom de la police souhaitée)
+            SizedBox(height: 13.0),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20.0),
+              child: Text(
+                'Orange Monney / Moov Monney',
+                style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            SizedBox(height: 5.0),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20.0),
+              child: Text(
+                'Choisissez votre opérateur',
+                style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ),
+            SizedBox(height: 13.0),
+            Align(
+              alignment: Alignment.topCenter,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TransactionOrange()),
+                  );
+                },
+                child: Container(
+                  width: 500.0,
+                  height: 90.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 5,
+                        blurRadius: 7,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 90.0,
+                        height: double.infinity,
+                        child: Image.asset(
+                          'images/orangemoney.jpg',
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Orange Monney',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 27.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.black,
+                        size: 30.0,
+                      ),
+                    ],
                   ),
                 ),
               ),
-             SizedBox(height: 5.0), // Ajoutez cet espace
-              Padding(
-                padding: EdgeInsets.only(bottom: 20.0), // Espacement en bas
-                child: Text(
-                  'Choisissez votre opérateur',
-                  style: TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  // fontFamily: 'Nunito', // Changer la police ici (remplacer 'Nunito' par le nom de la police souhaitée)
+            ),
+            SizedBox(height: 40.0),
+            Align(
+              alignment: Alignment.topCenter,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TransactionOrange()),
+                  );
+                },
+                child: Container(
+                  width: 500.0,
+                  height: 90.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 5,
+                        blurRadius: 7,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 90.0,
+                        height: double.infinity,
+                        child: Image.asset(
+                          'images/moovmoney.png',
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Moov Monney',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 27.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.black,
+                        size: 30.0,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(height: 13.0),
-
-              Align(
-                alignment: Alignment.topCenter,
-                child: GestureDetector(
-                  onTap: () {
-                    // Naviguer vers une autre page lorsque le cadre est cliqué
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TransactionOrange()), // Remplacez YourNextPage() par votre propre widget de page
-                    );
-                  },
-                  child: Container(
-                    width: 500.0,
-                    height: 90.0,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 5,
-                          blurRadius: 7,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 90.0,
-                          height: double.infinity,
-                          child: Image.asset(
-                            'images/orangemoney.jpg', // Chemin de votre image
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Orange Monney',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 27.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: Colors.black,
-                          size: 30.0,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-
-              SizedBox(height: 40.0),
-
-              Align(
-                alignment: Alignment.topCenter,
-                child: GestureDetector(
-                  onTap: () {
-                    // Naviguer vers une autre page lorsque le cadre est cliqué
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TransactionOrange()), // Remplacez YourNextPage() par votre propre widget de page
-                    );
-                  },
-                  child: Container(
-                    width: 500.0,
-                    height: 90.0,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 5,
-                          blurRadius: 7,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 90.0,
-                          height: double.infinity,
-                          child: Image.asset(
-                            'images/moovmoney.png', // Chemin de votre image
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Moov Monney',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 27.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: Colors.black,
-                          size: 30.0,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-
-
-           // Ajoutez d'autres widgets ici
+            ),
           ],
         ),
       ),
-          bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed, // Permet d'afficher les labels même lorsque les éléments ne sont pas sélectionnés
-          items: const <BottomNavigationBarItem>[
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.ad_units_rounded),
-            label: 'Opération',
-            
+            label: 'Transaction',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.access_time),
@@ -261,10 +239,10 @@ class homePage extends StatefulWidget {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue, // Couleur des icônes et du texte pour l'élément sélectionné
-        unselectedItemColor: Colors.grey, // Couleur des icônes et du texte pour les éléments non sélectionnés
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold), // Style du texte pour l'élément sélectionné
-        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal), // Style du texte pour les éléments non sélectionnés
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
         onTap: _onItemTapped,
       ),
 
