@@ -15,7 +15,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    Historique(),
+    HistoriquePage(),
     AddSim(),
     Parametrage(),
   ];
@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          Historique(),
+          HistoriquePage(),
           AddSim(),
           Parametrage(),
         ],

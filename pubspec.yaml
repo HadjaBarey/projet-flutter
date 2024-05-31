@@ -43,12 +43,12 @@ dependencies:
   #permission_handler: ^11.0.1
   image_picker: ^1.0.4
   image_cropper: ^5.0.0
-  flutter_scalable_ocr: ^2.0.0
   camera: ^0.10.5+5
   #barcode_scan2: ^4.3.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   google_ml_kit: ^0.18.0
+  build_runner: ^2.1.5
 
 dev_dependencies:
   flutter_test:

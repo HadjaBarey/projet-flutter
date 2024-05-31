@@ -109,7 +109,7 @@ class _TransactionOrangeState extends State<TransactionOrange> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => DeposOrange()),
+                          MaterialPageRoute(builder: (context) => DeposOrangePage(),),
                         );
                       },
                       child: Container(
