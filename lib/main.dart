@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'homePage.dart';
 import 'Model/OrangeModel.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Nécessaire pour utiliser Hive dans Flutter
 

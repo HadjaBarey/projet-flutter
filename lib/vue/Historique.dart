@@ -16,15 +16,20 @@ class _HistoriquePageState extends State<HistoriquePage> {
   @override
   void initState() {
     super.initState();
-    _controller.initializeData().then((_) {
-      loadData();
-    });
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _controller.initializeData();
+    loadData();
   }
 
   Future<void> loadData() async {
     List<OrangeModel> deposits = await _controller.loadData();
+    //print('Données chargées: $deposits'); // Débogage : affiche les données chargées
     setState(() {
       _deposList = deposits;
+      //print('État mis à jour avec les données: $_deposList'); // Débogage : affiche l'état mis à jour
     });
   }
 
@@ -49,7 +54,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('supprimé'),
+              child: Text('Supprimé'),
             ),
           ],
         );
@@ -60,6 +65,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
+    //print('Liste filtrée: $filteredList'); // Débogage : affiche la liste filtrée
     return Scaffold(
       appBar: AppBar(
         title: Text('Historique'),

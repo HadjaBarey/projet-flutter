@@ -6,12 +6,15 @@ import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 //import 'package:url_launcher/url_launcher.dart';
 
 class OrangeController {
 
   // Clé globale pour le formulaire
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  static const platform = MethodChannel('com.example.kadoustransfert/call');
 
    // Boîte Hive pour stocker les dépôts
   Box<OrangeModel>? todobos;
@@ -162,11 +165,11 @@ class OrangeController {
   }
 
 
- // Fonction pour traiter le dépôt
+// Fonction pour traiter le dépôt
 void fonctionDepos() async {
   if (formKey.currentState!.validate()) {
-    String montant = depos.montant;
-    String number = depos.numeroTelephone;
+    String montant = montantController.text;  // Utilisez le TextEditingController pour obtenir la valeur du montant
+    String number = numeroTelephoneController.text;  // Utilisez le TextEditingController pour obtenir le numéro de téléphone
     String codeD = "*144*1*4*";
 
     // Encodage des parties individuellement sans encoder le #
@@ -178,13 +181,26 @@ void fonctionDepos() async {
     String encodedResultat = "$encodedCodeD$encodedNumber*$encodedMontant%23"; // Utiliser %23 pour le #
 
     // Utiliser MethodChannel pour lancer l'appel
-    const platform = MethodChannel('com.example.yourapp/call');
+    const platform = MethodChannel('com.example.kadoustransfert/call');
 
     try {
       await platform.invokeMethod('callNumber', {'number': encodedResultat});
     } on PlatformException catch (e) {
       print("Failed to make call: '${e.message}'.");
     }
+  }
+}
+
+
+// Demander la permission d'appeler
+void requestCallPermission() async {
+  var status = await Permission.phone.request();
+  if (status.isGranted) {
+    // La permission est accordée, effectuez l'appel téléphonique
+    fonctionDepos();
+  } else {
+    // La permission n'est pas accordée, affichez un message à l'utilisateur
+    print('Permission refusée pour faire un appel téléphonique');
   }
 }
 
