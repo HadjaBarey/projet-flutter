@@ -52,6 +52,7 @@ class OrangeController {
 
 // Méthode pour initialiser les données
   Future<void> initializeData() async {
+    //Hive.registerAdapter(OrangeModelAdapter()); // Enregistrer l'adaptateur
     todobos = await Hive.openBox<OrangeModel>("todobos");
     _initializeIdOperation();
     _initializeDateOperation();
