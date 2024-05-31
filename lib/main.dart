@@ -12,7 +12,7 @@ void main() async {
   await Hive.initFlutter();
 
   // Ouvrir la boîte (Box)
-  await Hive.openBox<DeposOrange>('deposOrangeBox');
+  await Hive.openBox<OrangeModel>('OrangeModelBox');
 
   runApp(MyApp());
 
@@ -27,7 +27,7 @@ void main() async {
 //   await Hive.initFlutter();
 
 //   // Ouvrir la boîte (Box)
-//   await Hive.openBox<DeposOrange>('deposOrangeBox');
+//   await Hive.openBox<OrangeModel>('OrangeModelBox');
 
 //   runApp(MyApp());
 

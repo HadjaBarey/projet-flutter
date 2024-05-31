@@ -1,9 +1,9 @@
 import 'package:hive/hive.dart';
 
-// part 'DeposOrange.g.dart';
+part 'OrangeModel.g.dart';
 
-@HiveType(typeId: 0)
-class DeposOrange extends HiveObject {
+@HiveType(typeId: 1)
+class OrangeModel extends HiveObject {
   @HiveField(0)
   int idoperation;
 
@@ -31,7 +31,7 @@ class DeposOrange extends HiveObject {
   @HiveField(8)
   int iddette;
 
-  DeposOrange({
+  OrangeModel({
     required this.idoperation,
     required this.dateoperation,
     required this.montant,
@@ -43,8 +43,8 @@ class DeposOrange extends HiveObject {
     required this.iddette,
   });
 
-  factory DeposOrange.fromJSON(Map<String, dynamic> json) {
-    return DeposOrange(
+  factory OrangeModel.fromJSON(Map<String, dynamic> json) {
+    return OrangeModel(
       idoperation: json['idoperation'],
       dateoperation: json['dateoperation'],
       montant: json['montant'],
@@ -57,8 +57,8 @@ class DeposOrange extends HiveObject {
     );
   }
 
-   // Constructeur par défaut sans paramètres
-  DeposOrange.empty()
+  // Constructeur par défaut sans paramètres
+  OrangeModel.empty()
       : idoperation = 0,
         dateoperation = '',
         montant = '',
@@ -68,6 +68,4 @@ class DeposOrange extends HiveObject {
         operateur = '',
         supprimer = 0,
         iddette = 0;
-
-        
 }

@@ -11,7 +11,7 @@ class HistoriquePage extends StatefulWidget {
 
 class _HistoriquePageState extends State<HistoriquePage> {
   final OrangeController _controller = OrangeController([]);
-  List<DeposOrange> _deposList = [];
+  List<OrangeModel> _deposList = [];
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
   }
 
   Future<void> loadData() async {
-    List<DeposOrange> deposits = await _controller.loadData();
+    List<OrangeModel> deposits = await _controller.loadData();
     setState(() {
       _deposList = deposits;
     });
@@ -59,7 +59,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<DeposOrange> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
+    List<OrangeModel> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
     return Scaffold(
       appBar: AppBar(
         title: Text('Historique'),
@@ -69,7 +69,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
         child: ListView.builder(
           itemCount: filteredList.length,
           itemBuilder: (context, index) {
-            DeposOrange depos = filteredList[index];
+            OrangeModel depos = filteredList[index];
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

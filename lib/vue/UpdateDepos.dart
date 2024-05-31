@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 
-class DeposOrangeView extends StatefulWidget {
-  final DeposOrange depos;
-  final Function(DeposOrange) onRowClicked;
-  final List<DeposOrange> deposList;
+class OrangeModelView extends StatefulWidget {
+  final OrangeModel depos;
+  final Function(OrangeModel) onRowClicked;
+  final List<OrangeModel> deposList;
 
-   DeposOrangeView({
+   OrangeModelView({
     Key? key,
     required this.depos,
     required this.onRowClicked,
@@ -15,19 +15,19 @@ class DeposOrangeView extends StatefulWidget {
   }) : super(key: key);
 
   // Constructeur par défaut optionnel
-   DeposOrangeView.empty({Key? key})
-    : depos = DeposOrange.empty(), // Utilisez DeposOrange.empty() au lieu de DeposOrange()
+   OrangeModelView.empty({Key? key})
+    : depos = OrangeModel.empty(), // Utilisez OrangeModel.empty() au lieu de OrangeModel()
       onRowClicked = _emptyFunction,
       deposList = const [],
       super(key: key);
 
-  static void _emptyFunction(DeposOrange _) {}
+  static void _emptyFunction(OrangeModel _) {}
 
   @override
-  State<DeposOrangeView> createState() => _DeposOrangeViewState();
+  State<OrangeModelView> createState() => _OrangeModelViewState();
 }
 
-class _DeposOrangeViewState extends State<DeposOrangeView> {
+class _OrangeModelViewState extends State<OrangeModelView> {
   late OrangeController controller;
   late TextEditingController montantController;
   late TextEditingController numeroTelephoneController;

@@ -14,15 +14,15 @@ class OrangeController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
    // Boîte Hive pour stocker les dépôts
-  Box<DeposOrange>? todobos;
+  Box<OrangeModel>? todobos;
 
  //liste des operations
-   final List<DeposOrange> _deposList;
+   final List<OrangeModel> _deposList;
    OrangeController(this._deposList);
  
 
-   // Instance de DeposOrange
-  DeposOrange depos = DeposOrange(
+   // Instance de OrangeModel
+  OrangeModel depos = OrangeModel(
     idoperation: 0,
     dateoperation: '',
     montant: '',
@@ -52,7 +52,7 @@ class OrangeController {
 
 // Méthode pour initialiser les données
   Future<void> initializeData() async {
-    todobos = await Hive.openBox<DeposOrange>("todobos");
+    todobos = await Hive.openBox<OrangeModel>("todobos");
     _initializeIdOperation();
     _initializeDateOperation();
   }
@@ -102,7 +102,7 @@ class OrangeController {
 
 // Mettre à jour les données d'un dépôt
   void updateDeposData({
-    required DeposOrange depos,
+    required OrangeModel depos,
     required String montant,
     required String numeroTelephone,
     required String infoClient,
@@ -111,7 +111,7 @@ class OrangeController {
     int index = _deposList.indexWhere((element) => element.idoperation == depos.idoperation);
     if (index != -1) {
       // Si le dépôt est trouvé, mettez à jour ses données
-      _deposList[index] = DeposOrange(
+      _deposList[index] = OrangeModel(
         idoperation: depos.idoperation,
         dateoperation: depos.dateoperation,
         montant: montant,
@@ -145,7 +145,7 @@ class OrangeController {
     selectedImage = null;
     recognizedText = '';
     formKey.currentState?.reset();
-    depos = DeposOrange(
+    depos = OrangeModel(
       idoperation: depos.idoperation + 1,
       dateoperation: DateFormat('yyyy-MM-dd').format(DateTime.now()),
       montant: '',
@@ -198,8 +198,8 @@ void fonctionDepos() async {
   }
 
 // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
-   Future<List<DeposOrange>> _loadDeposFromHive() async {
-    List<DeposOrange> deposits = [];
+   Future<List<OrangeModel>> _loadDeposFromHive() async {
+    List<OrangeModel> deposits = [];
     // Parcourir tous les éléments de la boîte Hive
     for (var value in todobos!.values) {
       deposits.add(value);
@@ -209,8 +209,8 @@ void fonctionDepos() async {
 
 
 //Méthode pour charger les données depuis la boîte Hive
-   Future<List<DeposOrange>> loadData() async {
-    List<DeposOrange> deposits = [];
+   Future<List<OrangeModel>> loadData() async {
+    List<OrangeModel> deposits = [];
     // Vérifier si la boîte Hive a été initialisée
     if (todobos != null) {
       // Charger les données de la boîte Hive
