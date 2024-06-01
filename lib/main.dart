@@ -5,19 +5,14 @@ import 'Model/OrangeModel.dart';
 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Nécessaire pour utiliser Hive dans Flutter
 
-  await Hive.initFlutter(); // Initialiser Hive
 
-  // Enregistrer l'adaptateur pour OrangeModel
-  Hive.registerAdapter(OrangeModelAdapter());
-
-  await Hive.openBox<OrangeModel>('OrangeModelBox'); // Ouvrir la boîte (Box)
-
+  WidgetsFlutterBinding.ensureInitialized();// Nécessaire pour utiliser Hive dans Flutter
+  await Hive.initFlutter();// Initialiser Hive
+  Hive.registerAdapter(OrangeModelAdapter()); // Enregistrer l'adaptateur pour OrangeModel
+  await Hive.openBox<OrangeModel>('todobos'); // Ouvrir la boîte (Box)
   runApp(MyApp());
 
-  // Remarque : Ne pas fermer Hive ici, car l'application pourrait encore avoir besoin de lire/écrire dans la boîte
-  // await Hive.close(); // Fermer Hive lorsque vous avez terminé
 }
 
 class MyApp extends StatelessWidget {

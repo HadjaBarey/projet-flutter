@@ -53,24 +53,43 @@ class OrangeController {
   String recognizedText = '';
 
 
-// Méthode pour initialiser les données
-  Future<void> initializeData() async {
-    //Hive.registerAdapter(OrangeModelAdapter()); // Enregistrer l'adaptateur
-    todobos = await Hive.openBox<OrangeModel>("todobos");
-    _initializeIdOperation();
-    _initializeDateOperation();
+//Méthode pour charger les données depuis la boîte Hive
+  Future<List<OrangeModel>> loadData() async {
+  List<OrangeModel> deposits = [];
+  if (todobos != null) {
+    deposits = await _loadDeposFromHive();
+   // print('Données chargées depuis Hive: $deposits'); // Ajoutez cette ligne pour le débogage
   }
+  return deposits;
+}
+
+
+// Méthode pour initialiser les données
+Future<void> initializeData() async {
+  if (!Hive.isBoxOpen("todobos")) {
+    todobos = await Hive.openBox<OrangeModel>("todobos");
+  } else {
+    todobos = Hive.box<OrangeModel>("todobos");
+  }
+  _initializeIdOperation();
+  _initializeDateOperation();
+}
+
 
 // Initialiser l'ID de l'opération
-  void _initializeIdOperation() {
-    if (todobos != null && todobos!.isNotEmpty) {
-      final lastDepos = todobos!.values.last;
-      depos.idoperation = lastDepos.idoperation + 1;
-    } else {
-      depos.idoperation = 1;
-    }
-    idOperationController.text = depos.idoperation.toString();
+void _initializeIdOperation() {
+  if (todobos != null && todobos!.isNotEmpty) {
+    // Trie les valeurs de todobos par idoperation et récupère la dernière
+    final sortedDepos = todobos!.values.toList()
+      ..sort((a, b) => a.idoperation.compareTo(b.idoperation));
+    final lastDepos = sortedDepos.last;
+    depos.idoperation = lastDepos.idoperation + 1;
+  } else {
+    depos.idoperation = 1;
   }
+  idOperationController.text = depos.idoperation.toString();
+}
+
 
 // Initialiser la date de l'opération
   void _initializeDateOperation() {
@@ -133,16 +152,18 @@ class OrangeController {
 
 
 // Enregistrer les données dans la boîte Hive
-  Future<void> saveData() async {
-
-    if (todobos != null) {
-      await todobos!.put(depos.idoperation, depos).then((value) 
-      { print("succes");});
-    }
-    else{
-         print("erreur");
-    }
+Future<void> saveData() async {
+  if (todobos != null) {
+    await todobos!.put(depos.idoperation, depos).then((value) {
+      print("Enregistrement réussi : $depos");
+    }).catchError((error) {
+      print("Erreur lors de l'enregistrement : $error");
+    });
+  } else {
+    print("Boîte Hive non initialisée");
   }
+}
+
 
  // Réinitialiser les champs du formulaire
   void resetFormFields() {
@@ -191,13 +212,18 @@ void fonctionDepos() async {
   }
 }
 
+void _onPermissionGranted() {
+  saveData();
+  resetFormFields();
+}
+
 
 // Demander la permission d'appeler
 void requestCallPermission() async {
   var status = await Permission.phone.request();
   if (status.isGranted) {
-    // La permission est accordée, effectuez l'appel téléphonique
-    fonctionDepos();
+    // La permission est accordée, sauvegardez les données et réinitialisez le formulaire
+    _onPermissionGranted();
   } else {
     // La permission n'est pas accordée, affichez un message à l'utilisateur
     print('Permission refusée pour faire un appel téléphonique');
@@ -225,16 +251,6 @@ void requestCallPermission() async {
   }
 
 
-//Méthode pour charger les données depuis la boîte Hive
-   Future<List<OrangeModel>> loadData() async {
-    List<OrangeModel> deposits = [];
-    // Vérifier si la boîte Hive a été initialisée
-    if (todobos != null) {
-      // Charger les données de la boîte Hive
-      deposits = await _loadDeposFromHive();
-    }
-    return deposits;
-  }
 
 // Reconnaître le texte à partir de l'image
   Future<void> recognizeText(InputImage inputImage) async {

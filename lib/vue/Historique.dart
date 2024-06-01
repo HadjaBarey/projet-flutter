@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
+import 'package:kadoustransfert/vue/UpdateDepos.dart';
 
 class HistoriquePage extends StatefulWidget {
   const HistoriquePage({Key? key}) : super(key: key);
@@ -19,6 +20,12 @@ class _HistoriquePageState extends State<HistoriquePage> {
     _initialize();
   }
 
+  void refreshData() {
+    setState(() {
+      _initialize();
+    });
+  }
+
   Future<void> _initialize() async {
     await _controller.initializeData();
     loadData();
@@ -26,10 +33,8 @@ class _HistoriquePageState extends State<HistoriquePage> {
 
   Future<void> loadData() async {
     List<OrangeModel> deposits = await _controller.loadData();
-    //print('Données chargées: $deposits'); // Débogage : affiche les données chargées
     setState(() {
       _deposList = deposits;
-      //print('État mis à jour avec les données: $_deposList'); // Débogage : affiche l'état mis à jour
     });
   }
 
@@ -62,10 +67,15 @@ class _HistoriquePageState extends State<HistoriquePage> {
     );
   }
 
+  // Fonction pour gérer le clic sur une ligne dans la page HistoriquePage
+  void _handleRowClicked(OrangeModel clickedDepos) {
+    // Implémentez ici ce que vous souhaitez faire lorsque l'utilisateur clique sur une ligne
+    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}');
+  }
+
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
-    //print('Liste filtrée: $filteredList'); // Débogage : affiche la liste filtrée
     return Scaffold(
       appBar: AppBar(
         title: Text('Historique'),
@@ -92,7 +102,15 @@ class _HistoriquePageState extends State<HistoriquePage> {
                       SizedBox(width: 10),
                       GestureDetector(
                         onTap: () {
-                          print('Numéro de téléphone cliqué');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => UpdateDeposOrange(
+                              depos: depos,
+                              onRowClicked: _handleRowClicked,
+                              deposList: _deposList,
+                              refreshData: refreshData, // Ajout du paramètre refreshData
+                            )),
+                          );
                         },
                         child: Icon(Icons.update),
                       ),

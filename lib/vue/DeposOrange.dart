@@ -46,7 +46,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 SizedBox(height: 25),
 
               Offstage(
-                offstage: true, // Changez cette valeur pour contrôler la visibilité
+                offstage: false, // Changez cette valeur pour contrôler la visibilité
                 child: 
                 TextFormField(
                   controller: controller.idOperationController,
@@ -279,8 +279,6 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   onPressed: () {
                     if (controller.formKey.currentState!.validate()) {
                       controller.requestCallPermission();
-                      controller.saveData();
-                      controller.resetFormFields();
                       print(controller.saveData());
                     }
                   },

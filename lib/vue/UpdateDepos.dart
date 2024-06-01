@@ -2,32 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 
-class OrangeModelView extends StatefulWidget {
+class UpdateDeposOrange extends StatefulWidget {
   final OrangeModel depos;
   final Function(OrangeModel) onRowClicked;
   final List<OrangeModel> deposList;
+   final Function() refreshData; // Ajout de la méthode refreshData
+  
 
-   OrangeModelView({
+   UpdateDeposOrange({
     Key? key,
     required this.depos,
     required this.onRowClicked,
     required this.deposList,
+    required this.refreshData, // Ajout de la méthode refreshData
   }) : super(key: key);
 
-  // Constructeur par défaut optionnel
-   OrangeModelView.empty({Key? key})
-    : depos = OrangeModel.empty(), // Utilisez OrangeModel.empty() au lieu de OrangeModel()
-      onRowClicked = _emptyFunction,
-      deposList = const [],
-      super(key: key);
+   // Constructeur par défaut optionnel
+  UpdateDeposOrange.empty({Key? key})
+      : depos = OrangeModel.empty(),
+        onRowClicked = _emptyFunction,
+        deposList = const [],
+        refreshData = _emptyRefreshFunction, // Ajout de la méthode refreshData
+        super(key: key);
 
-  static void _emptyFunction(OrangeModel _) {}
+  static void _emptyFunction(OrangeModel _) {} // Ajustement pour correspondre à la signature
+  static void _emptyRefreshFunction() {} // Fonction vide sans arguments
+
 
   @override
-  State<OrangeModelView> createState() => _OrangeModelViewState();
+  State<UpdateDeposOrange> createState() => _UpdateDeposOrangeState();
 }
 
-class _OrangeModelViewState extends State<OrangeModelView> {
+class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
   late OrangeController controller;
   late TextEditingController montantController;
   late TextEditingController numeroTelephoneController;
@@ -166,16 +172,17 @@ class _OrangeModelViewState extends State<OrangeModelView> {
                 SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
-                    if (controller.formKey.currentState!.validate()) {
-                      controller.updateDeposData(
-                        depos: widget.depos,
-                        montant: montantController.text,
-                        numeroTelephone: numeroTelephoneController.text,
-                        infoClient: infoClientController.text,
-                      );
-                      widget.onRowClicked(widget.depos);
-                    }
-                  },
+                      if (controller.formKey.currentState!.validate()) {
+                        controller.updateDeposData(
+                          depos: widget.depos,
+                          montant: montantController.text,
+                          numeroTelephone: numeroTelephoneController.text,
+                          infoClient: infoClientController.text,
+                        );
+                        Navigator.of(context).pop(); // Fermer la page de mise à jour
+                        widget.onRowClicked(widget.depos); // Actualiser la page d'historique
+                      }
+                    },
                   child: Text(
                     'Valider',
                     style: TextStyle(
