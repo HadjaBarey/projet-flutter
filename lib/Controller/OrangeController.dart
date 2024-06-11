@@ -7,7 +7,7 @@ import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
-//import 'package:url_launcher/url_launcher.dart';
+
 
 class OrangeController {
 
@@ -55,25 +55,27 @@ class OrangeController {
 
 //Méthode pour charger les données depuis la boîte Hive
   Future<List<OrangeModel>> loadData() async {
-  List<OrangeModel> deposits = [];
-  if (todobos != null) {
-    deposits = await _loadDeposFromHive();
-   // print('Données chargées depuis Hive: $deposits'); // Ajoutez cette ligne pour le débogage
+    List<OrangeModel> deposits = [];
+    if (todobos != null) {
+      deposits = await _loadDeposFromHive();
+      // print('Données chargées depuis Hive: $deposits'); // Ajoutez cette ligne pour le débogage
+    }
+    return deposits;
   }
-  return deposits;
-}
 
 
 // Méthode pour initialiser les données
-Future<void> initializeData() async {
-  if (!Hive.isBoxOpen("todobos")) {
-    todobos = await Hive.openBox<OrangeModel>("todobos");
-  } else {
-    todobos = Hive.box<OrangeModel>("todobos");
+Future<List<OrangeModel>> initializeData() async {
+    if (!Hive.isBoxOpen("todobos")) {
+      todobos = await Hive.openBox<OrangeModel>("todobos");
+    } else {
+      todobos = Hive.box<OrangeModel>("todobos");
+    }
+    _initializeIdOperation();
+    _initializeDateOperation();
+    return loadData();
   }
-  _initializeIdOperation();
-  _initializeDateOperation();
-}
+
 
 
 // Initialiser l'ID de l'opération
@@ -278,8 +280,5 @@ void requestCallPermission() async {
     infoClientController.text = extractedText;
     updateDepos(infoClient: extractedText);
   }
-
-
-
 
 }

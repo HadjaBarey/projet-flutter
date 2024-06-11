@@ -20,10 +20,8 @@ class _HistoriquePageState extends State<HistoriquePage> {
     _initialize();
   }
 
-  void refreshData() {
-    setState(() {
-      _initialize();
-    });
+  Future<void> refreshData() async {
+    await _initialize();
   }
 
   Future<void> _initialize() async {
@@ -58,6 +56,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                   _deposList[index].supprimer = 1;
                 });
                 Navigator.of(context).pop();
+                refreshData(); // Actualiser les données après la suppression
               },
               child: Text('Supprimé'),
             ),
@@ -67,9 +66,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
     );
   }
 
-  // Fonction pour gérer le clic sur une ligne dans la page HistoriquePage
   void _handleRowClicked(OrangeModel clickedDepos) {
-    // Implémentez ici ce que vous souhaitez faire lorsque l'utilisateur clique sur une ligne
     print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}');
   }
 
@@ -108,9 +105,9 @@ class _HistoriquePageState extends State<HistoriquePage> {
                               depos: depos,
                               onRowClicked: _handleRowClicked,
                               deposList: _deposList,
-                              refreshData: refreshData, // Ajout du paramètre refreshData
+                              refreshData: refreshData,
                             )),
-                          );
+                          ).then((_) => refreshData()); // Actualiser les données après la mise à jour
                         },
                         child: Icon(Icons.update),
                       ),

@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 
 part 'OrangeModel.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class OrangeModel extends HiveObject {
   @HiveField(0)
   int idoperation;

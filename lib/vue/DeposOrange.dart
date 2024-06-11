@@ -1,7 +1,5 @@
-// DeposOrangePage.dart
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
-
 
 class DeposOrangePage extends StatefulWidget {
   const DeposOrangePage({super.key});
@@ -16,7 +14,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
   @override
   void initState() {
     super.initState();
-    controller.initializeData().then((_) {
+    controller.initializeData().then((data){
       setState(() {});
     });
   }
@@ -42,198 +40,169 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   width: 150,
                   child: Image.asset('images/Depos.jpg'),
                 ),
-
                 SizedBox(height: 25),
-
-              Offstage(
-                offstage: false, // Changez cette valeur pour contrôler la visibilité
-                child: 
-                TextFormField(
-                  controller: controller.idOperationController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'ID Opération',
-                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Offstage(
+                  offstage: false,
+                  child: TextFormField(
+                    controller: controller.idOperationController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'ID Opération',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    enabled: false,
                   ),
-                  enabled: false,
                 ),
-              ),
-
-              SizedBox(height: 15),
-
-               Offstage(
-                 offstage: true,
-                  child: 
-                    TextFormField(
-                     controller: controller.dateOperationController,
-                     decoration: InputDecoration(
-                     border: OutlineInputBorder(),
-                     labelText: 'Date Opération',
-                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                     ),
+                SizedBox(height: 15),
+                Offstage(
+                  offstage: true,
+                  child: TextFormField(
+                    controller: controller.dateOperationController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Date Opération',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                       return 'Erreur';
+                        return 'Erreur';
                       }
                       controller.updateDepos(dateoperation: value);
                       return null;
                     },
                   ),
                 ),
-
                 SizedBox(height: 15),
-            
                 TextFormField(
                   controller: controller.montantController,
                   decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Montant',
-                  labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                     return 'Erreur';
-                    }
-                  controller.updateDepos(montant: value);
-                    return null;
-                 },
-                   keyboardType: TextInputType.number,
-               ),              
-
-                SizedBox(height: 15),
-               
-              TextFormField(
-                controller: controller.numeroTelephoneController,
-                decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Numéro Téléphone',
-                labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                suffixIcon: Icon(Icons.contact_page),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Erreur';
-                }
-                controller.updateDepos(numeroTelephone: value);
-                return null;
-              },
-              keyboardType: TextInputType.phone,
-            ),
-                  
-
-            SizedBox(height: 15),
-
-             
-            TextFormField(
-              controller: controller.infoClientController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Informations Client',
-                labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Erreur';
-                }
-                controller.updateDepos(infoClient: value);
-                return null;
-              },
-            ),
-    
-
-                SizedBox(height: 15),
-
-            Offstage(
-              offstage: true,
-              child:
-                TextFormField(
-                  controller: controller.typeOperationController,
-                  decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Type Opération',
+                    labelText: 'Montant',
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Erreur';
                     }
-                    controller.updateDepos(typeOperation: int.tryParse(value));
+                    controller.updateDepos(montant: value);
                     return null;
                   },
                   keyboardType: TextInputType.number,
                 ),
-            ),
-
                 SizedBox(height: 15),
-
-            Offstage(
-              offstage: true,
-              child:
                 TextFormField(
-                  controller: controller.operateurController,
+                  controller: controller.numeroTelephoneController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Opérateur',
+                    labelText: 'Numéro Téléphone',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    suffixIcon: Icon(Icons.contact_page),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Erreur';
+                    }
+                    controller.updateDepos(numeroTelephone: value);
+                    return null;
+                  },
+                  keyboardType: TextInputType.phone,
+                ),
+                SizedBox(height: 15),
+                TextFormField(
+                  controller: controller.infoClientController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Informations Client',
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Erreur';
                     }
-                    controller.updateDepos(operateur: value);
+                    controller.updateDepos(infoClient: value);
                     return null;
                   },
                 ),
-            ),
-
                 SizedBox(height: 15),
-
-            Offstage(
-              offstage: true,
-              child:
-                TextFormField(
-                  controller: controller.supprimerController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Supprimer',
-                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Offstage(
+                  offstage: true,
+                  child: TextFormField(
+                    controller: controller.typeOperationController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Type Opération',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Erreur';
+                      }
+                      controller.updateDepos(typeOperation: int.tryParse(value));
+                      return null;
+                    },
+                    keyboardType: TextInputType.number,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Erreur';
-                    }
-                    controller.updateDepos(supprimer: int.tryParse(value));
-                    return null;
-                  },
-                  keyboardType: TextInputType.number,
                 ),
-            ),
-
                 SizedBox(height: 15),
-
-            Offstage(
-              offstage: true,
-              child:                
-                TextFormField(
-                  controller: controller.iddetteController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'ID Dette',
-                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Offstage(
+                  offstage: true,
+                  child: TextFormField(
+                    controller: controller.operateurController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Opérateur',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Erreur';
+                      }
+                      controller.updateDepos(operateur: value);
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Erreur';
-                    }
-                    controller.updateDepos(iddette: int.tryParse(value));
-                    return null;
-                  },
-                  keyboardType: TextInputType.number,
                 ),
-            ),
-
-             SizedBox(height: 25),
-                
+                SizedBox(height: 15),
+                Offstage(
+                  offstage: true,
+                  child: TextFormField(
+                    controller: controller.supprimerController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Supprimer',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Erreur';
+                      }
+                      controller.updateDepos(supprimer: int.tryParse(value));
+                      return null;
+                    },
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                SizedBox(height: 15),
+                Offstage(
+                  offstage: true,
+                  child: TextFormField(
+                    controller: controller.iddetteController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'ID Dette',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Erreur';
+                      }
+                      controller.updateDepos(iddette: int.tryParse(value));
+                      return null;
+                    },
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                SizedBox(height: 25),
                 ElevatedButton(
                   onPressed: () {
                     controller.pickImageCamera();
@@ -274,12 +243,11 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   ),
                 ),
                 SizedBox(height: 15),
-
                 ElevatedButton(
                   onPressed: () {
                     if (controller.formKey.currentState!.validate()) {
                       controller.requestCallPermission();
-                      print(controller.saveData());
+                      Navigator.pop(context, true); // Indiquer que l'opération a réussi
                     }
                   },
                   child: Text(
@@ -313,5 +281,3 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
     );
   }
 }
-
-                   
