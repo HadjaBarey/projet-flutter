@@ -41,14 +41,14 @@ class _HistoriquePageState extends State<HistoriquePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmation'),
-          content: Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
+          title: const Text('Confirmation'),
+          content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Annuler'),
+              child: const Text('Annuler'),
             ),
             TextButton(
               onPressed: () {
@@ -58,7 +58,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                 Navigator.of(context).pop();
                 refreshData(); // Actualiser les données après la suppression
               },
-              child: Text('Supprimé'),
+              child: const Text('Supprimé'),
             ),
           ],
         );
@@ -67,7 +67,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
   }
 
   void _handleRowClicked(OrangeModel clickedDepos) {
-    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}');
+    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
   }
 
   @override
@@ -75,7 +75,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
     List<OrangeModel> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Historique'),
+        title: const Text('Historique'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -94,9 +94,9 @@ class _HistoriquePageState extends State<HistoriquePage> {
                         onTap: () {
                           deleteItem(index);
                         },
-                        child: Icon(Icons.delete),
+                        child: const Icon(Icons.delete),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -109,29 +109,45 @@ class _HistoriquePageState extends State<HistoriquePage> {
                             )),
                           ).then((_) => refreshData()); // Actualiser les données après la mise à jour
                         },
-                        child: Icon(Icons.update),
+                        child: const Icon(Icons.update),
                       ),
                     ],
                   ),
                   title: Text(
                     'Montant: ${depos.montant}',
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Numéro de téléphone: ${depos.numeroTelephone}',
-                        style: TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 14),
                       ),
                       Text(
                         'Information client: ${depos.infoClient}',
-                        style: TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 14),
                       ),
+                      Text(
+                          depos.typeOperation == 1 && depos.operateur == '1' ? 
+                          'Opération: Depos Orange' :
+                          depos.typeOperation == 2 && depos.operateur == '1 '? 
+                          'Opération: Retrait Orange' :
+                          depos.typeOperation == 3 && depos.operateur == '1' ? 
+                          'Opération: Retrait sans compte Orange' :
+                          depos.typeOperation == 4 && depos.operateur == '2' ? 
+                          'Opération: Depos Moov' : 
+                          depos.typeOperation == 5 && depos.operateur == '2' ? 
+                          'Opération: Retrait Moov' :
+                          depos.typeOperation == 6 && depos.operateur == '2' ? 
+                          'Opération: Retrait sans compte Moov' : '',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                     
                     ],
                   ),
                 ),
-                Divider(),
+                const Divider(),
               ],
             );
           },

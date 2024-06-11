@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kadoustransfert/vue/DeposOrange.dart';
 
 class TransactionOrange extends StatefulWidget {
+  
   const TransactionOrange({Key? key}) : super(key: key);
 
   @override

@@ -6,10 +6,9 @@ class UpdateDeposOrange extends StatefulWidget {
   final OrangeModel depos;
   final Function(OrangeModel) onRowClicked;
   final List<OrangeModel> deposList;
-   final Function() refreshData; // Ajout de la méthode refreshData
+  final Function() refreshData; // Ajout de la méthode refreshData
   
-
-   UpdateDeposOrange({
+  const UpdateDeposOrange({
     Key? key,
     required this.depos,
     required this.onRowClicked,
@@ -17,7 +16,7 @@ class UpdateDeposOrange extends StatefulWidget {
     required this.refreshData, // Ajout de la méthode refreshData
   }) : super(key: key);
 
-   // Constructeur par défaut optionnel
+  // Constructeur par défaut optionnel
   UpdateDeposOrange.empty({Key? key})
       : depos = OrangeModel.empty(),
         onRowClicked = _emptyFunction,
@@ -27,7 +26,6 @@ class UpdateDeposOrange extends StatefulWidget {
 
   static void _emptyFunction(OrangeModel _) {} // Ajustement pour correspondre à la signature
   static void _emptyRefreshFunction() {} // Fonction vide sans arguments
-
 
   @override
   State<UpdateDeposOrange> createState() => _UpdateDeposOrangeState();
@@ -61,14 +59,14 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Modifier Dépôt Orange',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
         child: Container(
-          margin: EdgeInsets.all(10),
+          margin: const EdgeInsets.all(10),
           child: Form(
             key: controller.formKey,
             child: Column(
@@ -78,10 +76,10 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                   width: 150,
                   child: Image.asset('images/Depos.jpg'),
                 ),
-                SizedBox(height: 25),
+                const SizedBox(height: 25),
                 TextFormField(
                   controller: montantController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Montant',
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -94,10 +92,10 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                   },
                   keyboardType: TextInputType.number,
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 TextFormField(
                   controller: numeroTelephoneController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Numéro Téléphone',
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -111,10 +109,10 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                   },
                   keyboardType: TextInputType.phone,
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 TextFormField(
                   controller: infoClientController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Informations Client',
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -126,7 +124,7 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                     return null;
                   },
                 ),
-                SizedBox(height: 25),
+                const SizedBox(height: 25),
                 ElevatedButton(
                   onPressed: () {
                     controller.pickImageCamera().then((_) {
@@ -135,7 +133,7 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       });
                     });
                   },
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
@@ -169,21 +167,27 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                     backgroundColor: MaterialStateProperty.all(Colors.deepOrangeAccent),
                   ),
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
-                      if (controller.formKey.currentState!.validate()) {
-                        controller.updateDeposData(
-                          depos: widget.depos,
-                          montant: montantController.text,
-                          numeroTelephone: numeroTelephoneController.text,
-                          infoClient: infoClientController.text,
-                        );
-                        Navigator.of(context).pop(); // Fermer la page de mise à jour
-                        widget.onRowClicked(widget.depos); // Actualiser la page d'historique
-                      }
-                    },
-                  child: Text(
+                    if (controller.formKey.currentState!.validate()) {
+                      setState(() {
+                        widget.depos.montant = montantController.text;
+                        widget.depos.numeroTelephone = numeroTelephoneController.text;
+                        widget.depos.infoClient = infoClientController.text;
+                      });
+                      controller.updateDeposData(
+                        depos: widget.depos,
+                        montant: montantController.text,
+                        numeroTelephone: numeroTelephoneController.text,
+                        infoClient: infoClientController.text,
+                      );
+                      widget.refreshData(); // Actualiser les données
+                      Navigator.of(context).pop(); // Fermer la page de mise à jour
+                      widget.onRowClicked(widget.depos); // Actualiser la page d'historique
+                    }
+                  },
+                  child: const Text(
                     'Valider',
                     style: TextStyle(
                       color: Colors.black,
@@ -197,7 +201,7 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       ),
                     ),
                     padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                      const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                     ),
                     side: MaterialStateProperty.all(const BorderSide(
                       color: Colors.grey,
