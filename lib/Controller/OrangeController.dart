@@ -194,6 +194,23 @@ Future<void> saveData() async {
 }
 
 
+ // Ajoutez cette méthode pour mettre à jour l'état "supprimer" dans Hive
+  Future<void> markAsDeleted(OrangeModel depos) async {
+    await _initializeBox(); // S'assurer que la boîte est ouverte
+    if (todobos != null) {
+      depos.supprimer = 1;
+      await todobos!.put(depos.idoperation, depos).then((value) {
+        print("Dépôt marqué comme supprimé : $depos");
+      }).catchError((error) {
+        print("Erreur lors de la mise à jour : $error");
+      });
+    } else {
+      print("Boîte Hive non initialisée");
+    }
+  }
+
+
+
  // Réinitialiser les champs du formulaire
   void resetFormFields() {
     selectedImage = null;

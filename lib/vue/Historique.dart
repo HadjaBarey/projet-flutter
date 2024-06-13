@@ -26,7 +26,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
 
   Future<void> _initialize() async {
     await _controller.initializeData();
-    loadData();
+    await loadData();
   }
 
   Future<void> loadData() async {
@@ -51,12 +51,13 @@ class _HistoriquePageState extends State<HistoriquePage> {
               child: const Text('Annuler'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {  // Mark this callback as async
                 setState(() {
                   _deposList[index].supprimer = 1;
                 });
+                await _controller.markAsDeleted(_deposList[index]);  // Use await here
                 Navigator.of(context).pop();
-                refreshData(); // Actualiser les données après la suppression
+                await refreshData(); // Use await here
               },
               child: const Text('Supprimé'),
             ),
@@ -129,21 +130,20 @@ class _HistoriquePageState extends State<HistoriquePage> {
                         style: const TextStyle(fontSize: 14),
                       ),
                       Text(
-                          depos.typeOperation == 1 && depos.operateur == '1' ? 
-                          'Opération: Depos Orange' :
-                          depos.typeOperation == 2 && depos.operateur == '1 '? 
+                        depos.typeOperation == 1 && depos.operateur == '1' ? 
+                          'Opération: Dépôt Orange' :
+                          depos.typeOperation == 2 && depos.operateur == '1' ? 
                           'Opération: Retrait Orange' :
                           depos.typeOperation == 3 && depos.operateur == '1' ? 
                           'Opération: Retrait sans compte Orange' :
                           depos.typeOperation == 4 && depos.operateur == '2' ? 
-                          'Opération: Depos Moov' : 
+                          'Opération: Dépôt Moov' : 
                           depos.typeOperation == 5 && depos.operateur == '2' ? 
                           'Opération: Retrait Moov' :
                           depos.typeOperation == 6 && depos.operateur == '2' ? 
                           'Opération: Retrait sans compte Moov' : '',
                         style: const TextStyle(fontSize: 14),
                       ),
-                     
                     ],
                   ),
                 ),
