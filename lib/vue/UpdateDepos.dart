@@ -133,6 +133,22 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       });
                     });
                   },
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    ),
+                    side: MaterialStateProperty.all(
+                      const BorderSide(
+                        color: Colors.grey,
+                      ),
+                    ),
+                    backgroundColor: MaterialStateProperty.all(Colors.deepOrangeAccent),
+                  ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -149,22 +165,6 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                         color: Colors.black,
                       ),
                     ],
-                  ),
-                  style: ButtonStyle(
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                    ),
-                    side: MaterialStateProperty.all(
-                      const BorderSide(
-                        color: Colors.grey,
-                      ),
-                    ),
-                    backgroundColor: MaterialStateProperty.all(Colors.deepOrangeAccent),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -187,13 +187,6 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       widget.onRowClicked(widget.depos); // Actualiser la page d'historique
                     }
                   },
-                  child: const Text(
-                    'Valider',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                    ),
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all(
                       RoundedRectangleBorder(
@@ -208,6 +201,13 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                     )),
                     backgroundColor: MaterialStateProperty.all(Colors.black12),
                   ),
+                  child: const Text(
+                    'Valider',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                    ),
                 ),
               ],
             ),
