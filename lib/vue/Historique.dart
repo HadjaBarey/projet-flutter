@@ -51,13 +51,20 @@ class _HistoriquePageState extends State<HistoriquePage> {
               child: const Text('Annuler'),
             ),
             TextButton(
-              onPressed: () async {  // Mark this callback as async
+              onPressed: () async {
+                // Marquer l'élément comme supprimé
                 setState(() {
                   _deposList[index].supprimer = 1;
                 });
-                await _controller.markAsDeleted(_deposList[index]);  // Use await here
+
+                // Mettre à jour dans la base de données
+                await _controller.markAsDeleted(_deposList[index]);
+
+                // Fermer la boîte de dialogue
                 Navigator.of(context).pop();
-                await refreshData(); // Use await here
+
+                // Rafraîchir les données
+                await refreshData();
               },
               child: const Text('Supprimé'),
             ),
@@ -93,7 +100,8 @@ class _HistoriquePageState extends State<HistoriquePage> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          deleteItem(index);
+                          int actualIndex = _deposList.indexWhere((item) => item.idoperation == depos.idoperation);
+                          deleteItem(actualIndex);
                         },
                         child: const Icon(Icons.delete),
                       ),
@@ -108,7 +116,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                               deposList: _deposList,
                               refreshData: refreshData,
                             )),
-                          ).then((_) => refreshData()); // Actualiser les données après la mise à jour
+                          ).then((_) => refreshData());
                         },
                         child: const Icon(Icons.update),
                       ),
@@ -130,18 +138,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                         style: const TextStyle(fontSize: 14),
                       ),
                       Text(
-                        depos.typeOperation == 1 && depos.operateur == '1' ? 
-                          'Opération: Dépôt Orange' :
-                          depos.typeOperation == 2 && depos.operateur == '1' ? 
-                          'Opération: Retrait Orange' :
-                          depos.typeOperation == 3 && depos.operateur == '1' ? 
-                          'Opération: Retrait sans compte Orange' :
-                          depos.typeOperation == 4 && depos.operateur == '2' ? 
-                          'Opération: Dépôt Moov' : 
-                          depos.typeOperation == 5 && depos.operateur == '2' ? 
-                          'Opération: Retrait Moov' :
-                          depos.typeOperation == 6 && depos.operateur == '2' ? 
-                          'Opération: Retrait sans compte Moov' : '',
+                        _getOperationDescription(depos),
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
@@ -154,5 +151,22 @@ class _HistoriquePageState extends State<HistoriquePage> {
         ),
       ),
     );
+  }
+
+  String _getOperationDescription(OrangeModel depos) {
+    if (depos.typeOperation == 1 && depos.operateur == '1') {
+      return 'Opération: Dépôt Orange';
+    } else if (depos.typeOperation == 2 && depos.operateur == '1') {
+      return 'Opération: Retrait Orange';
+    } else if (depos.typeOperation == 3 && depos.operateur == '1') {
+      return 'Opération: Retrait sans compte Orange';
+    } else if (depos.typeOperation == 4 && depos.operateur == '2') {
+      return 'Opération: Dépôt Moov';
+    } else if (depos.typeOperation == 5 && depos.operateur == '2') {
+      return 'Opération: Retrait Moov';
+    } else if (depos.typeOperation == 6 && depos.operateur == '2') {
+      return 'Opération: Retrait sans compte Moov';
+    }
+    return '';
   }
 }

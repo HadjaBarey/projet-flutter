@@ -21,8 +21,13 @@ class OrangeController {
 
  //liste des operations
    final List<OrangeModel> _deposList;
-   OrangeController(this._deposList);
+   //OrangeController(this._deposList);
 //initializeData();
+
+ OrangeController(this._deposList) {
+    _initializeBox();
+    initializeData();
+  }
 
    // Instance de OrangeModel
   OrangeModel depos = OrangeModel(
@@ -63,11 +68,10 @@ class OrangeController {
 
 //Méthode pour charger les données depuis la boîte Hive
   Future<List<OrangeModel>> loadData() async {
-  //  await _initializeBox(); // S'assurer que la boîte est ouverte
+
     List<OrangeModel> deposits = [];
     if (todobos != null) {
       deposits = await _loadDeposFromHive();
-      // print('Données chargées depuis Hive: $deposits'); // Ajoutez cette ligne pour le débogage
     }
     return deposits;
   }
@@ -80,6 +84,7 @@ Future<List<OrangeModel>> initializeData() async {
     } else {
       todobos = Hive.box<OrangeModel>("todobos");
     }
+     await _initializeBox();
     _initializeIdOperation();
     _initializeDateOperation();
     return loadData();
@@ -139,12 +144,12 @@ void _initializeIdOperation() {
     await _initializeBox(); // S'assurer que la boîte est ouverte
     if (todobos != null) {
       await todobos!.put(updatedDepos.idoperation, updatedDepos).then((value) {
-        print("Mise à jour réussie : $updatedDepos");
+       // print("Mise à jour réussie : $updatedDepos");
       }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
+       // print("Erreur lors de la mise à jour : $error");
       });
     } else {
-      print("Boîte Hive non initialisée");
+    //  print("Boîte Hive non initialisée");
     }
   }
 
@@ -184,12 +189,12 @@ Future<void> saveData() async {
  // await _initializeBox(); // S'assurer que la boîte est ouverte
   if (todobos != null) {
     await todobos!.put(depos.idoperation, depos).then((value) {
-      print("Enregistrement réussi : $depos");
+    //  print("Enregistrement réussi : $depos");
     }).catchError((error) {
-      print("Erreur lors de l'enregistrement : $error");
+     // print("Erreur lors de l'enregistrement : $error");
     });
   } else {
-    print("Boîte Hive non initialisée");
+   // print("Boîte Hive non initialisée");
   }
 }
 
@@ -200,12 +205,12 @@ Future<void> saveData() async {
     if (todobos != null) {
       depos.supprimer = 1;
       await todobos!.put(depos.idoperation, depos).then((value) {
-        print("Dépôt marqué comme supprimé : $depos");
+       // print("Dépôt marqué comme supprimé : $depos");
       }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
+      //  print("Erreur lors de la mise à jour : $error");
       });
     } else {
-      print("Boîte Hive non initialisée");
+     // print("Boîte Hive non initialisée");
     }
   }
 
@@ -301,52 +306,57 @@ void requestCallPermission() async {
 // Reconnaître le texte à partir de l'image
 
 Future<void> recognizeText(InputImage inputImage) async {
-    final textRecognizer = GoogleMlKit.vision.textRecognizer();
+  final textRecognizer = GoogleMlKit.vision.textRecognizer();
 
-    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+  final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
-    if (recognizedText.blocks.isEmpty) {
-      print('Aucun texte n\'a été reconnu.');
-      this.recognizedText = '';
-      updateDepos(infoClient: '');
-      return;
+  if (recognizedText.blocks.isEmpty) {
+    print('Aucun texte n\'a été reconnu.');
+    this.recognizedText = '';
+    updateDepos(infoClient: '');
+    return;
+  }
+
+  String extractedText = '';
+
+  for (TextBlock block in recognizedText.blocks) {
+    for (TextLine line in block.lines) {
+      extractedText += line.text + '\n';
+      print('Texte reconnu : ${line.text}');
     }
+  }
 
-    String extractedName = '';
-    String extractedFirstName = '';
-    String extractedDate = '';
-    String extractedCardNumber = '';
+  // Extraction des informations spécifiques
+  String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
+  String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
+  String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
+  String reference = extractInfo(extractedText, r'\bB\d{7}\b');
 
-    for (TextBlock block in recognizedText.blocks) {
-      for (TextLine line in block.lines) {
-        String lineText = line.text;
-        
-        if (lineText.contains('Nom ')) {
-          extractedName = lineText.split('Nom ').last.trim();
-        } else if (lineText.contains('Prénoms ')) {
-          extractedFirstName = lineText.split('Prénoms ').last.trim();
-        } else if (lineText.contains('Délivrée le ')) {
-          extractedDate = lineText.split('Délivrée le ').last.trim();
-        } else if (lineText.contains('Numéro de carte ')) {
-          extractedCardNumber = lineText.split('Numéro de carte ').last.trim();
-        }
-        
-        print('Texte reconnu : ${lineText}');
+  print('Nom: $nom');
+  print('Prénoms: $prenoms');
+  print('Délivrée le: $delivreeLe');
+  print('Référence: $reference');
 
-      }
-    }
+  // Mettre à jour avec les informations spécifiques dans infoClient
+  String infoClient = 'Nom: $nom\nPrénoms: $prenoms\nDélivrée le: $delivreeLe\nRéférence: $reference';
 
-    // Combiner les informations extraites
-    String extractedText = 'Nom $extractedName\nPrénoms $extractedFirstName\nDélivrée le $extractedDate\nNuméro de carte $extractedCardNumber';
-
-    // Affichage des données extraites
-    print(extractedText);
-
-    // Mise à jour des données
-    this.recognizedText = extractedText;
-    infoClientController.text = extractedText;
-    updateDepos(infoClient: extractedText);
+  // Mettre à jour les variables et appeler updateDepos
+  this.recognizedText = extractedText;
+  infoClientController.text = extractedText;
+  updateDepos(infoClient: infoClient);
 }
+
+String extractInfo(String text, String pattern) {
+  final regExp = RegExp(pattern, multiLine: true);
+  final match = regExp.firstMatch(text);
+  return match != null ? match.group(1)?.trim() ?? '' : '';
+}
+
+
+
+
+
+
 
   // Future<void> recognizeText(InputImage inputImage) async {
   //   final textRecognizer = GoogleMlKit.vision.textRecognizer();
