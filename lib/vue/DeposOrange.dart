@@ -109,6 +109,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   keyboardType: TextInputType.phone,
                 ),
                 SizedBox(height: 15),
+                
                 TextFormField(
                   controller: controller.infoClientController,
                   decoration: InputDecoration(

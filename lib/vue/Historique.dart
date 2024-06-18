@@ -107,19 +107,25 @@ class _HistoriquePageState extends State<HistoriquePage> {
                       ),
                       const SizedBox(width: 10),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => UpdateDeposOrange(
-                              depos: depos,
-                              onRowClicked: _handleRowClicked,
-                              deposList: _deposList,
-                              refreshData: refreshData,
-                            )),
-                          ).then((_) => refreshData());
-                        },
-                        child: const Icon(Icons.update),
-                      ),
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UpdateDeposOrange(
+                                  depos: depos,
+                                  onRowClicked: _handleRowClicked,
+                                  deposList: _deposList,
+                                  refreshData: refreshData,
+                                ),
+                              ),
+                            );
+                            if (result == true) {
+                              await refreshData();
+                            }
+                          },
+                          child: const Icon(Icons.update),
+                        ),
+
                     ],
                   ),
                   title: Text(

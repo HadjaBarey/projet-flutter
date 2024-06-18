@@ -13,6 +13,7 @@ class OrangeController {
 
   // Clé globale pour le formulaire
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final TextEditingController infoClientController = TextEditingController();
 
   static const platform = MethodChannel('com.example.kadoustransfert/call');
 
@@ -47,15 +48,13 @@ class OrangeController {
   TextEditingController dateOperationController = TextEditingController();
   TextEditingController montantController = TextEditingController();
   TextEditingController numeroTelephoneController = TextEditingController();
-  TextEditingController infoClientController = TextEditingController();
+  // TextEditingController infoClientController = TextEditingController();
   TextEditingController typeOperationController = TextEditingController(text: '1'); // Valeur par défaut pour le Type Opération orange depos =1
   TextEditingController operateurController = TextEditingController(text: '1'); // Valeur par défaut pour l'Opérateur orange
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
  
- // Image sélectionnée et texte reconnu
-  XFile? selectedImage;
-  String recognizedText = '';
+ 
 
     Future<void> _initializeBox() async {
     if (!Hive.isBoxOpen("todobos")) {
@@ -214,11 +213,13 @@ Future<void> saveData() async {
     }
   }
 
-
+// Image sélectionnée et texte reconnu
+  late XFile selectedImage;
+  String recognizedText = '';
 
  // Réinitialiser les champs du formulaire
   void resetFormFields() {
-    selectedImage = null;
+    selectedImage ;
     recognizedText = '';
     formKey.currentState?.reset();
     depos = OrangeModel(
@@ -302,7 +303,6 @@ void requestCallPermission() async {
   }
 
 
-
 // Reconnaître le texte à partir de l'image
 
 Future<void> recognizeText(InputImage inputImage) async {
@@ -311,7 +311,7 @@ Future<void> recognizeText(InputImage inputImage) async {
   final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
   if (recognizedText.blocks.isEmpty) {
-    print('Aucun texte n\'a été reconnu.');
+    //print('Aucun texte n\'a été reconnu.');
     this.recognizedText = '';
     updateDepos(infoClient: '');
     return;
@@ -322,7 +322,6 @@ Future<void> recognizeText(InputImage inputImage) async {
   for (TextBlock block in recognizedText.blocks) {
     for (TextLine line in block.lines) {
       extractedText += line.text + '\n';
-      print('Texte reconnu : ${line.text}');
     }
   }
 
@@ -330,60 +329,56 @@ Future<void> recognizeText(InputImage inputImage) async {
   String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
   String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
   String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
-  String reference = extractInfo(extractedText, r'\bB\d{7}\b');
+  String reference = extractInfo(extractedText, r'\bB\d{5}\s\d{2}\b');
 
-  print('Nom: $nom');
-  print('Prénoms: $prenoms');
-  print('Délivrée le: $delivreeLe');
-  print('Référence: $reference');
+  // print('Nom: $nom');
+  // print('Prénoms: $prenoms');
+  // print('Délivrée le: $delivreeLe');
+  // print('Référence: $reference');
+
+  // Vérifiez si l'une des variables est vide et affichez un message d'erreur
+  if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
+   // print('Erreur: Une ou plusieurs informations sont manquantes.');
+    this.recognizedText = '';
+    updateDepos(infoClient: 'Erreur: veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
+    return;
+  }
+
+    // Vérifiez si delivreeLe est une date valide
+  if (!isValidDate(delivreeLe)) {
+    //print('Erreur: La date de délivrance n\'est pas valide.');
+    this.recognizedText = '';
+    updateDepos(infoClient: 'Erreur: La date de délivrance n\'est pas valide.');
+    return;
+  }
 
   // Mettre à jour avec les informations spécifiques dans infoClient
-  String infoClient = 'Nom: $nom\nPrénoms: $prenoms\nDélivrée le: $delivreeLe\nRéférence: $reference';
-
+  String infoClient = '$nom $prenoms / CNIB N° $reference du $delivreeLe';
+  //print('TTT: $infoClient');
   // Mettre à jour les variables et appeler updateDepos
   this.recognizedText = extractedText;
-  infoClientController.text = extractedText;
+  infoClientController.text = infoClient;
   updateDepos(infoClient: infoClient);
 }
 
 String extractInfo(String text, String pattern) {
   final regExp = RegExp(pattern, multiLine: true);
   final match = regExp.firstMatch(text);
-  return match != null ? match.group(1)?.trim() ?? '' : '';
+  if (match != null) {
+    return match.groupCount >= 1 ? match.group(1)?.trim() ?? '' : match.group(0)?.trim() ?? '';
+  }
+  return '';
 }
 
-
-
-
-
-
-
-  // Future<void> recognizeText(InputImage inputImage) async {
-  //   final textRecognizer = GoogleMlKit.vision.textRecognizer();
-
-  //   final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-
-  //   if (recognizedText.blocks.isEmpty) {
-  //     print('Aucun texte n\'a été reconnu.');
-  //     this.recognizedText = '';
-  //     updateDepos(infoClient: '');
-  //     return;
-  //   }
-
-  //   String extractedText = '';
-
-  //   for (TextBlock block in recognizedText.blocks) {
-  //     for (TextLine line in block.lines) {
-  //       extractedText += line.text + '\n';
-  //       print('Texte reconnu : ${line.text}');
-  //     }
-  //   }
-
-  //   this.recognizedText = extractedText;
-  //   infoClientController.text = extractedText;
-  //   updateDepos(infoClient: extractedText);
-  // }
-
+bool isValidDate(String dateStr) {
+  try {
+    final dateFormat = DateFormat('dd/MM/yyyy'); // Assuming the date format is 'dd/MM/yyyy'
+    dateFormat.parseStrict(dateStr);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
    
 
 }
