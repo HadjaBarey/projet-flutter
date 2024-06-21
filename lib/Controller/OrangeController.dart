@@ -7,6 +7,7 @@ import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'call_service.dart'; // Importez le service d'appel
 
 
 class OrangeController {
@@ -14,6 +15,12 @@ class OrangeController {
   // Clé globale pour le formulaire
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController infoClientController = TextEditingController();
+  final TextEditingController montantController = TextEditingController();
+  final TextEditingController numeroTelephoneController = TextEditingController();
+
+   // Instance du service d'appel
+  final CallService callService = CallService();
+
 
   static const platform = MethodChannel('com.example.kadoustransfert/call');
 
@@ -46,8 +53,8 @@ class OrangeController {
  // Contrôleurs pour les champs de saisie
   TextEditingController idOperationController = TextEditingController();
   TextEditingController dateOperationController = TextEditingController();
-  TextEditingController montantController = TextEditingController();
-  TextEditingController numeroTelephoneController = TextEditingController();
+ // TextEditingController montantController = TextEditingController();
+  //TextEditingController numeroTelephoneController = TextEditingController();
   // TextEditingController infoClientController = TextEditingController();
   TextEditingController typeOperationController = TextEditingController(text: '1'); // Valeur par défaut pour le Type Opération orange depos =1
   TextEditingController operateurController = TextEditingController(text: '1'); // Valeur par défaut pour l'Opérateur orange
@@ -188,12 +195,12 @@ Future<void> saveData() async {
  // await _initializeBox(); // S'assurer que la boîte est ouverte
   if (todobos != null) {
     await todobos!.put(depos.idoperation, depos).then((value) {
-    //  print("Enregistrement réussi : $depos");
+      print("Enregistrement réussi : $depos");
     }).catchError((error) {
-     // print("Erreur lors de l'enregistrement : $error");
+      print("Erreur lors de l'enregistrement : $error");
     });
   } else {
-   // print("Boîte Hive non initialisée");
+    print("Boîte Hive non initialisée");
   }
 }
 
@@ -238,48 +245,53 @@ Future<void> saveData() async {
   }
 
 
+
+
 // Fonction pour traiter le dépôt
 void fonctionDepos() async {
-  if (formKey.currentState!.validate()) {
-    String montant = montantController.text;  // Utilisez le TextEditingController pour obtenir la valeur du montant
-    String number = numeroTelephoneController.text;  // Utilisez le TextEditingController pour obtenir le numéro de téléphone
-    String codeD = "*144*1*4*";
+    if (formKey.currentState != null && formKey.currentState!.validate()) {
+        String montant = montantController.text;
+        String number = numeroTelephoneController.text;
+        String codeD = "*144*1*4*";
 
-    // Encodage des parties individuellement sans encoder le #
-    String encodedCodeD = Uri.encodeComponent(codeD);
-    String encodedNumber = Uri.encodeComponent(number);
-    String encodedMontant = Uri.encodeComponent(montant);
+        String encodedCodeD = Uri.encodeComponent(codeD);
+        String encodedNumber = Uri.encodeComponent(number);
+        String encodedMontant = Uri.encodeComponent(montant);
 
-    // Assembler les composants encodés avec #
-    String encodedResultat = "$encodedCodeD$encodedNumber*$encodedMontant%23"; // Utiliser %23 pour le #
+        String encodedResultat = "$encodedCodeD$encodedNumber*$encodedMontant%23";
 
-    // Utiliser MethodChannel pour lancer l'appel
-    const platform = MethodChannel('com.example.kadoustransfert/call');
-
-    try {
-      await platform.invokeMethod('callNumber', {'number': encodedResultat});
-    } on PlatformException catch (e) {
-      print("Failed to make call: '${e.message}'.");
+        try {
+           await callService.initiateCall(encodedResultat);
+            //await platform.invokeMethod('chooseSim', {'number': encodedResultat});
+        } on PlatformException catch (e) {
+            print("Échec de la sélection de la SIM: '${e.message}'.");
+        } catch (e) {
+            print("Erreur inattendue lors de la sélection de la SIM: $e");
+        }
     }
-  }
 }
 
-void _onPermissionGranted() {
-  saveData();
-  resetFormFields();
-}
+
 
 
 // Demander la permission d'appeler
 void requestCallPermission() async {
-  var status = await Permission.phone.request();
-  if (status.isGranted) {
-    // La permission est accordée, sauvegardez les données et réinitialisez le formulaire
-    _onPermissionGranted();
-  } else {
-    // La permission n'est pas accordée, affichez un message à l'utilisateur
-    print('Permission refusée pour faire un appel téléphonique');
-  }
+    try {
+        var status = await Permission.phone.request();
+        if (status.isGranted) {
+            fonctionDepos();
+        } else {
+            print('Permission refusée pour faire un appel téléphonique');
+        }
+    } catch (e) {
+        print('Erreur lors de la demande de permission: $e');
+    }
+}
+
+
+void _onPermissionGranted() {
+  saveData();
+  resetFormFields();
 }
 
 
