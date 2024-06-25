@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/vue/Client.dart';
+import 'package:kadoustransfert/vue/ListClient.dart';
 
 class Parametrage extends StatefulWidget {
   const Parametrage({Key? key}) : super(key: key);
@@ -46,10 +47,10 @@ class _ParametrageState extends State<Parametrage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
                       onTap: () {                       
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ClientPage()),
-                        );               
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) => const ClientPage()),
+                        // );               
                       },
                       child: Center(
                         child: Text(
@@ -78,8 +79,12 @@ class _ParametrageState extends State<Parametrage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
                       onTap: () {
-                        // Action à réaliser lors du clic
-                        print('Container cliqué');
+                        {                       
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ListeClientPage()),
+                        );               
+                      }
                       },
                       child: Center(
                         child: Text(
