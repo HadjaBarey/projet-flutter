@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kadoustransfert/vue/Client.dart';
+import 'package:kadoustransfert/Controller/EntrepriseController.dart';
+import 'package:kadoustransfert/vue/Entreprise.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
 
 class Parametrage extends StatefulWidget {
@@ -151,9 +152,13 @@ class _ParametrageState extends State<Parametrage> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
                             onTap: () {
-                              // Action à réaliser lors du clic
-                              print('Container cliqué');
-                            },
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => EntreprisePage(
+                                    entrepriseController: EntrepriseController(), // Créez une nouvelle instance de votre contrôleur
+                                  )),
+                                );
+                              },
                             child: Center(
                               child: Text(
                                 'Entreprise', // Le texte que vous souhaitez afficher

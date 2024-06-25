@@ -8,6 +8,7 @@ import 'Model/OrangeModel.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Nécessaire pour utiliser Hive dans Flutter
   await Hive.initFlutter(); // Initialiser Hive
+  
 
   // Enregistrer l'adaptateur pour OrangeModel
   Hive.registerAdapter(OrangeModelAdapter());

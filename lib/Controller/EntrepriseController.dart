@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
-
 
 class EntrepriseController {
   final formKey = GlobalKey<FormState>();
   late Box<EntrepriseModel> todobos2;
 
-  EntrepriseController() {
-    initializeBox();
-  }
-
   TextEditingController idEntrepriseController = TextEditingController();
   TextEditingController NomEntrepriseController = TextEditingController();
   TextEditingController DirecteurEntrepriseController = TextEditingController();
   TextEditingController DateControleController = TextEditingController();
-
 
   EntrepriseModel Entreprise = EntrepriseModel(
     idEntreprise: 0,
@@ -24,18 +19,34 @@ class EntrepriseController {
     DateControle: '',
   );
 
-  void resetFormFields() {
-    Entreprise = EntrepriseModel(
-      idEntreprise: Entreprise.idEntreprise + 1,
-      NomEntreprise: '',
-      DirecteurEntreprise: '',
-      DateControle: '',
-    );
-    idEntrepriseController.text = Entreprise.idEntreprise.toString();
-    NomEntrepriseController.clear();
-    DirecteurEntrepriseController.clear();
-    DateControleController.clear();
+  EntrepriseController() {
+    initializeBox();
   }
+
+ void resetFormFields() {
+  Entreprise = EntrepriseModel(
+    idEntreprise: Entreprise.idEntreprise + 1,
+    NomEntreprise: '', // Vous pouvez vider seulement ce champ si nécessaire
+    DirecteurEntreprise: '', // Et laisser les autres tels qu'ils sont
+    DateControle: '', // Si vous ne voulez pas les vider complètement
+  );
+ // idEntrepriseController.text = Entreprise.idEntreprise.toString();
+}
+
+  void pickDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null) {
+      DateControleController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
+      updateEntreprise(DateControle: DateControleController.text);
+    }
+  }
+
 
   void _initializeEntrepriseId() {
     if (todobos2.isNotEmpty) {
@@ -54,7 +65,7 @@ class EntrepriseController {
     if (!Hive.isAdapterRegistered(EntrepriseModelAdapter().typeId)) {
       Hive.registerAdapter(EntrepriseModelAdapter());
     }
-    todobos2 = await Hive.openBox<EntrepriseModel>("todobos1");
+    todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
     _initializeEntrepriseId();
   }
 
@@ -65,19 +76,18 @@ class EntrepriseController {
     return todobos2.values.toList();
   }
 
-void updateEntreprise({
-  int? idEntreprise,
-  String? NomEntreprise,
-  String? DirecteurEntreprise,
-  String? DateControle,
-}) {
-  if (idEntreprise != null) Entreprise.idEntreprise = idEntreprise;
-  if (NomEntreprise != null) Entreprise.NomEntreprise = NomEntreprise;
-  if (DirecteurEntreprise != null) Entreprise.DirecteurEntreprise = DirecteurEntreprise;
-  if (DateControle != null) Entreprise.DateControle = DateControle;
-  //if (supprimer != null) client.supprimer = supprimer;
-}
-
+  void updateEntreprise({
+    int? idEntreprise,
+    String? NomEntreprise,
+    String? DirecteurEntreprise,
+    String? DateControle,
+  }) {
+    if (idEntreprise != null) Entreprise.idEntreprise = idEntreprise;
+    if (NomEntreprise != null) Entreprise.NomEntreprise = NomEntreprise;
+    if (DirecteurEntreprise != null)
+      Entreprise.DirecteurEntreprise = DirecteurEntreprise;
+    if (DateControle != null) Entreprise.DateControle = DateControle;
+  }
 
   Future<void> saveEntrepriseData() async {
     try {
@@ -88,11 +98,10 @@ void updateEntreprise({
     }
   }
 
-  Future<void> markAsDeleted(EntrepriseModel Entreprise) async {
+  Future<void> markAsDeleted(EntrepriseModel entreprise) async {
     if (todobos2 != null) {
-      //client.supprimer = 1;
-      await todobos2.put(Entreprise.idEntreprise, Entreprise).then((value) {
-        print("Client marqué comme supprimé : $Entreprise");
+      await todobos2.put(entreprise.idEntreprise, entreprise).then((value) {
+        print("Entreprise marquée comme supprimée : $entreprise");
       }).catchError((error) {
         print("Erreur lors de la mise à jour : $error");
       });
