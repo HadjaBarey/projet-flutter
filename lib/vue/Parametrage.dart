@@ -3,6 +3,7 @@ import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/vue/Entreprise.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
 import 'package:kadoustransfert/vue/ListOpTransaction.dart';
+import 'package:kadoustransfert/vue/ListUtilisateur.dart';
 
 
 class Parametrage extends StatefulWidget {
@@ -50,10 +51,10 @@ class _ParametrageState extends State<Parametrage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(15.0),
                     onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => const ClientPage()),
-                      // );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PageListeUtilisateur()),
+                      );
                     },
                     child: Center(
                       child: Text(

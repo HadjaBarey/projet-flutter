@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:kadoustransfert/Controller/OpTransactionController.dart';
-import 'package:kadoustransfert/Model/OpTransactionModel.dart';
-import 'package:kadoustransfert/vue/OpTransaction.dart';
+import 'package:kadoustransfert/Controller/UtilisateurController.dart';
+import 'package:kadoustransfert/Model/UtilisateurModel.dart';
+import 'package:kadoustransfert/vue/Utilisateur.dart';
 
-class PageListOpTransaction extends StatefulWidget {
-  const PageListOpTransaction({Key? key}) : super(key: key);
+
+class PageListeUtilisateur extends StatefulWidget {
+  const PageListeUtilisateur({Key? key}) : super(key: key);
 
   @override
-  State<PageListOpTransaction> createState() => _PageListOpTransactionState();
+  State<PageListeUtilisateur> createState() => _PageListeUtilisateurState();
 }
 
-class _PageListOpTransactionState extends State<PageListOpTransaction> {
-  final OpTransactionController _controller = OpTransactionController();
-  List<OpTransactionModel> _TransactionsList = [];
+class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
+  final UtilisateurController _controller = UtilisateurController();
+  List<UtilisateurModel> _UtilisateurList = [];
 
   @override
   void initState() {
@@ -21,16 +22,16 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
   }
 
   Future<void> _initialize() async {
-    await _controller.initializeBox();
+    await _controller.initializeBox(); // Correction ici
     await loadData();
   }
 
   Future<void> loadData() async {
-    List<OpTransactionModel> Transactions = await _controller.loadData();
+    List<UtilisateurModel> clients = await _controller.loadData();
     setState(() {
-      _TransactionsList = Transactions;
+      _UtilisateurList = clients;
     });
-    print('Données chargées : $_TransactionsList');
+    print('Données chargées : $_UtilisateurList');
   }
 
   void deleteItem(int index) {
@@ -38,6 +39,7 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+         
           title: const Text('Confirmation'),
           content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
           actions: <Widget>[
@@ -51,10 +53,10 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
               onPressed: () async {
                 try {
                   setState(() {
-                    _TransactionsList[index].supprimer = 1;
+                    _UtilisateurList[index].supprimer = 1;
                   });
 
-                  await _controller.markAsDeleted(_TransactionsList[index]);
+                  await _controller.markAsDeleted(_UtilisateurList[index]);
                   Navigator.of(context).pop();
                   await loadData();
                 } catch (e) {
@@ -72,24 +74,23 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
     );
   }
 
-  void _handleRowClicked(OpTransactionModel clickedTransaction) {
-    print('Ligne cliquée : ${clickedTransaction.CodeTransaction}, ${clickedTransaction.Operateur}, ${clickedTransaction.TypeOperation}');
+  void _handleRowClicked(UtilisateurModel clickedUtilisateur) {
+    print('Ligne cliquée : ${clickedUtilisateur.IdentiteUtilisateur}, ${clickedUtilisateur.RefCNIBUtilisateur}, ${clickedUtilisateur.NumPhoneUtilisateur}');
   }
 
   @override
   Widget build(BuildContext context) {
-    List<OpTransactionModel> filteredList = _TransactionsList.where((client) => client.supprimer == 0).toList();
+    List<UtilisateurModel> filteredList = _UtilisateurList.where((client) => client.supprimer == 0).toList();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Liste des Transactions'),
+        title: const Text('Liste des Utilisateurs'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView.builder(
           itemCount: filteredList.length,
           itemBuilder: (context, index) {
-            OpTransactionModel Transaction = filteredList[index];
-
+            UtilisateurModel client = filteredList[index];
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -99,7 +100,7 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          int actualIndex = _TransactionsList.indexWhere((item) => item.idOpTransaction == Transaction.idOpTransaction);
+                          int actualIndex = _UtilisateurList.indexWhere((item) => item.idUtilisateur == client.idUtilisateur);
                           deleteItem(actualIndex);
                         },
                         child: const Icon(Icons.delete),
@@ -107,20 +108,24 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
                     ],
                   ),
                   title: Text(
-                    'Transaction: ${Transaction.CodeTransaction}',
+                    'Identité: ${client.IdentiteUtilisateur}',
                     style: const TextStyle(fontSize: 18),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getOperationDescription(Transaction),
+                        'Numéro de téléphone: ${client.NumPhoneUtilisateur}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        'Ref CNIB: ${client.RefCNIBUtilisateur}',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
                   onTap: () {
-                    _handleRowClicked(Transaction);
+                    _handleRowClicked(client);
                   },
                 ),
                 const Divider(),
@@ -133,28 +138,16 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => OpeTransactionPage(OpeTransactionController: _controller)),
+            MaterialPageRoute(builder: (context) => PageUtilisateur(utilisateurController: _controller)),
+
           );
           if (result == true) {
             await loadData();
           }
         },
         child: const Icon(Icons.add),
-        tooltip: 'Ajouter une Transaction',
+        tooltip: 'Ajouter un client',
       ),
     );
   }
-
- String _getOperationDescription(OpTransactionModel transaction) {
-  String operateurLabel = _controller.getOperateurLabel(transaction.Operateur);
-  String typeOperationLabel = _controller.getTypeOperationLabel(transaction.TypeOperation);
-
-  if (typeOperationLabel.isNotEmpty && operateurLabel.isNotEmpty) {
-    return 'Opérateur: $operateurLabel / type Opération: $typeOperationLabel';
-  }
-  
-  return 'na';
-}
-
-
 }

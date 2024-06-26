@@ -102,29 +102,41 @@ class OpTransactionController {
   }
 
   void updateOpTransaction({
-    int? idOpTransaction,
-    String? CodeTransaction,
-    String? TypeOperation,
-    String? Operateur,
-    int? supprimer,
-  }) {
-    if (idOpTransaction != null) OpTransaction.idOpTransaction = idOpTransaction;
-    if (CodeTransaction != null) OpTransaction.CodeTransaction = CodeTransaction;
-    if (TypeOperation != null) OpTransaction.TypeOperation = TypeOperation;
-    if (Operateur != null) OpTransaction.Operateur = Operateur;
+  int? idOpTransaction,
+  String? CodeTransaction,
+  String? TypeOperation,
+  String? Operateur,
+  int? supprimer,
+}) {
+  if (idOpTransaction != null) OpTransaction.idOpTransaction = idOpTransaction;
+  if (CodeTransaction != null) OpTransaction.CodeTransaction = CodeTransaction;
+  if (TypeOperation != null) {
+    OpTransaction.TypeOperation = TypeOperation;
+    selectedTypeOpe = TypeOperation; // Mettre à jour la sélection
   }
-
-
-
-  Future<void> saveOpTransactionData() async {
-    try {
-      await todobos3.put(OpTransaction.idOpTransaction, OpTransaction);
-      print("Enregistrement réussi : $OpTransaction");
-    } catch (e) {
-      print("Erreur lors de l'enregistrement : $e");
-      throw Exception("Erreur lors de l'enregistrement : $e");
-    }
+  if (Operateur != null) {
+    OpTransaction.Operateur = Operateur;
+    selectedOperateur = Operateur; // Mettre à jour la sélection
   }
+  if (supprimer != null) OpTransaction.supprimer = supprimer;
+}
+
+
+
+ Future<void> saveOpTransactionData() async {
+  try {
+    updateOpTransaction(
+      Operateur: selectedOperateur,
+      TypeOperation: selectedTypeOpe,
+    );
+    await todobos3.put(OpTransaction.idOpTransaction, OpTransaction);
+    print("Enregistrement réussi : $OpTransaction");
+  } catch (e) {
+    print("Erreur lors de l'enregistrement : $e");
+    throw Exception("Erreur lors de l'enregistrement : $e");
+  }
+}
+
 
   Future<void> markAsDeleted(OpTransactionModel OpTransact) async {
     if (todobos3 != null) {
