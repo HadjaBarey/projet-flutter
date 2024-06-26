@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/vue/Entreprise.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
+import 'package:kadoustransfert/vue/ListOpTransaction.dart';
+
 
 class Parametrage extends StatefulWidget {
   const Parametrage({Key? key}) : super(key: key);
@@ -34,144 +36,144 @@ class _ParametrageState extends State<Parametrage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-               Container(
-                    width: 150,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300], // Couleur de fond gris
-                      border: Border.all(
-                        color: Colors.black87, // Couleur de la bordure en noir foncé
-                        width: 0.0, // Épaisseur de la bordure en pixels
-                      ),
-                      borderRadius: BorderRadius.circular(15.0), // Bordure circulaire avec un rayon de 15 pixels
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
                     ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
-                      onTap: () {                       
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) => const ClientPage()),
-                        // );               
-                      },
-                      child: Center(
-                        child: Text(
-                          'Utilsateur', // Le texte que vous souhaitez afficher
-                          style: TextStyle(
-                            color: Colors.black, // Couleur du texte
-                            fontSize: 18.0, // Taille de la police
-                            fontWeight: FontWeight.bold, // Mettre le texte en gras
-                          ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (context) => const ClientPage()),
+                      // );
+                    },
+                    child: Center(
+                      child: Text(
+                        'Utilisateur',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-
+                ),
                 Container(
-                    width: 150,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300], // Couleur de fond gris
-                      border: Border.all(
-                        color: Colors.black87, // Couleur de la bordure en noir foncé
-                        width: 0.0, // Épaisseur de la bordure en pixels
-                      ),
-                      borderRadius: BorderRadius.circular(15.0), // Bordure circulaire avec un rayon de 15 pixels
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
                     ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
-                      onTap: () {
-                        {                       
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ListeClientPage()),
-                        );               
-                      }
-                      },
-                      child: Center(
-                        child: Text(
-                          'Client', // Le texte que vous souhaitez afficher
-                          style: TextStyle(
-                            color: Colors.black, // Couleur du texte
-                            fontSize: 18.0, // Taille de la police
-                            fontWeight: FontWeight.bold, // Mettre le texte en gras
-                          ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ListeClientPage()),
+                      );
+                    },
+                    child: Center(
+                      child: Text(
+                        'Client',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ),                
+                  ),
+                ),
               ],
             ),
-             SizedBox(height: 60),
-
+            SizedBox(height: 60),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                  Container(
-                          width: 150,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300], // Couleur de fond gris
-                            border: Border.all(
-                              color: Colors.black87, // Couleur de la bordure en noir foncé
-                              width: 0.0, // Épaisseur de la bordure en pixels
-                            ),
-                            borderRadius: BorderRadius.circular(15.0), // Bordure circulaire avec un rayon de 15 pixels
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
-                            onTap: () {
-                              // Action à réaliser lors du clic
-                              print('Container cliqué');
-                            },
-                            child: Center(
-                              child: Text(
-                                'Opération Transaction', // Le texte que vous souhaitez afficher
-                                style: TextStyle(
-                                  color: Colors.black, // Couleur du texte
-                                  fontSize: 18.0, // Taille de la police
-                                  fontWeight: FontWeight.bold, // Mettre le texte en gras
-                                ),
-                                textAlign: TextAlign.center, // Centre le texte horizontalement
-                              ),
-                            ),
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
+                    ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PageListOpTransaction(),
+                        ),
+                      );
+                    },
+                    child: Center(
+                      child: Text(
+                        'Opération Transaction',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
+                    ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EntreprisePage(
+                            entrepriseController: EntrepriseController(),
                           ),
                         ),
-
-
-                Container(
-                          width: 150,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300], // Couleur de fond gris
-                            border: Border.all(
-                              color: Colors.black87, // Couleur de la bordure en noir foncé
-                              width: 0.0, // Épaisseur de la bordure en pixels
-                            ),
-                            borderRadius: BorderRadius.circular(15.0), // Bordure circulaire avec un rayon de 15 pixels
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(15.0), // Assure que l'effet d'encre respecte les coins arrondis
-                            onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => EntreprisePage(
-                                    entrepriseController: EntrepriseController(), // Créez une nouvelle instance de votre contrôleur
-                                  )),
-                                );
-                              },
-                            child: Center(
-                              child: Text(
-                                'Entreprise', // Le texte que vous souhaitez afficher
-                                style: TextStyle(
-                                  color: Colors.black, // Couleur du texte
-                                  fontSize: 18.0, // Taille de la police
-                                  fontWeight: FontWeight.bold, // Mettre le texte en gras
-                                ),
-                                textAlign: TextAlign.center, // Centre le texte horizontalement
-                              ),
-                            ),
-                          ),
-                        ),   
+                      );
+                    },
+                    child: Center(
+                      child: Text(
+                        'Entreprise',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],

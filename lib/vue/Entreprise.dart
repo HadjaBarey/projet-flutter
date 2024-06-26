@@ -18,7 +18,13 @@ class _EntreprisePageState extends State<EntreprisePage> {
   void initState() {
     super.initState();
     entrepriseController = widget.entrepriseController;
-    entrepriseController.resetFormFields();
+    loadEntreprise();
+  }
+
+  void loadEntreprise() async {
+    await entrepriseController.initializeBox();
+    await entrepriseController.loadMostRecentEntrepriseData();
+    setState(() {});
   }
 
   // Méthode pour incrémenter la date
@@ -38,7 +44,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Information de la boutique',
+          'Info de la boutique',
           style: TextStyle(
             fontSize: 25.0,
             fontWeight: FontWeight.bold,
@@ -54,7 +60,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
           child: Column(
             children: [
               Offstage(
-                offstage: false,
+                offstage: true,
                 child: TextFormField(
                   controller: entrepriseController.idEntrepriseController,
                   decoration: InputDecoration(
@@ -122,7 +128,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
               // Ajout du bouton pour incrémenter la date
               ElevatedButton(
                 onPressed: incrementDate,
-                child: const Text('Incrémenter la date'),
+                child: const Text('Date du jour'),
               ),
 
               SizedBox(height: 20),

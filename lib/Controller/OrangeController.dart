@@ -63,7 +63,7 @@ class OrangeController {
  
  
 
-    Future<void> _initializeBox() async {
+  Future<void> _initializeBox() async {
     if (!Hive.isBoxOpen("todobos")) {
       todobos = await Hive.openBox<OrangeModel>("todobos");
     } else {
@@ -85,11 +85,11 @@ class OrangeController {
 
 // Méthode pour initialiser les données
 Future<List<OrangeModel>> initializeData() async {
-    if (!Hive.isBoxOpen("todobos")) {
-      todobos = await Hive.openBox<OrangeModel>("todobos");
-    } else {
-      todobos = Hive.box<OrangeModel>("todobos");
-    }
+    // if (!Hive.isBoxOpen("todobos")) {
+    //   todobos = await Hive.openBox<OrangeModel>("todobos");
+    // } else {
+    //   todobos = Hive.box<OrangeModel>("todobos");
+    // }
      await _initializeBox();
     _initializeIdOperation();
     _initializeDateOperation();
@@ -296,13 +296,18 @@ void _onPermissionGranted() {
 
 
  // Sélectionner une image à partir de la caméra
-  Future<void> pickImageCamera() async {
+Future<void> pickImageCamera() async {
+  try {
     var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
     if (returnedImage == null) return;
     selectedImage = XFile(returnedImage.path);
     final inputImage = InputImage.fromFilePath(returnedImage.path);
     await recognizeText(inputImage);
+  } catch (e) {
+    print("Error picking image: $e");
   }
+}
+
 
 // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
    Future<List<OrangeModel>> _loadDeposFromHive() async {

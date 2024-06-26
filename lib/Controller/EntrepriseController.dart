@@ -98,6 +98,7 @@ class EntrepriseController {
     }
   }
 
+
   Future<void> markAsDeleted(EntrepriseModel entreprise) async {
     if (todobos2 != null) {
       await todobos2.put(entreprise.idEntreprise, entreprise).then((value) {
@@ -107,4 +108,24 @@ class EntrepriseController {
       });
     }
   }
+
+  Future<void> loadEntrepriseData(int idEntreprise) async {
+  final entreprise = todobos2.get(idEntreprise);
+  if (entreprise != null) {
+    Entreprise = entreprise;
+    idEntrepriseController.text = entreprise.idEntreprise.toString();
+    NomEntrepriseController.text = entreprise.NomEntreprise;
+    DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
+    DateControleController.text = entreprise.DateControle;
+  }
+}
+
+Future<void> loadMostRecentEntrepriseData() async {
+  if (todobos2.isNotEmpty) {
+    final lastEntreprise = todobos2.values.last;
+    await loadEntrepriseData(lastEntreprise.idEntreprise);
+  }
+}
+
+
 }

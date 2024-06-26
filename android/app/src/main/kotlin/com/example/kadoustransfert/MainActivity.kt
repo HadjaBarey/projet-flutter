@@ -77,9 +77,11 @@ class MainActivity: FlutterActivity() {
     }
 
     // Méthode à appeler depuis Flutter
-    private fun initiateCall(phoneNumber: String) {
-        Log.d("MainActivity", "Calling number: $phoneNumber")
-        val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
-        startActivity(intent)
+    private fun initiateCall(number: String?) {
+        val intent = Intent(Intent.ACTION_CALL)
+        intent.data = Uri.parse("tel:$number")
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
     }
 }
