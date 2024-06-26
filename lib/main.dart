@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:kadoustransfert/Model/AddSimModel.dart';
-import 'package:kadoustransfert/Model/OpTransactionModel.dart';
+import 'Model/OpTransactionModel.dart';
+import 'Model/UtilisateurModel.dart';
 import 'Model/EntrepriseModel.dart';
 import 'Model/ClientModel.dart';
 import 'homePage.dart';
@@ -21,8 +21,11 @@ void main() async {
   // Enregistrer l'adaptateur pour EntrepriseModel
   Hive.registerAdapter(EntrepriseModelAdapter());
 
-  // Enregistrer l'adaptateur pour AddSimModel
+  // Enregistrer l'adaptateur pour OpTransactionModel
   Hive.registerAdapter(OpTransactionModelAdapter());
+
+  // Enregistrer l'adaptateur pour UtilisateurModel
+  Hive.registerAdapter(UtilisateurModelAdapter());
 
 
 
@@ -37,6 +40,9 @@ void main() async {
 
   // Ouvrir la boîte pour EntrepriseModel
   await Hive.openBox<OpTransactionModel>('todobos3');
+
+  // Ouvrir la boîte pour UtilisateurModel
+  await Hive.openBox<UtilisateurModel>('todobos4');
 
   runApp(MyApp());
 }
