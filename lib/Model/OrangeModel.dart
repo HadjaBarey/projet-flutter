@@ -69,4 +69,19 @@ class OrangeModel extends HiveObject {
         operateur = '',
         supprimer = 0,
         iddette = 0;
+
+        // Optional: Factory method to create OrangeModel from map
+  factory OrangeModel.fromMap(Map<String, dynamic> map) {
+    return OrangeModel(
+      idoperation: map['idoperation'],
+      dateoperation: map['dateoperation'],
+      montant: map['montant'],
+      numeroTelephone: map['numeroTelephone'],
+      infoClient: map['infoClient'],
+      typeOperation: map['typeOperation'],
+      operateur: map['operateur'],
+      supprimer: map['supprimer'],
+      iddette: map['iddette'],
+    );
+  }
 }

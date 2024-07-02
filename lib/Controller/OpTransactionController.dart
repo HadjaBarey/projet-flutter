@@ -148,4 +148,23 @@ class OpTransactionController {
       });
     }
   }
+
+
+  // Méthode pour obtenir le CodeTransaction en fonction de l'Operateur et du TypeOperation
+ String? getCodeTransaction(String operateur, String typeOperation) {
+    try {
+      OpTransactionModel? transaction;
+      for (var trans in todobos3.values) {
+        if (trans.Operateur == operateur && trans.TypeOperation == typeOperation && trans.supprimer == 0) {
+          transaction = trans;
+          break;
+        }
+      }
+      return transaction?.CodeTransaction;
+    } catch (e) {
+      print("Erreur lors de la récupération du CodeTransaction : $e");
+      return null;
+    }
+  }
+
 }

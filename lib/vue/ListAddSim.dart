@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:kadoustransfert/Controller/UtilisateurController.dart';
-import 'package:kadoustransfert/Model/UtilisateurModel.dart';
-import 'package:kadoustransfert/vue/Utilisateur.dart';
+import 'package:kadoustransfert/Controller/AddSimController.dart';
+import 'package:kadoustransfert/Model/AddSimModel.dart';
+import 'package:kadoustransfert/vue/AddSim.dart';
 
-
-class PageListeUtilisateur extends StatefulWidget {
-  const PageListeUtilisateur({Key? key}) : super(key: key);
+class PageListAddSim extends StatefulWidget {
+  const PageListAddSim({Key? key}) : super(key: key);
 
   @override
-  State<PageListeUtilisateur> createState() => _PageListeUtilisateurState();
+  State<PageListAddSim> createState() => _PageListAddSimState();
 }
 
-class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
-  final UtilisateurController _controller = UtilisateurController();
-  List<UtilisateurModel> _UtilisateurList = [];
+class _PageListAddSimState extends State<PageListAddSim> {
+  final AddSimController _controller = AddSimController();
+  List<AddSimModel> _OperateursList = [];
 
   @override
   void initState() {
@@ -27,11 +26,11 @@ class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
   }
 
   Future<void> loadData() async {
-    List<UtilisateurModel> clients = await _controller.loadData();
+    List<AddSimModel> Operateurs = await _controller.loadData();
     setState(() {
-      _UtilisateurList = clients;
+      _OperateursList = Operateurs;
     });
-   // print('Données chargées : $_UtilisateurList');
+    //print('Données chargées : $_OperateursList');
   }
 
   void deleteItem(int index) {
@@ -53,10 +52,10 @@ class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
               onPressed: () async {
                 try {
                   setState(() {
-                    _UtilisateurList[index].supprimer = 1;
+                    _OperateursList[index].supprimer = 1;
                   });
 
-                  await _controller.markAsDeleted(_UtilisateurList[index]);
+                  await _controller.markAsDeleted(_OperateursList[index]);
                   Navigator.of(context).pop();
                   await loadData();
                 } catch (e) {
@@ -74,23 +73,23 @@ class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
     );
   }
 
-  void _handleRowClicked(UtilisateurModel clickedUtilisateur) {
-    print('Ligne cliquée : ${clickedUtilisateur.IdentiteUtilisateur}, ${clickedUtilisateur.RefCNIBUtilisateur}, ${clickedUtilisateur.NumPhoneUtilisateur}');
+  void _handleRowClicked(AddSimModel clickedOperateurs) {
+    print('Ligne cliquée : ${clickedOperateurs.CodeAgent}, ${clickedOperateurs.LibOperateur}, ${clickedOperateurs.NumPhone}');
   }
 
   @override
   Widget build(BuildContext context) {
-    List<UtilisateurModel> filteredList = _UtilisateurList.where((client) => client.supprimer == 0).toList();
+    List<AddSimModel> filteredList = _OperateursList.where((Sim) => Sim.supprimer == 0).toList();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Liste des Utilisateurs'),
+        title: const Text('Liste des Opérateurs'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView.builder(
           itemCount: filteredList.length,
           itemBuilder: (context, index) {
-            UtilisateurModel client = filteredList[index];
+            AddSimModel Sim = filteredList[index];
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -100,7 +99,7 @@ class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          int actualIndex = _UtilisateurList.indexWhere((item) => item.idUtilisateur == client.idUtilisateur);
+                          int actualIndex = _OperateursList.indexWhere((item) => item.idOperateur == Sim.idOperateur);
                           deleteItem(actualIndex);
                         },
                         child: const Icon(Icons.delete),
@@ -108,24 +107,24 @@ class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
                     ],
                   ),
                   title: Text(
-                    'Identité: ${client.IdentiteUtilisateur}',
+                    'Code Agent: ${Sim.CodeAgent}',
                     style: const TextStyle(fontSize: 18),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Numéro de téléphone: ${client.NumPhoneUtilisateur}',
+                        'Opérateur: ${Sim.LibOperateur}',
                         style: const TextStyle(fontSize: 14),
                       ),
                       Text(
-                        'Ref CNIB: ${client.RefCNIBUtilisateur}',
+                        'N° Téléphone: ${Sim.NumPhone}',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
                   onTap: () {
-                    _handleRowClicked(client);
+                    _handleRowClicked(Sim);
                   },
                 ),
                 const Divider(),
@@ -138,8 +137,7 @@ class _PageListeUtilisateurState extends State<PageListeUtilisateur> {
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PageUtilisateur(utilisateurController: _controller)),
-
+            MaterialPageRoute(builder: (context) => PageAddSim(SimController: _controller)), // Naviguez vers la nouvelle page
           );
           if (result == true) {
             await loadData();

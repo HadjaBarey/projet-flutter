@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 
 class ClientController {
   final formKey = GlobalKey<FormState>();
@@ -24,7 +27,15 @@ class ClientController {
     supprimer: 0,
   );
 
+
+  // Image sélectionnée et texte reconnu
+  late XFile selectedImage;
+  String recognizedText = '';
+
   void resetFormFields() {
+    selectedImage = XFile('');
+    recognizedText = '';
+    formKey.currentState?.reset();
     client = ClientModel(
       idClient: client.idClient + 1,
       RefCNIB: '',
@@ -101,4 +112,86 @@ void updateClient({
       });
     }
   }
+
+
+
+   Future<void> pickImageCamera() async {
+    try {
+      var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (returnedImage == null) return;
+      selectedImage = XFile(returnedImage.path);
+      final inputImage = InputImage.fromFilePath(returnedImage.path);
+      await recognizeText(inputImage);
+    } catch (e) {
+      print("Error picking image: $e");
+    }
+  }
+
+   // Reconnaître le texte à partir de l'image
+  Future<void> recognizeText(InputImage inputImage) async {
+    final textRecognizer = GoogleMlKit.vision.textRecognizer();
+
+    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+    if (recognizedText.blocks.isEmpty) {
+      this.recognizedText = '';
+      updateClient(identite: '');
+      return;
+    }
+
+    String extractedText = '';
+
+    for (TextBlock block in recognizedText.blocks) {
+      for (TextLine line in block.lines) {
+        extractedText += line.text + '\n';
+      }
+    }
+
+    String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
+    String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
+    String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
+    String reference = extractInfo(extractedText, r'\bB\d{5}\s\d{2}\b');
+
+    print('Nom: $nom');
+    print('Prénoms: $prenoms');
+    print('Délivrée le: $delivreeLe');
+    print('Référence: $reference');
+
+    if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
+      this.recognizedText = '';
+      updateClient(identite: 'Erreur: veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
+      return;
+    }
+
+    if (!isValidDate(delivreeLe)) {
+      this.recognizedText = '';
+      updateClient(identite: 'Erreur: La date de délivrance n\'est pas valide.');
+      return;
+    }
+
+    String infoClient = '$nom $prenoms / CNIB N° $reference du $delivreeLe';
+    this.recognizedText = extractedText;
+    identiteController.text = infoClient;
+    updateClient(identite: infoClient);
+  }
+
+  String extractInfo(String text, String pattern) {
+    final regExp = RegExp(pattern, multiLine: true);
+    final match = regExp.firstMatch(text);
+    if (match != null) {
+      return match.groupCount >= 1 ? match.group(1)?.trim() ?? '' : match.group(0)?.trim() ?? '';
+    }
+    return '';
+  }
+
+  bool isValidDate(String dateStr) {
+    try {
+      final dateFormat = DateFormat('dd/MM/yyyy'); // Assuming the date format is 'dd/MM/yyyy'
+      dateFormat.parseStrict(dateStr);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
 }

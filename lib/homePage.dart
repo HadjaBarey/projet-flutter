@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kadoustransfert/vue/AddSim.dart';
 import 'package:kadoustransfert/vue/Historique.dart';
+import 'package:kadoustransfert/vue/ListAddSim.dart';
 import 'package:kadoustransfert/vue/Parametrage.dart';
 import 'package:kadoustransfert/vue/TransactionOrange.dart';
 
@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     HistoriquePage(),
-    AddSim(),
+    PageListAddSim(),
     Parametrage(),
   ];
 
@@ -211,7 +211,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           HistoriquePage(),
-          AddSim(),
+          PageListAddSim(),
           Parametrage(),
         ],
       ),

@@ -30,7 +30,7 @@ class _PageListOpTransactionState extends State<PageListOpTransaction> {
     setState(() {
       _TransactionsList = Transactions;
     });
-    print('Données chargées : $_TransactionsList');
+    //print('Données chargées : $_TransactionsList');
   }
 
   void deleteItem(int index) {

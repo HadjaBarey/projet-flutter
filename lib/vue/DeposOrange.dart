@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class DeposOrangePage extends StatefulWidget {
-  
-  const DeposOrangePage({super.key});
+  const DeposOrangePage({Key? key}) : super(key: key);
 
   @override
   State<DeposOrangePage> createState() => _DeposOrangePageState();
@@ -15,8 +14,11 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
   @override
   void initState() {
     super.initState();
-    controller.initializeData().then((data){
-      setState(() {});
+    controller.initializeData().then((_) {
+      setState(() {
+        // Mettre à jour le texte du contrôleur infoClient
+        controller.infoClientController.text = controller.depos.infoClient;
+      });
     });
   }
 
@@ -43,7 +45,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 25),
                 Offstage(
-                  offstage: false,
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.idOperationController,
                     decoration: InputDecoration(
@@ -56,7 +58,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: true,
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.dateOperationController,
                     decoration: InputDecoration(
@@ -107,9 +109,14 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     return null;
                   },
                   keyboardType: TextInputType.phone,
+                  onChanged: (value) {
+                    // Ajouter un listener onChanged pour vérifier la longueur du numéro de téléphone
+                    if (value.length == 8) {
+                      controller.updateInfoClientController();
+                    }
+                  },
                 ),
                 SizedBox(height: 15),
-                
                 TextFormField(
                   controller: controller.infoClientController,
                   decoration: InputDecoration(
@@ -127,7 +134,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: true,
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.typeOperationController,
                     decoration: InputDecoration(
@@ -147,7 +154,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: true,
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.operateurController,
                     decoration: InputDecoration(
@@ -166,7 +173,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: true,
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.supprimerController,
                     decoration: InputDecoration(
@@ -186,7 +193,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: true,
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.iddetteController,
                     decoration: InputDecoration(

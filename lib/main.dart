@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'Model/AddSimModel.dart';
 import 'Model/OpTransactionModel.dart';
 import 'Model/UtilisateurModel.dart';
 import 'Model/EntrepriseModel.dart';
@@ -27,6 +28,11 @@ void main() async {
   // Enregistrer l'adaptateur pour UtilisateurModel
   Hive.registerAdapter(UtilisateurModelAdapter());
 
+  // Enregistrer l'adaptateur pour AddSimModel
+  Hive.registerAdapter(AddSimModelAdapter());
+
+  
+
 
 
   // Ouvrir la boîte pour OrangeModel
@@ -43,6 +49,9 @@ void main() async {
 
   // Ouvrir la boîte pour UtilisateurModel
   await Hive.openBox<UtilisateurModel>('todobos4');
+
+  // Ouvrir la boîte pour AddSimModel
+  await Hive.openBox<AddSimModel>('todobos5');
 
   runApp(MyApp());
 }

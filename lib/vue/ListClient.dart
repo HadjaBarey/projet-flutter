@@ -30,7 +30,7 @@ class _ListeClientPageState extends State<ListeClientPage> {
     setState(() {
       _clientList = clients;
     });
-    print('Données chargées : $_clientList');
+   // print('Données chargées : $_clientList');
   }
 
   void deleteItem(int index) {
@@ -107,7 +107,7 @@ class _ListeClientPageState extends State<ListeClientPage> {
                     ],
                   ),
                   title: Text(
-                    'Identité: ${client.Identite}',
+                    'Info Client: ${client.Identite}',
                     style: const TextStyle(fontSize: 18),
                   ),
                   subtitle: Column(
@@ -115,12 +115,12 @@ class _ListeClientPageState extends State<ListeClientPage> {
                     children: [
                       Text(
                         'Numéro de téléphone: ${client.numeroTelephone}',
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 18),
                       ),
-                      Text(
-                        'Ref CNIB: ${client.RefCNIB}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
+                      // Text(
+                      //   'Ref CNIB: ${client.RefCNIB}',
+                      //   style: const TextStyle(fontSize: 14),
+                      // ),
                     ],
                   ),
                   onTap: () {

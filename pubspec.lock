@@ -1045,6 +1045,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  ussd_service:
+    dependency: "direct main"
+    description:
+      name: ussd_service
+      sha256: "2eb389b5ac8efa33722939837ef342627d7846a6e1786cae3518f994645168d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   vector_math:
     dependency: transitive
     description:

@@ -1,36 +1,131 @@
 import 'package:flutter/material.dart';
+import 'package:kadoustransfert/Controller/AddSimController.dart';
 
-class AddSim extends StatefulWidget {
-  const AddSim({super.key});
+
+class PageAddSim extends StatefulWidget {
+  final AddSimController SimController;
+
+  const PageAddSim({required this.SimController, Key? key}) : super(key: key);
 
   @override
-  State<AddSim> createState() => _AddSimState();
+  State<PageAddSim> createState() => _PageAddSimState();
 }
 
-class _AddSimState extends State<AddSim> {
-   @override
+class _PageAddSimState extends State<PageAddSim> {
+
+  @override
+  void initState() {
+    super.initState();
+    widget.SimController.resetFormFields(); // Reset des champs du formulaire
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Ajouter une Sim',
+          style: TextStyle(
+            fontSize: 25.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        backgroundColor: Colors.orange,
+      ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20.0), // Espacement pour descendre le contenu
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.0), // Espacement en bas
-              child: Center( // Centre le texte horizontalement
-                child: Text(
-                  'Add Sim',
-                  style: TextStyle(
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    // fontFamily: 'Nunito', // Changer la police ici (remplacer 'Nunito' par le nom de la police souhaitée)
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: widget.SimController.formKey,
+          child: Column(
+            children: [
+              Offstage(
+                offstage: true,
+                child: TextFormField(
+                  controller: widget.SimController.idOperateurController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'ID Opération',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                  enabled: false,
                 ),
               ),
-            ),
-            // Ajoutez votre contenu ici
-          ],
+              SizedBox(height: 15),
+              
+              TextFormField(
+                controller: widget.SimController.CodeAgentController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Code Agent',
+                  labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ce champ est requis';
+                  }
+                  widget.SimController.updateAddSim(CodeAgent: value);
+                  return null;
+                },
+              ),
+              SizedBox(height: 15),
+              
+              TextFormField(
+                controller: widget.SimController.LibOperateurController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Operateur',
+                  labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ce champ est requis';
+                  }
+                  widget.SimController.updateAddSim(LibOperateur: value);
+                  return null;
+                },
+              ),
+              SizedBox(height: 15),
+
+              TextFormField(
+                controller: widget.SimController.NumPhoneController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Numéro Téléphone',
+                  labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  suffixIcon: Icon(Icons.contact_page),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ce champ est requis';
+                  }
+                  widget.SimController.updateAddSim(NumPhone: value);
+                  return null;
+                },
+                keyboardType: TextInputType.phone,
+              ),
+
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (widget.SimController.formKey.currentState!.validate()) {
+                    widget.SimController.formKey.currentState!.save();
+                    widget.SimController.saveAddSimData().then((_) {
+                      setState(() {
+                        widget.SimController.resetFormFields();
+                      });
+                      Navigator.pop(context, true); // Fermer la page avec un résultat vrai
+                    }).catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Erreur lors de l\'enregistrement')),
+                      );
+                    });
+                  }
+                },
+                child: const Text('Enregistrer'),
+              ),
+            ],
+          ),
         ),
       ),
     );

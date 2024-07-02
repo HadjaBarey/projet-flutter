@@ -271,6 +271,62 @@ class _TransactionOrangeState extends State<TransactionOrange> {
                       ),
                     ),
                   ),
+
+                  SizedBox(height: 30.0), // Espacement entre les containers
+
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Add onTap logic for Moov Money
+                      },
+                      child: Container(
+                        width: 500.0,
+                        height: 90.0,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 90.0,
+                              height: double.infinity,
+                              child: Image.asset(
+                                'images/retraitgratuitorange.jpeg',
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Retrait Gratuit',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 27.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.black,
+                              size: 30.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),
