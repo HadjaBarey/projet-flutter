@@ -11,6 +11,7 @@ import 'package:kadoustransfert/Controller/OpTransactionController.dart';
 import 'package:kadoustransfert/Controller/AddSimController.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
 import 'package:collection/collection.dart'; // Importez le package collection
+import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 
 class OrangeController {
   // Clé globale pour le formulaire
@@ -23,6 +24,8 @@ class OrangeController {
   final CallService callService = CallService();
   final OpTransactionController opTransactionController = OpTransactionController(); // Initialisez votre OpTransactionController
   final AddSimController LibOperateurController = AddSimController(); // Initialisez votre AddSimController
+
+  EntrepriseController entrepriseController = EntrepriseController();
 
   static const platform = MethodChannel('com.example.kadoustransfert/call');
 
@@ -52,6 +55,7 @@ class OrangeController {
     operateur: '1',
     supprimer: 0,
     iddette: 0,
+    optionCreance : false,
   );
 
   // Contrôleurs pour les champs de saisie
@@ -61,6 +65,8 @@ class OrangeController {
   TextEditingController operateurController = TextEditingController(text: '1'); // Valeur par défaut pour l'Opérateur orange
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
+  TextEditingController optionCreanceController = TextEditingController(text: 'false'); // Valeur par défaut pour pas supprimer par defaut
+  
 
   Future<void> _initializeBox() async {
     if (!Hive.isBoxOpen("todobos")) {
@@ -102,9 +108,14 @@ class OrangeController {
 
   // Initialiser la date de l'opération
   void _initializeDateOperation() {
-    String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    depos.dateoperation = currentDate;
-    dateOperationController.text = currentDate;
+    // String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    // depos.dateoperation = currentDate;
+    // dateOperationController.text = currentDate;
+
+    String dateFromEntrepriseController = entrepriseController.getDateControle();
+    print("Date de contrôle obtenue : $dateFromEntrepriseController");
+    depos.dateoperation = dateFromEntrepriseController;
+    dateOperationController.text = dateFromEntrepriseController;
   }
 
   // Mettre à jour les données de dépôt
@@ -118,6 +129,7 @@ class OrangeController {
     String? operateur,
     int? supprimer,
     int? iddette,
+    bool? optionCreance, // Définissez 'optionCreance' comme un paramètre nommé
   }) {
     if (idoperation != null) depos.idoperation = idoperation;
     if (dateoperation != null) depos.dateoperation = dateoperation;
@@ -128,7 +140,17 @@ class OrangeController {
     if (operateur != null) depos.operateur = operateur;
     if (supprimer != null) depos.supprimer = supprimer;
     if (iddette != null) depos.iddette = iddette;
+    if (optionCreance != null) {depos.optionCreance = optionCreance;
   }
+  }
+
+  void updateOptionCreance(bool value) {
+  depos.optionCreance = value;
+  optionCreanceController.text = value.toString();
+  updateDepos(optionCreance: value);
+}
+
+
 
   Future<void> updateDeposInHive(OrangeModel updatedDepos) async {
     await _initializeBox(); // S'assurer que la boîte est ouverte
@@ -162,6 +184,7 @@ class OrangeController {
         operateur: depos.operateur,
         supprimer: depos.supprimer,
         iddette: depos.iddette,
+        optionCreance :depos.optionCreance,
       );
       updateDeposInHive(_deposList[index]);
     }
@@ -215,6 +238,7 @@ class OrangeController {
       operateur: '',
       supprimer: 0,
       iddette: 0,
+      optionCreance: false,
     );
     idOperationController.text = depos.idoperation.toString();
     dateOperationController.text = depos.dateoperation;
@@ -378,16 +402,19 @@ Future<void> _initializeClientsBox() async {
   void updateInfoClientController() {
     String phoneNumber = numeroTelephoneController.text.trim();
 
+    // Vérifiez si le numéro de téléphone est vide
+      if (phoneNumber.isEmpty) {
+        infoClientController.text = ''; // Vide infoClientController
+        return; // Sortir de la méthode si le numéro est vide
+      }
+
+
     // Vérifiez si la boîte Hive des clients est initialisée
     if (clientsBox != null && clientsBox.isNotEmpty) {
       // Recherchez le client correspondant dans la boîte Hive
       var client = clientsBox.values.firstWhereOrNull(
         (client) => client.numeroTelephone == phoneNumber && client.supprimer==0
       );
-
-
-       print('Numro verification: $phoneNumber');
-       print('Numro verification: $client');
 
       // Si le client est trouvé, mettez à jour infoClientController avec l'identité du client
       if (client != null) {
@@ -400,5 +427,6 @@ Future<void> _initializeClientsBox() async {
       // Vous pouvez gérer le cas où la boîte Hive n'est pas initialisée ou vide ici
     }
   }
+
 
 }

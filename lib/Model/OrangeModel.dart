@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 
-
 part 'OrangeModel.g.dart';
 
 @HiveType(typeId: 1)
@@ -32,6 +31,9 @@ class OrangeModel extends HiveObject {
   @HiveField(8)
   int iddette;
 
+  @HiveField(9)
+  bool optionCreance; // Ajout de la nouvelle variable de type boolean
+
   OrangeModel({
     required this.idoperation,
     required this.dateoperation,
@@ -42,6 +44,7 @@ class OrangeModel extends HiveObject {
     required this.operateur,
     required this.supprimer,
     required this.iddette,
+    required this.optionCreance, // Ajout du champ dans le constructeur
   });
 
   factory OrangeModel.fromJSON(Map<String, dynamic> json) {
@@ -55,10 +58,10 @@ class OrangeModel extends HiveObject {
       operateur: json['operateur'],
       supprimer: json['supprimer'],
       iddette: json['iddette'],
+      optionCreance: json['isNewField'], // Ajout du champ dans la méthode fromJSON
     );
   }
 
-  // Constructeur par défaut sans paramètres
   OrangeModel.empty()
       : idoperation = 0,
         dateoperation = '',
@@ -68,9 +71,9 @@ class OrangeModel extends HiveObject {
         typeOperation = 0,
         operateur = '',
         supprimer = 0,
-        iddette = 0;
+        iddette = 0,
+        optionCreance = false; // Initialisation du champ dans le constructeur vide
 
-        // Optional: Factory method to create OrangeModel from map
   factory OrangeModel.fromMap(Map<String, dynamic> map) {
     return OrangeModel(
       idoperation: map['idoperation'],
@@ -82,6 +85,7 @@ class OrangeModel extends HiveObject {
       operateur: map['operateur'],
       supprimer: map['supprimer'],
       iddette: map['iddette'],
+      optionCreance: map['isNewField'], // Ajout du champ dans la méthode fromMap
     );
   }
 }

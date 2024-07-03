@@ -10,6 +10,7 @@ class DeposOrangePage extends StatefulWidget {
 
 class _DeposOrangePageState extends State<DeposOrangePage> {
   final OrangeController controller = OrangeController([]);
+  bool isChecked = false; // Variable pour suivre l'état de la case à cocher
 
   @override
   void initState() {
@@ -58,7 +59,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: true, // Mettre à false si nécessaire
+                  offstage: false, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.dateOperationController,
                     decoration: InputDecoration(
@@ -133,6 +134,34 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   },
                 ),
                 SizedBox(height: 15),
+
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Crédit?',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 8),
+                    Checkbox(
+                      value: isChecked,
+                      onChanged: (bool? value) {
+                        if (value != null) {
+                          setState(() {
+                            isChecked = value;
+                            controller.updateOptionCreance(value);
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+
+
+
+                SizedBox(height: 15),
+
                 Offstage(
                   offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
@@ -211,7 +240,10 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                SizedBox(height: 25),
+             
+
+                
+                SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
                     controller.pickImageCamera();

@@ -26,13 +26,14 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       operateur: fields[6] as String,
       supprimer: fields[7] as int,
       iddette: fields[8] as int,
+      optionCreance: fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, OrangeModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.idoperation)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       ..writeByte(7)
       ..write(obj.supprimer)
       ..writeByte(8)
-      ..write(obj.iddette);
+      ..write(obj.iddette)
+      ..writeByte(9)
+      ..write(obj.optionCreance);
   }
 
   @override

@@ -6,6 +6,7 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 class EntrepriseController {
   final formKey = GlobalKey<FormState>();
   late Box<EntrepriseModel> todobos2;
+  String dateControleText = "";
 
   TextEditingController idEntrepriseController = TextEditingController();
   TextEditingController NomEntrepriseController = TextEditingController();
@@ -67,6 +68,7 @@ class EntrepriseController {
     }
     todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
     _initializeEntrepriseId();
+    
   }
 
   Future<List<EntrepriseModel>> loadData() async {
@@ -74,6 +76,7 @@ class EntrepriseController {
       return [];
     }
     return todobos2.values.toList();
+
   }
 
   void updateEntreprise({
@@ -117,7 +120,9 @@ class EntrepriseController {
     NomEntrepriseController.text = entreprise.NomEntreprise;
     DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
     DateControleController.text = entreprise.DateControle;
+    
   }
+   dateControleText = DateControleController.text;               
 }
 
 Future<void> loadMostRecentEntrepriseData() async {
@@ -127,5 +132,10 @@ Future<void> loadMostRecentEntrepriseData() async {
   }
 }
 
+String getDateControle() {
+    return dateControleText;
+    
+  }
 
+ 
 }
