@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -34,6 +35,9 @@ class OrangeController {
 
   // Boîte Hive pour stocker les clients
   late Box<ClientModel> clientsBox;
+
+    //Boîte Hive pour stocker EntrepriseModel
+  late Box<EntrepriseModel> EntrepriseBox;
 
   // Liste des opérations
   final List<OrangeModel> _deposList;
@@ -89,7 +93,8 @@ class OrangeController {
   Future<List<OrangeModel>> initializeData() async {
     await _initializeBox();
     _initializeIdOperation();
-    _initializeDateOperation();
+    _initializeEntreprisesBox();
+    DateControleRecupere();
     return loadData();
   }
 
@@ -106,17 +111,47 @@ class OrangeController {
     idOperationController.text = depos.idoperation.toString();
   }
 
-  // Initialiser la date de l'opération
-  void _initializeDateOperation() {
-    // String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    // depos.dateoperation = currentDate;
-    // dateOperationController.text = currentDate;
 
-    String dateFromEntrepriseController = entrepriseController.getDateControle();
-    print("Date de contrôle obtenue : $dateFromEntrepriseController");
-    depos.dateoperation = dateFromEntrepriseController;
-    dateOperationController.text = dateFromEntrepriseController;
+ // Initialisez la boîte Hive pour entreprise
+
+Future<void> _initializeEntreprisesBox() async {
+  if (!Hive.isBoxOpen("todobos2")) {
+    await Hive.openBox<EntrepriseModel>("todobos2");
   }
+  EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
+}
+
+
+Future<void> DateControleRecupere() async {
+    // Vérifiez si la boîte Hive des entreprises est initialisée
+    if (EntrepriseBox != null && EntrepriseBox.isNotEmpty) {
+      // Recherchez l'entreprise correspondante dans la boîte Hive
+      var entreprise = EntrepriseBox.values.firstWhereOrNull(
+        (entreprise) => entreprise.idEntreprise == 1);
+
+      if (entreprise != null) {
+        dateOperationController.text = entreprise.DateControle;
+      } else {
+        dateOperationController.text = ''; // Sinon, laissez le champ infoClientController vide
+      }
+    } else {
+      print("Boîte Hive des entreprises non initialisée ou vide");
+      // Vous pouvez gérer le cas où la boîte Hive n'est pas initialisée ou vide ici
+    }
+  }
+
+
+  // // Initialiser la date de l'opération
+  // void _initializeDateOperation() {
+  //   // String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  //   // depos.dateoperation = currentDate;
+  //   // dateOperationController.text = currentDate;
+
+  //   String dateFromEntrepriseController = entrepriseController.getDateControle();
+  //   print("Date de contrôle obtenue : $dateFromEntrepriseController");
+  //   depos.dateoperation = dateFromEntrepriseController;
+  //   dateOperationController.text = dateFromEntrepriseController;
+  // }
 
   // Mettre à jour les données de dépôt
   void updateDepos({
@@ -292,11 +327,6 @@ class OrangeController {
       print('Erreur lors de la demande de permission: $e');
     }
   }
-
-  // void _onPermissionGranted() {
-  //   saveData();
-  //   resetFormFields();
-  // }
 
   // Sélectionner une image à partir de la caméra
   Future<void> pickImageCamera() async {

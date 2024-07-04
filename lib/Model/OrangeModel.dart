@@ -44,7 +44,8 @@ class OrangeModel extends HiveObject {
     required this.operateur,
     required this.supprimer,
     required this.iddette,
-    required this.optionCreance, // Ajout du champ dans le constructeur
+     this.optionCreance = false, // Valeur par défaut
+    //required this.optionCreance, // Ajout du champ dans le constructeur
   });
 
   factory OrangeModel.fromJSON(Map<String, dynamic> json) {
@@ -58,8 +59,9 @@ class OrangeModel extends HiveObject {
       operateur: json['operateur'],
       supprimer: json['supprimer'],
       iddette: json['iddette'],
-      optionCreance: json['isNewField'], // Ajout du champ dans la méthode fromJSON
+      optionCreance: json['optionCreance'] ?? false,
     );
+    
   }
 
   OrangeModel.empty()

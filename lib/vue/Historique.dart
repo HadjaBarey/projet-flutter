@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; // Pour le formatage des dates
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/vue/UpdateDepos.dart';
@@ -30,30 +30,50 @@ class _HistoriquePageState extends State<HistoriquePage> {
 
   Future<void> _initialize() async {
     await _controller.initializeData();
+    await _controller.DateControleRecupere(); // Appel de votre méthode pour récupérer les informations de contrôle de date
+    String dateControle = _controller.dateOperationController.text; // Supposons que dateControle soit une propriété de votre OrangeController
+
+    // Assurez-vous que dateControle est au format attendu 'dd/MM/yyyy'
+    DateTime? parsedDate = DateFormat('dd/MM/yyyy').parse(dateControle, true); // Utilisation du paramètre strict pour valider strictement le format
+
+    if (parsedDate != null) {
+      _startDateController.text = DateFormat('dd/MM/yyyy').format(parsedDate); // Mise à jour de startDateController
+      _endDateController.text = DateFormat('dd/MM/yyyy').format(parsedDate); // Mise à jour de endDateController
+    }
+
+    // Charger les données initiales avec les dates par défaut
     await loadData();
   }
 
   Future<void> loadData() async {
     List<OrangeModel> deposits = await _controller.loadData();
+
+    // Convertir les dates de début et de fin au format attendu (par exemple 'dd/MM/yyyy')
     DateTime? startDate = _startDateController.text.isNotEmpty
-        ? DateTime.parse(_startDateController.text)
+        ? DateFormat('dd/MM/yyyy').parse(_startDateController.text)
         : null;
     DateTime? endDate = _endDateController.text.isNotEmpty
-        ? DateTime.parse(_endDateController.text)
+        ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
         : null;
 
     setState(() {
-      _deposList = deposits.where((depos) {
-        if (startDate != null && DateTime.parse(depos.dateoperation).isBefore(startDate)) {
+    _deposList = deposits.where((depos) {
+      try {
+        DateTime dateOperation = DateTime.parse(depos.dateoperation);
+        if (startDate != null && dateOperation.isBefore(startDate)) {
           return false;
         }
-        if (endDate != null && DateTime.parse(depos.dateoperation).isAfter(endDate)) {
+        if (endDate != null && dateOperation.isAfter(endDate)) {
           return false;
         }
         return true;
-      }).toList();
-    });
-  }
+      } catch (e) {
+       // print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
+        return false;
+      }
+    }).toList();
+  });
+}
 
   void deleteItem(int index) {
     showDialog(
@@ -61,7 +81,8 @@ class _HistoriquePageState extends State<HistoriquePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirmation'),
-          content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
+          content: const Text(
+              'Voulez-vous vraiment marquer cet élément comme supprimé ?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -94,7 +115,8 @@ class _HistoriquePageState extends State<HistoriquePage> {
   }
 
   void _handleRowClicked(OrangeModel clickedDepos) {
-    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
+    print(
+        'Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
   }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
@@ -106,9 +128,9 @@ class _HistoriquePageState extends State<HistoriquePage> {
     );
     if (pickedDate != null) {
       setState(() {
-        controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+        controller.text = DateFormat('dd/MM/yyyy').format(pickedDate);
       });
-      await loadData(); // Reload data after date selection
+      await loadData(); // Recharger les données après la sélection de la date
     }
   }
 

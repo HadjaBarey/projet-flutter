@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kadoustransfert/Controller/EntrepriseController.dart'; // Assurez-vous d'importer correctement EntrepriseController
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class DeposOrangePage extends StatefulWidget {
@@ -10,11 +11,17 @@ class DeposOrangePage extends StatefulWidget {
 
 class _DeposOrangePageState extends State<DeposOrangePage> {
   final OrangeController controller = OrangeController([]);
+  final EntrepriseController entrepriseController = EntrepriseController(); // Création d'une instance de EntrepriseController
   bool isChecked = false; // Variable pour suivre l'état de la case à cocher
 
   @override
   void initState() {
     super.initState();
+    entrepriseController.initializeBox().then((_) {
+      // Assurez-vous que l'initialisation est terminée avant d'utiliser le contrôleur
+      // Vous pouvez appeler d'autres méthodes après cela si nécessaire
+    });
+
     controller.initializeData().then((_) {
       setState(() {
         // Mettre à jour le texte du contrôleur infoClient
@@ -28,7 +35,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Depos Orange Monney',
+          'Depos Orange Money',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
@@ -135,7 +142,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
 
-              Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
@@ -146,104 +153,17 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     Checkbox(
                       value: isChecked,
                       onChanged: (bool? value) {
-                        if (value != null) {
-                          setState(() {
-                            isChecked = value;
-                            controller.updateOptionCreance(value);
-                          });
-                        }
+                        setState(() {
+                          isChecked = value ?? false;
+                          controller.updateOptionCreance(isChecked);
+                        });
                       },
                     ),
                   ],
                 ),
 
-
-
-
                 SizedBox(height: 15),
 
-                Offstage(
-                  offstage: true, // Mettre à false si nécessaire
-                  child: TextFormField(
-                    controller: controller.typeOperationController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Type Opération',
-                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Erreur';
-                      }
-                      controller.updateDepos(typeOperation: int.tryParse(value));
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                SizedBox(height: 15),
-                Offstage(
-                  offstage: true, // Mettre à false si nécessaire
-                  child: TextFormField(
-                    controller: controller.operateurController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Opérateur',
-                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Erreur';
-                      }
-                      controller.updateDepos(operateur: value);
-                      return null;
-                    },
-                  ),
-                ),
-                SizedBox(height: 15),
-                Offstage(
-                  offstage: true, // Mettre à false si nécessaire
-                  child: TextFormField(
-                    controller: controller.supprimerController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Supprimer',
-                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Erreur';
-                      }
-                      controller.updateDepos(supprimer: int.tryParse(value));
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                SizedBox(height: 15),
-                Offstage(
-                  offstage: true, // Mettre à false si nécessaire
-                  child: TextFormField(
-                    controller: controller.iddetteController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'ID Dette',
-                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Erreur';
-                      }
-                      controller.updateDepos(iddette: int.tryParse(value));
-                      return null;
-                    },
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-             
-
-                
-                SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () {
                     controller.pickImageCamera();
@@ -284,6 +204,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   ),
                 ),
                 SizedBox(height: 15),
+
                 ElevatedButton(
                   onPressed: () {
                     if (controller.formKey.currentState!.validate()) {

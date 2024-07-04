@@ -26,7 +26,8 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       operateur: fields[6] as String,
       supprimer: fields[7] as int,
       iddette: fields[8] as int,
-      optionCreance: fields[9] as bool,
+      optionCreance: fields[9] == null ? false : fields[9] as bool,
+      //optionCreance: fields[9] as bool,
     );
   }
 

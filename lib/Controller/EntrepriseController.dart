@@ -24,15 +24,15 @@ class EntrepriseController {
     initializeBox();
   }
 
- void resetFormFields() {
-  Entreprise = EntrepriseModel(
-    idEntreprise: Entreprise.idEntreprise + 1,
-    NomEntreprise: '', // Vous pouvez vider seulement ce champ si nécessaire
-    DirecteurEntreprise: '', // Et laisser les autres tels qu'ils sont
-    DateControle: '', // Si vous ne voulez pas les vider complètement
-  );
- // idEntrepriseController.text = Entreprise.idEntreprise.toString();
-}
+  void resetFormFields() {
+    Entreprise = EntrepriseModel(
+      idEntreprise: Entreprise.idEntreprise + 1,
+      NomEntreprise: '',
+      DirecteurEntreprise: '',
+      DateControle: '',
+    );
+    // idEntrepriseController.text = Entreprise.idEntreprise.toString();
+  }
 
   void pickDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -47,7 +47,6 @@ class EntrepriseController {
       updateEntreprise(DateControle: DateControleController.text);
     }
   }
-
 
   void _initializeEntrepriseId() {
     if (todobos2.isNotEmpty) {
@@ -68,7 +67,6 @@ class EntrepriseController {
     }
     todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
     _initializeEntrepriseId();
-    
   }
 
   Future<List<EntrepriseModel>> loadData() async {
@@ -76,7 +74,6 @@ class EntrepriseController {
       return [];
     }
     return todobos2.values.toList();
-
   }
 
   void updateEntreprise({
@@ -101,7 +98,6 @@ class EntrepriseController {
     }
   }
 
-
   Future<void> markAsDeleted(EntrepriseModel entreprise) async {
     if (todobos2 != null) {
       await todobos2.put(entreprise.idEntreprise, entreprise).then((value) {
@@ -113,29 +109,25 @@ class EntrepriseController {
   }
 
   Future<void> loadEntrepriseData(int idEntreprise) async {
-  final entreprise = todobos2.get(idEntreprise);
-  if (entreprise != null) {
-    Entreprise = entreprise;
-    idEntrepriseController.text = entreprise.idEntreprise.toString();
-    NomEntrepriseController.text = entreprise.NomEntreprise;
-    DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
-    DateControleController.text = entreprise.DateControle;
-    
+    final entreprise = todobos2.get(idEntreprise);
+    if (entreprise != null) {
+      Entreprise = entreprise;
+      idEntrepriseController.text = entreprise.idEntreprise.toString();
+      NomEntrepriseController.text = entreprise.NomEntreprise;
+      DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
+      DateControleController.text = entreprise.DateControle;
+      dateControleText = DateControleController.text;
+    }
   }
-   dateControleText = DateControleController.text;               
-}
 
-Future<void> loadMostRecentEntrepriseData() async {
-  if (todobos2.isNotEmpty) {
-    final lastEntreprise = todobos2.values.last;
-    await loadEntrepriseData(lastEntreprise.idEntreprise);
+  Future<void> loadMostRecentEntrepriseData() async {
+    if (todobos2.isNotEmpty) {
+      final lastEntreprise = todobos2.values.last;
+      await loadEntrepriseData(lastEntreprise.idEntreprise);
+    }
   }
-}
 
-String getDateControle() {
+  String getDateControle() {
     return dateControleText;
-    
   }
-
- 
 }
