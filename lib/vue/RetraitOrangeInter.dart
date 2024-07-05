@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/EntrepriseController.dart'; // Assurez-vous d'importer correctement EntrepriseController
 import 'package:kadoustransfert/Controller/OrangeController.dart';
 
-class DeposOrangePage extends StatefulWidget {
-  const DeposOrangePage({Key? key}) : super(key: key);
+class RetraitOrangeInterPage extends StatefulWidget {
+  const RetraitOrangeInterPage({Key? key}) : super(key: key);
 
   @override
-  State<DeposOrangePage> createState() => _DeposOrangePageState();
+  State<RetraitOrangeInterPage> createState() => _RetraitOrangeInterPageState();
 }
 
-class _DeposOrangePageState extends State<DeposOrangePage> {
+class _RetraitOrangeInterPageState extends State<RetraitOrangeInterPage> {
   final OrangeController controller = OrangeController([]);
   final EntrepriseController entrepriseController = EntrepriseController(); // Création d'une instance de EntrepriseController
   bool isChecked = false; // Variable pour suivre l'état de la case à cocher
@@ -35,7 +35,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Depos Orange Money',
+          'Retrait Orange Inter',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
@@ -66,7 +66,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
                 Offstage(
-                  offstage: false, // Mettre à false si nécessaire
+                  offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
                     controller: controller.dateOperationController,
                     decoration: InputDecoration(
@@ -142,32 +142,10 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 15),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Crédit?',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 8),
-                    Checkbox(
-                      value: isChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          isChecked = value ?? false;
-                          controller.updateOptionCreance(isChecked);
-                        });
-                      },
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 15),
-
-                  Offstage(
+                    Offstage(
                     offstage: true, // Mettez à true ou false selon votre logique pour afficher ou cacher le widget
                     child: TextFormField(
-                      controller: controller.typeOperationController..text = '1',
+                      controller: controller.typeOperationController..text = '7',
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Type Operation',
@@ -187,7 +165,6 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                       },
                     ),
                   ),
-
 
                 SizedBox(height: 15),
 
@@ -235,7 +212,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ElevatedButton(
                   onPressed: () {
                     if (controller.formKey.currentState!.validate()) {
-                      controller.requestCallPermission(context);
+                      controller.saveData(context);
                       Navigator.pop(context, true); // Indiquer que l'opération a réussi
                     }
                   },

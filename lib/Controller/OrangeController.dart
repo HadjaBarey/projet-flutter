@@ -65,7 +65,7 @@ class OrangeController {
   // Contrôleurs pour les champs de saisie
   TextEditingController idOperationController = TextEditingController();
   TextEditingController dateOperationController = TextEditingController();
-  TextEditingController typeOperationController = TextEditingController(text: '1'); // Valeur par défaut pour le Type Opération orange depos =1
+  TextEditingController typeOperationController = TextEditingController();  
   TextEditingController operateurController = TextEditingController(text: '1'); // Valeur par défaut pour l'Opérateur orange
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
@@ -123,35 +123,28 @@ Future<void> _initializeEntreprisesBox() async {
 
 
 Future<void> DateControleRecupere() async {
-    // Vérifiez si la boîte Hive des entreprises est initialisée
-    if (EntrepriseBox != null && EntrepriseBox.isNotEmpty) {
-      // Recherchez l'entreprise correspondante dans la boîte Hive
-      var entreprise = EntrepriseBox.values.firstWhereOrNull(
-        (entreprise) => entreprise.idEntreprise == 1);
+  // Vérifiez si la boîte Hive des entreprises est initialisée
+  if (EntrepriseBox != null && EntrepriseBox.isNotEmpty) {
+    // Recherchez l'entreprise correspondante dans la boîte Hive
+    var entreprise = EntrepriseBox.values.firstWhereOrNull(
+      (entreprise) => entreprise.idEntreprise == 1);
+    
+    // Affichez les détails de l'entreprise
+    //print('Entreprise trouvée : ${entreprise.toString()}');
 
-      if (entreprise != null) {
-        dateOperationController.text = entreprise.DateControle;
-      } else {
-        dateOperationController.text = ''; // Sinon, laissez le champ infoClientController vide
-      }
+    if (entreprise != null) {
+      dateOperationController.text = entreprise.DateControle;
+      //print('Date de contrôle récupérée : ${dateOperationController.text}');
     } else {
-      print("Boîte Hive des entreprises non initialisée ou vide");
-      // Vous pouvez gérer le cas où la boîte Hive n'est pas initialisée ou vide ici
+      dateOperationController.text = '';
+      //print('Aucune entreprise trouvée avec l\'ID 1');
     }
+  } else {
+    print("Boîte Hive des entreprises non initialisée ou vide");
+    // Vous pouvez gérer le cas où la boîte Hive n'est pas initialisée ou vide ici
   }
+}
 
-
-  // // Initialiser la date de l'opération
-  // void _initializeDateOperation() {
-  //   // String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-  //   // depos.dateoperation = currentDate;
-  //   // dateOperationController.text = currentDate;
-
-  //   String dateFromEntrepriseController = entrepriseController.getDateControle();
-  //   print("Date de contrôle obtenue : $dateFromEntrepriseController");
-  //   depos.dateoperation = dateFromEntrepriseController;
-  //   dateOperationController.text = dateFromEntrepriseController;
-  // }
 
   // Mettre à jour les données de dépôt
   void updateDepos({
@@ -191,12 +184,12 @@ Future<void> DateControleRecupere() async {
     await _initializeBox(); // S'assurer que la boîte est ouverte
     if (todobos != null) {
       await todobos!.put(updatedDepos.idoperation, updatedDepos).then((value) {
-        print("Mise à jour réussie : $updatedDepos");
+       // print("Mise à jour réussie : $updatedDepos");
       }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
+       // print("Erreur lors de la mise à jour : $error");
       });
     } else {
-      print("Boîte Hive non initialisée");
+     // print("Boîte Hive non initialisée");
     }
   }
 
@@ -226,18 +219,36 @@ Future<void> DateControleRecupere() async {
   }
 
   // Enregistrer les données dans la boîte Hive
-  Future<void> saveData() async {
-    await _initializeBox(); // S'assurer que la boîte est ouverte
-    if (todobos != null) {
-      await todobos!.put(depos.idoperation, depos).then((value) {
-        print("Enregistrement réussi : $depos");
-      }).catchError((error) {
-        print("Erreur lors de l'enregistrement : $error");
-      });
-    } else {
-      print("Boîte Hive non initialisée");
-    }
+  Future<void> saveData(BuildContext context) async {
+  await _initializeBox(); // S'assurer que la boîte est ouverte
+  if (todobos != null) {
+    await todobos!.put(depos.idoperation, depos).then((value) {
+      // Affichez le SnackBar en cas de succès
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('opération enregistré avec Succès'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }).catchError((error) {
+      // Affichez le SnackBar en cas d'erreur
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de l\'enregistrement : $error'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    });
+  } else {
+    // Affichez le SnackBar si la boîte Hive n'est pas initialisée
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Boîte Hive non initialisée'),
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
+}
 
   // Marquer comme supprimé
   Future<void> markAsDeleted(OrangeModel depos) async {
@@ -245,12 +256,12 @@ Future<void> DateControleRecupere() async {
     if (todobos != null) {
       depos.supprimer = 1;
       await todobos!.put(depos.idoperation, depos).then((value) {
-        print("Dépôt marqué comme supprimé : $depos");
+        //print("Dépôt marqué comme supprimé : $depos");
       }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
+        //print("Erreur lors de la mise à jour : $error");
       });
     } else {
-      print("Boîte Hive non initialisée");
+      //print("Boîte Hive non initialisée");
     }
   }
 
@@ -280,66 +291,108 @@ Future<void> DateControleRecupere() async {
   }
 
   // Fonction pour traiter le dépôt
-  void fonctionDepos() async {
-    if (formKey.currentState != null && formKey.currentState!.validate()) {
-      String montant = montantController.text;
-      String number = numeroTelephoneController.text;
+  void fonctionDepos(BuildContext context) async {
+  if (formKey.currentState != null && formKey.currentState!.validate()) {
+    String montant = montantController.text;
+    String number = numeroTelephoneController.text;
 
-      String? codeD = opTransactionController.getCodeTransaction('1', '1');
-      if (codeD == null) {
-        print("CodeTransaction non trouvé pour Operateur=1 et TypeOperation=1");
-        return;
-      }
+    String? codeD = opTransactionController.getCodeTransaction('1', '1');
+    if (codeD == null) {
+      // CodeTransaction non trouvé
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('CodeTransaction non trouvé pour Operateur=1 et TypeOperation=1'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
 
-      String? CodeAg = LibOperateurController.getCodeAgent('Orange');
-      if (CodeAg == null) {
-        print("Libelle operateur non trouvé ");
-        return;
-      }
+    String? CodeAg = LibOperateurController.getCodeAgent('Orange');
+    if (CodeAg == null) {
+      // Libelle operateur non trouvé
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Libelle operateur non trouvé'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
 
-      String resultat = "$codeD*$number*$montant*$CodeAg#";
-      print('RESULTAT AVANT ENCODAGE: $resultat');
+    String resultat = "$codeD*$number*$montant*$CodeAg#";
+    // Encode le résultat
+    String encodedResultat = Uri.encodeComponent(resultat).replaceAll('%23', '#');
 
-      String encodedResultat = Uri.encodeComponent(resultat).replaceAll('%23', '#');
-      print('RESULTAT ENCODÉ: $encodedResultat');
-
-      try {
-        await platform.invokeMethod('initiateCall', {'number': encodedResultat});
-        await saveData(); // Enregistrer les données après le dépôt
-      } on PlatformException catch (e) {
-        print("Échec de la sélection de la SIM: '${e.message}'.");
-      } catch (e) {
-        print("Erreur inattendue lors de la sélection de la SIM: $e");
-      }
+    try {
+      await platform.invokeMethod('initiateCall', {'number': encodedResultat});
+      await saveData(context); // Enregistrer les données après le dépôt
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Opération réussie'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } on PlatformException catch (e) {
+      // Échec de la sélection de la SIM
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Échec de la sélection de la SIM: '${e.message}'"),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      // Erreur inattendue
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur inattendue lors de la sélection de la SIM: $e"),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
+}
+
 
   // Demander la permission d'appeler
-  void requestCallPermission() async {
-    try {
-      var status = await Permission.phone.request();
-      if (status.isGranted) {
-        fonctionDepos();
-      } else {
-        print('Permission refusée pour faire un appel téléphonique');
-      }
-    } catch (e) {
-      print('Erreur lors de la demande de permission: $e');
+ void requestCallPermission(BuildContext context) async {
+  try {
+    var status = await Permission.phone.request();
+    if (status.isGranted) {
+      fonctionDepos(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Permission refusée pour faire un appel téléphonique'),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Erreur lors de la demande de permission: $e'),
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
+}
+
 
   // Sélectionner une image à partir de la caméra
-  Future<void> pickImageCamera() async {
-    try {
-      var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-      if (returnedImage == null) return;
-      selectedImage = XFile(returnedImage.path);
-      final inputImage = InputImage.fromFilePath(returnedImage.path);
-      await recognizeText(inputImage);
-    } catch (e) {
-      print("Error picking image: $e");
-    }
+  Future<void> pickImageCamera(BuildContext context) async {
+  try {
+    var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (returnedImage == null) return;
+    selectedImage = XFile(returnedImage.path);
+    final inputImage = InputImage.fromFilePath(returnedImage.path);
+    await recognizeText(context, inputImage);
+  } catch (e) {
+    // Gestion des erreurs
+    print("Error picking image: $e");
   }
+}
+
 
   // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
   Future<List<OrangeModel>> _loadDeposFromHive() async {
@@ -351,61 +404,74 @@ Future<void> DateControleRecupere() async {
   }
 
   // Reconnaître le texte à partir de l'image
-  Future<void> recognizeText(InputImage inputImage) async {
-    final textRecognizer = GoogleMlKit.vision.textRecognizer();
+  Future<void> recognizeText(BuildContext context, InputImage inputImage) async {
+  final textRecognizer = GoogleMlKit.vision.textRecognizer();
 
-    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+  final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
-    if (recognizedText.blocks.isEmpty) {
-      this.recognizedText = '';
-      updateDepos(infoClient: '');
-      return;
-    }
-
-    String extractedText = '';
-
-    for (TextBlock block in recognizedText.blocks) {
-      for (TextLine line in block.lines) {
-        extractedText += line.text + '\n';
-      }
-    }
-
-    String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
-    String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
-    String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
-    String reference = extractInfo(extractedText, r'\bB\d{5}\s\d{2}\b');
-
-    print('Nom: $nom');
-    print('Prénoms: $prenoms');
-    print('Délivrée le: $delivreeLe');
-    print('Référence: $reference');
-
-    if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
-      this.recognizedText = '';
-      updateDepos(infoClient: 'Erreur: veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
-      return;
-    }
-
-    if (!isValidDate(delivreeLe)) {
-      this.recognizedText = '';
-      updateDepos(infoClient: 'Erreur: La date de délivrance n\'est pas valide.');
-      return;
-    }
-
-    String infoClient = '$nom $prenoms / CNIB N° $reference du $delivreeLe';
-    this.recognizedText = extractedText;
-    infoClientController.text = infoClient;
-    updateDepos(infoClient: infoClient);
+  if (recognizedText.blocks.isEmpty) {
+    this.recognizedText = '';
+    updateDepos(infoClient: '');
+    return;
   }
 
-  String extractInfo(String text, String pattern) {
-    final regExp = RegExp(pattern, multiLine: true);
-    final match = regExp.firstMatch(text);
-    if (match != null) {
-      return match.groupCount >= 1 ? match.group(1)?.trim() ?? '' : match.group(0)?.trim() ?? '';
+  String extractedText = '';
+
+  for (TextBlock block in recognizedText.blocks) {
+    for (TextLine line in block.lines) {
+      extractedText += line.text + '\n';
     }
-    return '';
   }
+
+  String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
+  String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
+  String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
+  String reference = extractInfo(extractedText, r'\bB\d{5}\s\d{2}\b');
+
+  if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
+    this.recognizedText = '';
+    updateDepos(infoClient: 'Erreur: veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
+
+    // Affichez le SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Erreur: veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.'),
+        duration: Duration(seconds: 3), // Durée pendant laquelle le SnackBar est affiché
+      ),
+    );
+
+    return;
+  }
+
+  if (!isValidDate(delivreeLe)) {
+    this.recognizedText = '';
+    updateDepos(infoClient: 'Erreur: La date de délivrance n\'est pas valide.');
+
+    // Affichez le SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Erreur: La date de délivrance n\'est pas valide.'),
+        duration: Duration(seconds: 3), // Durée pendant laquelle le SnackBar est affiché
+      ),
+    );
+
+    return;
+  }
+
+  String infoClient = '$nom $prenoms / CNIB N° $reference du $delivreeLe';
+  this.recognizedText = extractedText;
+  infoClientController.text = infoClient;
+  updateDepos(infoClient: infoClient);
+}
+
+String extractInfo(String text, String pattern) {
+  final regExp = RegExp(pattern, multiLine: true);
+  final match = regExp.firstMatch(text);
+  if (match != null) {
+    return match.groupCount >= 1 ? match.group(1)?.trim() ?? '' : match.group(0)?.trim() ?? '';
+  }
+  return '';
+}
 
   bool isValidDate(String dateStr) {
     try {
@@ -453,7 +519,7 @@ Future<void> _initializeClientsBox() async {
         infoClientController.text = ''; // Sinon, laissez le champ infoClientController vide
       }
     } else {
-      print("Boîte Hive des clients non initialisée ou vide");
+     // print("Boîte Hive des clients non initialisée ou vide");
       // Vous pouvez gérer le cas où la boîte Hive n'est pas initialisée ou vide ici
     }
   }

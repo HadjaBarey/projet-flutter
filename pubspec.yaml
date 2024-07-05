@@ -37,7 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   velocity_x: ^4.1.1
   google_fonts: ^6.1.0
-  intl: ^0.17.0
+  intl: ^0.19.0
   http: ^1.1.0
   image_picker: ^1.0.4
   image_cropper: ^5.0.0
@@ -49,6 +49,8 @@ dependencies:
   permission_handler: ^11.3.1
   ussd_service: ^0.1.1
   #path_provider: ^2.0.3S
+  flutter_localizations: 
+    sdk: flutter
 
 
 

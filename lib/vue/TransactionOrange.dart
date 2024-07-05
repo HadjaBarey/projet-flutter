@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/vue/DeposOrange.dart';
+import 'package:kadoustransfert/vue/RetraitOrange.dart';
+import 'package:kadoustransfert/vue/RetraitOrangeInter.dart';
+import 'package:kadoustransfert/vue/RetraitOrangeSCPT.dart';
 
 class TransactionOrange extends StatefulWidget {
   
@@ -160,13 +163,17 @@ class _TransactionOrangeState extends State<TransactionOrange> {
                       ),
                     ),
                   ),
+
                   SizedBox(height: 30.0), // Espacement entre les containers
                   // Container Moov Money
                   Align(
                     alignment: Alignment.topCenter,
                     child: GestureDetector(
-                      onTap: () {
-                        // Add onTap logic for Moov Money
+                       onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RetraitOrangePage(),),
+                        );
                       },
                       child: Container(
                         width: 500.0,
@@ -183,6 +190,7 @@ class _TransactionOrangeState extends State<TransactionOrange> {
                             ),
                           ],
                         ),
+
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -221,8 +229,11 @@ class _TransactionOrangeState extends State<TransactionOrange> {
                   Align(
                     alignment: Alignment.topCenter,
                     child: GestureDetector(
-                      onTap: () {
-                        // Add onTap logic for Moov Money
+                       onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => RetraitOrangeSCPTPage(),),
+                        );
                       },
                       child: Container(
                         width: 500.0,
@@ -278,7 +289,10 @@ class _TransactionOrangeState extends State<TransactionOrange> {
                     alignment: Alignment.topCenter,
                     child: GestureDetector(
                       onTap: () {
-                        // Add onTap logic for Moov Money
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => RetraitOrangeInterPage(),),
+                        );
                       },
                       child: Container(
                         width: 500.0,

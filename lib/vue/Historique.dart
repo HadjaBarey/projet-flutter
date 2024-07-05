@@ -14,6 +14,7 @@ class HistoriquePage extends StatefulWidget {
 class _HistoriquePageState extends State<HistoriquePage> {
   final OrangeController _controller = OrangeController([]);
   List<OrangeModel> _deposList = [];
+
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -30,6 +31,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
 
   Future<void> _initialize() async {
     await _controller.initializeData();
+
     await _controller.DateControleRecupere(); // Appel de votre méthode pour récupérer les informations de contrôle de date
     String dateControle = _controller.dateOperationController.text; // Supposons que dateControle soit une propriété de votre OrangeController
 
@@ -59,7 +61,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
     setState(() {
     _deposList = deposits.where((depos) {
       try {
-        DateTime dateOperation = DateTime.parse(depos.dateoperation);
+        DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
         if (startDate != null && dateOperation.isBefore(startDate)) {
           return false;
         }
@@ -68,7 +70,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
         }
         return true;
       } catch (e) {
-       // print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
+       print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
         return false;
       }
     }).toList();
@@ -119,161 +121,169 @@ class _HistoriquePageState extends State<HistoriquePage> {
         'Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (pickedDate != null) {
-      setState(() {
-        controller.text = DateFormat('dd/MM/yyyy').format(pickedDate);
-      });
-      await loadData(); // Recharger les données après la sélection de la date
-    }
-  }
+ Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  DateTime? pickedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2101),
+    locale: const Locale("fr", "FR"), // Utilise le paramètre locale pour le calendrier français
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    List<OrangeModel> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Historique'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _startDateController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                            width: 1.0, // Épaisseur de la bordure
-                          ),
+  if (pickedDate != null) {
+    setState(() {
+      controller.text = DateFormat('dd/MM/yyyy').format(pickedDate); // Utilise également 'fr_FR' pour la locale dans DateFormat
+    });
+    await loadData(); // Recharger les données après la sélection de la date
+  }
+}
+
+
+ @override
+Widget build(BuildContext context) {
+  List<OrangeModel> filteredList = _deposList.where((depos) => depos.supprimer == 0).toList();
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Historique'),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _startDateController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey,
+                          width: 1.0, // Épaisseur de la bordure
                         ),
-                        labelText: 'Date de début',
-                        labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      readOnly: true,
-                      onTap: () => _selectDate(context, _startDateController),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez sélectionner une date de début';
-                        }
-                        return null;
-                      },
+                      labelText: 'Date de début',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
+                    readOnly: true,
+                    onTap: () => _selectDate(context, _startDateController), // Utilisation de Builder ici
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez sélectionner une date de début';
+                      }
+                      return null;
+                    },
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _endDateController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey,
-                            width: 1.0, // Épaisseur de la bordure
-                          ),
-                        ),
-                        labelText: 'Date de fin',
-                        labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      readOnly: true,
-                      onTap: () => _selectDate(context, _endDateController),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez sélectionner une date de fin';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filteredList.length,
-                  itemBuilder: (context, index) {
-                    OrangeModel depos = filteredList[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          leading: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  int actualIndex = _deposList.indexWhere((item) => item.idoperation == depos.idoperation);
-                                  deleteItem(actualIndex);
-                                },
-                                child: const Icon(Icons.delete),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UpdateDeposOrange(
-                                        depos: depos,
-                                        onRowClicked: _handleRowClicked,
-                                        deposList: _deposList,
-                                        refreshData: refreshData,
-                                      ),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    await refreshData();
-                                  }
-                                },
-                                child: const Icon(Icons.update),
-                              ),
-                            ],
-                          ),
-                          title: Text(
-                            'Montant: ${depos.montant}',
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Numéro de téléphone: ${depos.numeroTelephone}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                              Text(
-                                'Information client: ${depos.infoClient}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                              Text(
-                                _getOperationDescription(depos),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Divider(),
-                      ],
-                    );
-                  },
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _endDateController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey,
+                          width: 1.0, // Épaisseur de la bordure
+                        ),
+                      ),
+                      labelText: 'Date de fin',
+                      labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    readOnly: true,
+                    onTap: () => _selectDate(context, _endDateController), // Utilisation de Builder ici
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez sélectionner une date de fin';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filteredList.length,
+                itemBuilder: (context, index) {
+                  OrangeModel depos = filteredList[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        leading: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                int actualIndex = _deposList.indexWhere((item) => item.idoperation == depos.idoperation);
+                                deleteItem(actualIndex);
+                              },
+                              child: const Icon(Icons.delete),
+                            ),
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              onTap: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UpdateDeposOrange(
+                                      depos: depos,
+                                      onRowClicked: _handleRowClicked,
+                                      deposList: _deposList,
+                                      refreshData: refreshData,
+                                    ),
+                                  ),
+                                );
+                                if (result == true) {
+                                  await refreshData();
+                                }
+                              },
+                              child: const Icon(Icons.update),
+                            ),
+                          ],
+                        ),
+                        title: Text(
+                          'Montant: ${depos.montant}',
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Numéro de téléphone: ${depos.numeroTelephone}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              'Information client: ${depos.infoClient}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              'Date Operation: ${depos.dateoperation}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              _getOperationDescription(depos),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   String _getOperationDescription(OrangeModel depos) {
     if (depos.typeOperation == 1 && depos.operateur == '1') {
@@ -288,6 +298,8 @@ class _HistoriquePageState extends State<HistoriquePage> {
       return 'Opération: Retrait Moov';
     } else if (depos.typeOperation == 6 && depos.operateur == '2') {
       return 'Opération: Retrait sans compte Moov';
+    } else if (depos.typeOperation == 7 && depos.operateur == '1') {
+      return 'Opération: Retrait Orange Inter';
     }
     return '';
   }

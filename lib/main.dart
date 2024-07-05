@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'Model/AddSimModel.dart';
 import 'Model/OpTransactionModel.dart';
@@ -9,48 +10,23 @@ import 'homePage.dart';
 import 'Model/OrangeModel.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Nécessaire pour utiliser Hive dans Flutter
-  await Hive.initFlutter(); // Initialiser Hive
-  
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
 
-  // Enregistrer l'adaptateur pour OrangeModel
+  // Enregistrer vos adaptateurs Hive ici
   Hive.registerAdapter(OrangeModelAdapter());
-  
-  // Enregistrer l'adaptateur pour ClientModel
   Hive.registerAdapter(ClientModelAdapter());
-
-  // Enregistrer l'adaptateur pour EntrepriseModel
   Hive.registerAdapter(EntrepriseModelAdapter());
-
-  // Enregistrer l'adaptateur pour OpTransactionModel
   Hive.registerAdapter(OpTransactionModelAdapter());
-
-  // Enregistrer l'adaptateur pour UtilisateurModel
   Hive.registerAdapter(UtilisateurModelAdapter());
-
-  // Enregistrer l'adaptateur pour AddSimModel
   Hive.registerAdapter(AddSimModelAdapter());
 
-  
-
-
-
-  // Ouvrir la boîte pour OrangeModel
+  // Ouvrir les boîtes Hive nécessaires
   await Hive.openBox<OrangeModel>('todobos');
-  
-  // Ouvrir la boîte pour ClientModel
   await Hive.openBox<ClientModel>('todobos1');
-
-  // Ouvrir la boîte pour EntrepriseModel
   await Hive.openBox<EntrepriseModel>('todobos2');
-
-  // Ouvrir la boîte pour EntrepriseModel
   await Hive.openBox<OpTransactionModel>('todobos3');
-
-  // Ouvrir la boîte pour UtilisateurModel
   await Hive.openBox<UtilisateurModel>('todobos4');
-
-  // Ouvrir la boîte pour AddSimModel
   await Hive.openBox<AddSimModel>('todobos5');
 
   runApp(MyApp());
@@ -68,6 +44,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      // Définir les locales prises en charge
+      supportedLocales: [
+        const Locale('fr', 'FR'), // Ajouter d'autres locales si nécessaire
+      ],
+      // Définir les délégués de localisation
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate, // Ajouter ce délégué
+      ],
       home: const HomePage(),
     );
   }

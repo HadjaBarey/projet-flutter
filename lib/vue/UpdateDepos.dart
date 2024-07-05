@@ -127,7 +127,7 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                 const SizedBox(height: 25),
                 ElevatedButton(
                   onPressed: () {
-                    controller.pickImageCamera().then((_) {
+                    controller.pickImageCamera(context).then((_) {
                       setState(() {
                         infoClientController.text = controller.recognizedText;
                       });
