@@ -45,7 +45,7 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
 
       await loadData();
     } catch (e) {
-      print('Erreur pendant l\'initialisation : $e');
+     // print('Erreur pendant l\'initialisation : $e');
     }
   }
 
@@ -53,76 +53,43 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
     try {
       List<OrangeModel> deposits = await _controller.loadData();
 
-      setState(() {
-        _deposList = deposits;
-      });
+      DateTime? startDate = _startDateController.text.isNotEmpty
+        ? DateFormat('dd/MM/yyyy').parse(_startDateController.text)
+        : null;
+    DateTime? endDate = _endDateController.text.isNotEmpty
+        ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
+        : null;
+
+          setState(() {
+    _deposList = deposits.where((depos) {
+      try {
+        DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
+        if (startDate != null && dateOperation.isBefore(startDate)) {
+          return false;
+        }
+        if (endDate != null && dateOperation.isAfter(endDate)) {
+          return false;
+        }
+        return true;
+      } catch (e) {
+     //  print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
+        return false;
+      }
+    }).toList();
+  });
     } catch (e) {
-      print('Erreur lors du chargement des données : $e');
-    }
+     // print('Erreur lors du chargement des données : $e');
+     }
   }
 
-  // void deleteItem(int index) async {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Confirmation'),
-  //         content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: const Text('Annuler'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () async {
-  //               try {
-  //               //  setState(() {
-  //                   // Affecte 1 à la propriété supprimer de l'élément
-  //                   _deposList[index].supprimer = 1;
-  //                   //  _deposList[index].numeroIndependant = "058984";
-  //                // });
-  //                 // print('Model enregistré dans Hive: ${_deposList[index].toJson().toString()}');
-  //                 // Sauvegarde des changements dans Hive
-                 
-  //                   await _deposList[index].save().then((value){
-  //                     // print();
-  //                     print('Model enregistré dans Hive: ${_deposList[index].toJson().toString()}');
-                     
-  //                   });
-                    
-  //                 // } catch (e) {
-  //                 //   print('Erreur lors de la sauvegarde dans Hive : $e');
-  //                 // }
 
-  //                 // Affichage pour vérification
-  //                 // print('Supprimé : ${_deposList[index].supprimer}');
-
-  //                 // Rafraîchissement des données après la suppression
-  //                 await refreshData().then((v){
-  //                    Navigator.of(context).pop();
-  //                 });
-
-                  
-  //               } catch (e) {
-  //                 print('Erreur lors de la suppression de l\'élément : $e');
-  //               }
-  //             },
-  //             child: const Text('Supprimé'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
   void deleteItem(int index) async {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Confirmation'),
-        content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
+        content: const Text('Voulez-vous vraiment supprimer cet élément ?'),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -133,23 +100,21 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
           TextButton(
             onPressed: () async {
               try {
-                // Modifie la propriété supprimer de l'élément
-                _deposList[index].supprimer = 1;
+                // Assurez-vous que l'idoperation est bien défini
+                final idoperation = _deposList[index].idoperation;
+               // print('Suppression de l\'élément avec idoperation: $idoperation');
 
-                // Sauvegarde des changements dans Hive
-                await _controller.updateDeposInHiveDelete(_deposList[index]).then((value){
-                  print('Model enregistré dans Hive: ${_deposList[index].toJson().toString()}');
+                // Supprime l'élément de Hive en utilisant idoperation
+                await _controller.deleteDeposInHive(idoperation);
+
+                // Supprime l'élément de la liste
+                setState(() {
+                  _deposList.removeAt(index);
                 });
-                
-                // Affichage pour vérification
-                
 
-                // Rafraîchissement des données après la suppression
-                // await refreshData();
-                
                 Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
               } catch (e) {
-                print('Erreur lors de la suppression de l\'élément : $e');
+                //print('Erreur lors de la suppression de l\'élément : $e');
               }
             },
             child: const Text('Supprimer'),
@@ -221,7 +186,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanMessage == '')
+      .where((depos) => depos.operateur == '1' && depos.scanMessage == '')
       .toList();
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
@@ -229,7 +194,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Historique'),
+        title: const Text('Historique Non Scanné'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -332,14 +297,6 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                             children: [
                               Text(
                                 'Numéro de téléphone: ${depos.numeroTelephone}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                               Text(
-                                'Numéro supprimer: ${depos.supprimer}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                               Text(
-                                'Numéro id: ${depos.numeroIndependant}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                               Text(

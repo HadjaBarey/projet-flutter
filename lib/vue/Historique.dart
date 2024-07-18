@@ -23,65 +23,105 @@ class _HistoriquePageState extends State<HistoriquePage> {
     _initialize();
   }
 
-  Future<void> _initialize() async {
-    await _controller.initializeData();
+ Future<void> _initialize() async {
+    try {
+      await _controller.initializeData();
 
-    // Récupération de la date de contrôle
-    await _controller.DateControleRecupere();
-    String dateControle = _controller.dateOperationController.text;
+      // Récupération de la date de contrôle
+      await _controller.DateControleRecupere();
+      String dateControle = _controller.dateOperationController.text;
 
-    // Formatage de la date
-    DateFormat formatter = DateFormat('dd/MM/yyyy');
-    DateTime? parsedDate = formatter.parse(dateControle, true);
+      // Formatage de la date
+      DateFormat formatter = DateFormat('dd/MM/yyyy');
+      DateTime? parsedDate = formatter.parse(dateControle, true);
 
-    if (parsedDate != null) {
-      setState(() {
-        _startDateController.text = formatter.format(parsedDate);
-        _endDateController.text = formatter.format(parsedDate);
-      });
+      if (parsedDate != null) {
+        setState(() {
+          _startDateController.text = formatter.format(parsedDate);
+          _endDateController.text = formatter.format(parsedDate);
+        });
+      }
+
+      await loadData();
+    } catch (e) {
+     // print('Erreur pendant l\'initialisation : $e');
     }
-
-    await loadData();
   }
 
-  Future<void> loadData() async {
-    List<OrangeModel> deposits = await _controller.loadData();
+   Future<void> loadData() async {
+    try {
+      List<OrangeModel> deposits = await _controller.loadData();
 
-    setState(() {
-      _deposList = deposits;
-    });
+      DateTime? startDate = _startDateController.text.isNotEmpty
+        ? DateFormat('dd/MM/yyyy').parse(_startDateController.text)
+        : null;
+    DateTime? endDate = _endDateController.text.isNotEmpty
+        ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
+        : null;
+
+          setState(() {
+    _deposList = deposits.where((depos) {
+      try {
+        DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
+        if (startDate != null && dateOperation.isBefore(startDate)) {
+          return false;
+        }
+        if (endDate != null && dateOperation.isAfter(endDate)) {
+          return false;
+        }
+        return true;
+      } catch (e) {
+     //  print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
+        return false;
+      }
+    }).toList();
+  });
+    } catch (e) {
+     // print('Erreur lors du chargement des données : $e');
+     }
   }
 
   void deleteItem(int index) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmation'),
-          content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () async {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirmation'),
+        content: const Text('Voulez-vous vraiment supprimer cet élément ?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                // Assurez-vous que l'idoperation est bien défini
+                final idoperation = _deposList[index].idoperation;
+               // print('Suppression de l\'élément avec idoperation: $idoperation');
+
+                // Supprime l'élément de Hive en utilisant idoperation
+                await _controller.deleteDeposInHive(idoperation);
+
+                // Supprime l'élément de la liste
                 setState(() {
-                  _deposList[index].supprimer = 1;
+                  _deposList.removeAt(index);
                 });
-                //await _controller.markAsDeleted(_deposList[index]);
-                await refreshData();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Supprimé'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+
+                Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
+              } catch (e) {
+                //print('Erreur lors de la suppression de l\'élément : $e');
+              }
+            },
+            child: const Text('Supprimer'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   Future<void> refreshData() async {
     await _initialize();
@@ -204,29 +244,27 @@ class _HistoriquePageState extends State<HistoriquePage> {
                                 child: const Icon(Icons.delete),
                               ),
 
-                              const SizedBox(width: 10),
-
-                              GestureDetector(
-                                onTap: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UpdateDeposOrange(
-                                        depos: depos,
-                                        onRowClicked: _handleRowClicked,
-                                        deposList: _deposList,
-                                        refreshData: refreshData,
-                                      ),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    await refreshData();
-                                  }
-                                },
-                                child: const Icon(Icons.update),
-                              ),
-                            ],
-                          ),
+                          //     GestureDetector(
+                          //       onTap: () async {
+                          //         final result = await Navigator.push(
+                          //           context,
+                          //           MaterialPageRoute(
+                          //             builder: (context) => UpdateDeposOrange(
+                          //               depos: depos,
+                          //               onRowClicked: _handleRowClicked,
+                          //               deposList: _deposList,
+                          //               refreshData: refreshData,
+                          //             ),
+                          //           ),
+                          //         );
+                          //         if (result == true) {
+                          //           await refreshData();
+                          //         }
+                          //       },
+                          //       child: const Icon(Icons.update),
+                          //     ),
+                             ],
+                           ),
 
                           title: Text(
                             'Montant: ${depos.montant}',

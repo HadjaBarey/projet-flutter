@@ -269,41 +269,18 @@ Future<void> updateDeposInHiveDelete(OrangeModel updatedDepos) async {
 
       try {
         await todobos!.put(updatedDepos.idoperation, updatedDepos);
-        print("Mise à jour réussie : ${updatedDepos.toJson()}");
+       // print("Mise à jour réussie : ${updatedDepos.toJson()}");
       } catch (error) {
-        print("Erreur lors de la mise à jour : $error");
+       // print("Erreur lors de la mise à jour : $error");
       }
     } else {
-      print("Boîte Hive non initialisée");
+      //print("Boîte Hive non initialisée");
     }
   } catch (e) {
-    print("Une erreur est survenue lors de la mise à jour : $e");
+   // print("Une erreur est survenue lors de la mise à jour : $e");
   }
 }
-
-  // Future updateDeposInHiveDelete(OrangeModel updatedDepos) async {
-  //  try {
-  //   await _initializeBox().then((v)async{
-  //     if (todobos != null) {
-  //     updatedDepos.supprimer=1;
-  //     await todobos!.put(updatedDepos.idoperation, updatedDepos).then((value) {
-  //      print("Mise à jour réussie : $updatedDepos");
-  //     // return true;
-  //     }).catchError((error) {
-  //      print("Erreur lors de la mise à jour : $error");
-  //     });
-  //   } else {
-  //    // print("Boîte Hive non initialisée");
-  //   }
-  //   }); // S'assurer que la boîte est ouverte
     
-  //  // return false;
-  //  } catch (e) {
-  //    print("une erreur sur la modif $e"); 
-  //  }
-    
-
-  // }
 
   // Mettre à jour les données d'un dépôt
   void updateDeposData({
@@ -344,63 +321,11 @@ Future<void> updateDeposInHiveDelete(OrangeModel updatedDepos) async {
   if (todobos != null) {
     await todobos!.put(depos.idoperation, depos).then((value) {
       // Affichez le showDialog en cas de succès
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Succès'),
-            content: Text('Opération enregistrée avec succès'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+       showErrorDialog(context, 'Opération enregistrée avec succès.');
     }).catchError((error) {
       // Affichez le showDialog en cas d'erreur
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Erreur'),
-            content: Text('Erreur lors de l\'enregistrement. Veuillez reprendre l\'opereration!'),
-           // content: Text('Erreur lors de l\'enregistrement : $error'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      showErrorDialog(context, 'Erreur lors de l\'enregistrement. Veuillez reprendre l\'opereration!');
     });
-  // } else {
-  //   // Affichez le showDialog si la boîte Hive n'est pas initialisée
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Erreur'),
-  //         content: Text('Boîte Hive non initialisée'),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: Text('OK'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
   }
 }
 
@@ -412,32 +337,7 @@ Future<void> _initializeOperateursBox() async {
   OperateurBox = Hive.box<AddSimModel>("todobos5");
 }
 
- // Demander la permission d'appeler
-//  void requestCallPermission(BuildContext context) async {
-//   try {
-//     var status = await Permission.phone.request();
-//     if (status.isGranted) {
-//       await saveData(context);
-//     } else {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text('Permission refusée pour faire un appel téléphonique'),
-//           duration: Duration(seconds: 3),
-//         ),
-//       );
-//     }
-//   } catch (e) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(
-//         content: Text('Erreur lors de la demande de permission: $e'),
-//         duration: Duration(seconds: 3),
-//       ),
-//     );
-//   }
-// }
-
-
-
+ 
   // Marquer comme supprimé
   Future<void> markAsDeleted(OrangeModel depos) async {
     await _initializeBox(); // S'assurer que la boîte est ouverte
@@ -514,7 +414,6 @@ Future<void> _initializeOperateursBox() async {
 
  Future<void> detecterText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
-
   try {
     print("Début de la détection de texte..."); // Log de début
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
@@ -524,16 +423,13 @@ Future<void> _initializeOperateursBox() async {
       scanMessageController.text = ''; // Réinitialiser le champ de texte
       return;
     }
-
     String extractedMessage = '';
-
     for (TextBlock block in recognizedText.blocks) {
       for (TextLine line in block.lines) {
         extractedMessage += line.text + '';
       }
     }
-
-    print("Texte extrait : $extractedMessage"); // Log du texte extrait
+   // print("Texte extrait : $extractedMessage"); // Log du texte extrait
 
     // Expressions régulières pour rechercher "transfere" et "numero"
     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
@@ -567,43 +463,18 @@ Future<void> _initializeOperateursBox() async {
       numero = matchesNumero.first.group(1) ?? '';
     }
 
-  
-
-     // Si les champs montant ou numéro sont vides après le scan
     // Si les champs montant ou numéro sont vides après le scan
     if (montant.isEmpty || numero.isEmpty) {
-
-      // Log pour erreur
-      // montantController.text = ''; // Réinitialiser le champ montant
-      // numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
-      // scanMessageController.text = ''; // Réinitialiser le champ message
-
+      montantController.text = ''; // Réinitialiser le champ montant
+      numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
+      scanMessageController.text = ''; // Réinitialiser le champ message
       // Afficher une boîte de dialogue sur l'appareil Android
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Erreur"),
-            content: Text("Impossible de renseigner les champs. Veuillez réessayer."),
-            actions: <Widget>[
-              TextButton(
-                child: Text("OK"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
       return; // Arrêter la fonction ici
     }
 
 //     print("Montant extrait : $montant"); // Log du montant extrait
 //     print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
-
- print("Numéro de téléphone extrait : ${montantController.text}"); // Log du numéro extrait
- print("Numéro de numero extrait : ${numeroTelephoneController.text}"); // Log du numéro extrait
 
    if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
       montantController.text = montant;
@@ -615,30 +486,22 @@ Future<void> _initializeOperateursBox() async {
     } else {
       
     }if (montantController.text == montant && numeroTelephoneController.text == numero){     
-         recognizedText2  = 'Message Scanné111';        
-         print("message extrait : ${scanMessageController.text}"); 
-         print('scanMessageController updated to:2');
+         recognizedText2  = 'Message Scanné';        
       } else {
-        scanMessageController.text = 'NO DATA';
-        print('scanMessageController cleared:3');
+        recognizedText2= '';
       }
-
-
   
     List<String> keywords = ['recu'];
 
     // Mettre à jour le champ ScanMessage en fonction du résultat
     if (keywords.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()))) {     
-      typeOperationController.text = '2'; // Mettre à jour le champ de texte
-      
+      typeOperationController.text = '2'; // Mettre à jour le champ de texte      
     } else {     
-      typeOperationController.text = '1'; // Réinitialiser le champ de texte
-     
+      typeOperationController.text = '1'; // Réinitialiser le champ de texte     
     }
 
   } catch (e) {
-    print("Erreur lors de la détection du texte : $e"); // Log en cas d'erreur
-    // Gérer les erreurs de détection de texte ici
+    showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
   } finally {
     textRecognizer.close();
   }
@@ -672,43 +535,9 @@ Future<void> _initializeOperateursBox() async {
 
    if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
     this.recognizedText = '';
-    //updateDepos(infoClient: 'Erreur: veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
-
-    // Affichez le showDialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Erreur'),
-          content: Text('Veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-
+    showErrorDialog(context, 'Veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
     return;
   }
-  // if (!isValidDate(delivreeLe)) {
-  //   this.recognizedText = '';
-  //   updateDepos(infoClient: 'Erreur: La date de délivrance n\'est pas valide.');
-
-  //   // Affichez le SnackBar
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text('Erreur: La date de délivrance n\'est pas valide.'),
-  //       duration: Duration(seconds: 3), // Durée pendant laquelle le SnackBar est affiché
-  //     ),
-  //   );
-
-  //   return;
-  // }
 
   String infoClient = '$nom $prenoms / CNIB N° $reference du $delivreeLe';
   this.recognizedText = extractedText;
@@ -737,6 +566,21 @@ String extractInfo(String text, String pattern) {
     return false;
   }
 }
+
+ Future<void> deleteDeposInHive(int idoperation) async {
+    try {
+      // Ouvrir la boîte
+      final box = await Hive.openBox<OrangeModel>('todobos');
+      // Supprimer l'élément
+      if (box.containsKey(idoperation)) {
+        await box.delete(idoperation);
+      } else {
+       // print('Élément avec idoperation $idoperation non trouvé dans la boîte.');
+      }
+    } catch (e) {
+    // print('Erreur lors de la suppression de l\'élément dans Hive : $e');
+    }
+  }
 
 // Initialisez la boîte Hive pour les clients
 
@@ -777,6 +621,52 @@ Future<void> _initializeClientsBox() async {
       // Vous pouvez gérer le cas où la boîte Hive n'est pas initialisée ou vide ici
     }
   }
+
+
+  void showErrorDialog(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text(''),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+// Demander la permission d'appeler
+//  void requestCallPermission(BuildContext context) async {
+//   try {
+//     var status = await Permission.phone.request();
+//     if (status.isGranted) {
+//       await saveData(context);
+//     } else {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text('Permission refusée pour faire un appel téléphonique'),
+//           duration: Duration(seconds: 3),
+//         ),
+//       );
+//     }
+//   } catch (e) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(
+//         content: Text('Erreur lors de la demande de permission: $e'),
+//         duration: Duration(seconds: 3),
+//       ),
+//     );
+//   }
+// }
 
 //   void fonctionDepos(BuildContext context) async {
 

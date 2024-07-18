@@ -166,11 +166,6 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       ),                    
                   ],
                 ),
-                SizedBox(
-                        height: 30,
-                      ),
-                      Text(controller.scanMessageController.text),
-                      Text("mon test"),
                 const SizedBox(height: 15),
                 ElevatedButton(
                   onPressed: () async {
