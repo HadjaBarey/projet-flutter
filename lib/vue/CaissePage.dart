@@ -17,13 +17,23 @@ class _CaissePageState extends State<CaissePage> {
       return listCaiss.map((item) {
         return TableRow(
           children: [
-            TableCell(child: Center(child: Text(item.idjournal.toString()))),
-            TableCell(child: Center(child: Text(item.operateur))),
+            TableCell(
+              child: Center(
+                child: Text(item.typeCompte == '1' ? 'Transfert' : 'caisse'),
+              ),
+            ),
+            // TableCell(
+            //   child: Center(
+            //     child: Text(item.operateur == '1' ? 'Orange' : 'Moov'),
+            //   ),
+            // ),
+            TableCell(child: Center(child: Text(item.montantJ))),
             TableCell(child: Center(child: Text("---"))),
             TableCell(child: Center(child: Text("---"))),
             TableCell(child: Center(child: Text('---'))),
           ],
         );
+
       }).toList();
     }
   Future iniData() async{
@@ -49,7 +59,7 @@ void initState() {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Page caisse'),
+        title: const Text('caisse'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

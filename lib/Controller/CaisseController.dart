@@ -94,8 +94,8 @@ class CaisseController {
     idjournalController.text = Caisse.idjournal.toString();
     dateJournalController.clear();
     montantJController.clear();
-    typeCompteController.clear();
-    operateurController.clear();
+    selectedTypeCpt = '1';
+    selectedOperateur = '1';
   }
 
   void _initializeClientId() {
@@ -123,45 +123,21 @@ class CaisseController {
     print('Hive and boxes initialized.');
   }
 
-  // Future<List<JournalCaisseModel>> loadData() async {
-  //   if (todobos6.isEmpty) {
-  //     return [];
-  //   }
-  //   return todobos6.values.toList();
-  // }
 
-  void updateAddSim({
-    int? idjournal,
-    String? dateJournal,
-    String? montantJ,
-    String? typeCompte,
-    String? operateur,
-    String? soldeInitial,
-  }) {
-    if (idjournal != null) Caisse.idjournal = idjournal;
-    if (dateJournal != null) Caisse.dateJournal = dateJournal;
-    if (montantJ != null) Caisse.montantJ = montantJ;
-    if (typeCompte != null) Caisse.typeCompte = typeCompte;
-    if (operateur != null) Caisse.operateur = operateur;
-  }
-
-  Future<void> saveAddCaisseData() async {
+   Future<void> saveAddCaisseData() async {
     try {
+      // Mettre à jour le modèle avec les valeurs des contrôleurs
+      Caisse.dateJournal = dateJournalController.text;
+      Caisse.montantJ = montantJController.text;
+      Caisse.typeCompte = selectedTypeCpt;
+      Caisse.operateur = selectedOperateur;
+
+      // Enregistrer dans la boîte Hive
       await todobos6.put(Caisse.idjournal, Caisse);
       print("Enregistrement réussi : $Caisse");
       //await DateControleRecupere(); // Mettre à jour la date après enregistrement
     } catch (e) {
       print("Erreur lors de l'enregistrement : $e");
-    }
-  }
-
-  Future<void> markAsDeleted(JournalCaisseModel CaisseJ) async {
-    if (todobos6 != null) {
-      await todobos6.put(CaisseJ.idjournal, CaisseJ).then((value) {
-        print("Client marqué comme supprimé : $CaisseJ");
-      }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
-      });
     }
   }
 
