@@ -18,10 +18,10 @@ class ClientModelAdapter extends TypeAdapter<ClientModel> {
     };
     return ClientModel(
       idClient: fields[0] as int,
-      Identite: fields[1] as String,
-      RefCNIB: fields[2] as String,
-      numeroTelephone: fields[3] as String,
-      supprimer: fields[4] as int,
+      Identite:fields[1] != null ? fields[1] as String : '',
+      RefCNIB: fields[2] != null ? fields[2] as String : '',
+      numeroTelephone: fields[3] != null ? fields[3] as String : '',
+      supprimer:fields[4] != null ? fields[4] as int : 0,
     );
   }
 

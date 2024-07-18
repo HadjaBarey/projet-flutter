@@ -34,19 +34,23 @@ class EntrepriseController {
     // idEntrepriseController.text = Entreprise.idEntreprise.toString();
   }
 
-  void pickDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
+ void pickDate(BuildContext context) async {
+  final DateTime? pickedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2100),
+  );
 
-    if (pickedDate != null) {
-      DateControleController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
-      updateEntreprise(DateControle: DateControleController.text);
-    }
+  if (pickedDate != null) {
+    DateControleController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
+  } else if (DateControleController.text.isEmpty) {
+    DateControleController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   }
+
+  updateEntreprise(DateControle: DateControleController.text);
+}
+
 
   void _initializeEntrepriseId() {
     if (todobos2.isNotEmpty) {
@@ -57,7 +61,7 @@ class EntrepriseController {
     } else {
       Entreprise.idEntreprise = 1;
     }
-    idEntrepriseController.text = Entreprise.idEntreprise.toString();
+    // idEntrepriseController.text = Entreprise.idEntreprise.toString();
   }
 
   Future<void> initializeBox() async {
@@ -66,7 +70,19 @@ class EntrepriseController {
       Hive.registerAdapter(EntrepriseModelAdapter());
     }
     todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
+
+    if (todobos2.isEmpty) {
+      print("La boîte Hive des entreprises est vide");
+    } else {
+      print("La boîte Hive des entreprises contient des données");
+    }
+
     _initializeEntrepriseId();
+    // Set default date if DateControleController.text is empty
+  if (DateControleController.text.isEmpty) {
+    DateControleController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    updateEntreprise(DateControle: DateControleController.text);
+  }
   }
 
   Future<List<EntrepriseModel>> loadData() async {
@@ -84,8 +100,7 @@ class EntrepriseController {
   }) {
     if (idEntreprise != null) Entreprise.idEntreprise = idEntreprise;
     if (NomEntreprise != null) Entreprise.NomEntreprise = NomEntreprise;
-    if (DirecteurEntreprise != null)
-      Entreprise.DirecteurEntreprise = DirecteurEntreprise;
+    if (DirecteurEntreprise != null) Entreprise.DirecteurEntreprise = DirecteurEntreprise;
     if (DateControle != null) Entreprise.DateControle = DateControle;
   }
 

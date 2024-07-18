@@ -6,26 +6,15 @@ class UpdateDeposOrange extends StatefulWidget {
   final OrangeModel depos;
   final Function(OrangeModel) onRowClicked;
   final List<OrangeModel> deposList;
-  final Function() refreshData; // Ajout de la méthode refreshData
-  
+  final Function() refreshData;
+
   const UpdateDeposOrange({
     Key? key,
     required this.depos,
     required this.onRowClicked,
     required this.deposList,
-    required this.refreshData, // Ajout de la méthode refreshData
+    required this.refreshData,
   }) : super(key: key);
-
-  // Constructeur par défaut optionnel
-  UpdateDeposOrange.empty({Key? key})
-      : depos = OrangeModel.empty(),
-        onRowClicked = _emptyFunction,
-        deposList = const [],
-        refreshData = _emptyRefreshFunction, // Ajout de la méthode refreshData
-        super(key: key);
-
-  static void _emptyFunction(OrangeModel _) {} // Ajustement pour correspondre à la signature
-  static void _emptyRefreshFunction() {} // Fonction vide sans arguments
 
   @override
   State<UpdateDeposOrange> createState() => _UpdateDeposOrangeState();
@@ -33,34 +22,29 @@ class UpdateDeposOrange extends StatefulWidget {
 
 class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
   late OrangeController controller;
-  late TextEditingController montantController;
-  late TextEditingController numeroTelephoneController;
-  late TextEditingController infoClientController;
+  
 
   @override
   void initState() {
     super.initState();
     controller = OrangeController(widget.deposList);
 
-    montantController = TextEditingController(text: widget.depos.montant);
-    numeroTelephoneController = TextEditingController(text: widget.depos.numeroTelephone);
-    infoClientController = TextEditingController(text: widget.depos.infoClient);
+    // Initialisez les contrôleurs avec les valeurs de depos
+    controller.montantController.text = widget.depos.montant;
+    controller.numeroTelephoneController.text = widget.depos.numeroTelephone;
+    controller.infoClientController.text = widget.depos.infoClient;
+    controller.numeroIndependantController.text = widget.depos.numeroIndependant;
+    // controller.scanMessageController.text = widget.depos.scanMessage;
   }
 
-  @override
-  void dispose() {
-    montantController.dispose();
-    numeroTelephoneController.dispose();
-    infoClientController.dispose();
-    super.dispose();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Modifier Dépôt Orange',
+          'Modifier transfert Orange',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
@@ -78,7 +62,7 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                 ),
                 const SizedBox(height: 25),
                 TextFormField(
-                  controller: montantController,
+                  controller: controller.montantController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Montant',
@@ -91,10 +75,11 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                     return null;
                   },
                   keyboardType: TextInputType.number,
+                  enabled: false,
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
-                  controller: numeroTelephoneController,
+                  controller: controller.numeroTelephoneController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Numéro Téléphone',
@@ -108,10 +93,11 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                     return null;
                   },
                   keyboardType: TextInputType.phone,
+                  enabled: false,
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
-                  controller: infoClientController,
+                  controller: controller.infoClientController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Informations Client',
@@ -123,16 +109,95 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                     }
                     return null;
                   },
+                  enabled: false,
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: controller.numeroIndependantController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Numéro Independant',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    suffixIcon: Icon(Icons.contact_page),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  enabled: false,
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Message:',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 0),
+
+                    Expanded(
+                        child: TextFormField(
+                          controller: controller.scanMessageController, // Utilisez directement le TextEditingController
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),                            
+                            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            filled: true,
+                            fillColor: controller.scanMessageController.text.isEmpty ? Colors.red : Colors.black, // Utilisez le texte actuel du TextEditingController
+                          ),
+                          style: TextStyle(
+                            color: controller.scanMessageController.text.isEmpty ? Colors.black : Colors.white, // Utilisez le texte actuel du TextEditingController
+                          ),
+                          enabled: false,
+                        ),
+                      ),
+                      
+                    SizedBox(width: 7),
+                    Text(
+                      'Crédit?',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 0),
+                    Checkbox(
+                        value: controller.depos.optionCreance,
+                        onChanged: (value) {
+                          setState(() {
+                            controller.updateOptionCreance(value ?? false);
+                          });
+                        },
+                       // enabled: true, // Rend la case à cocher activable
+                      ),                    
+                  ],
+                ),
+                SizedBox(
+                        height: 30,
+                      ),
+                      Text(controller.scanMessageController.text),
+                      Text("mon test"),
+                const SizedBox(height: 15),
                 ElevatedButton(
-                  onPressed: () {
-                    controller.pickImageCamera(context).then((_) {
-                      setState(() {
-                        infoClientController.text = controller.recognizedText;
-                      });
+                  onPressed: () async {
+                    controller.setScan(1);
+                    await controller.pickImageCamera(context);
+                    setState(() {
+                      controller.scanMessageController.text = controller.recognizedText2;
                     });
                   },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Message',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(
+                        Icons.scanner,
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all(
                       RoundedRectangleBorder(
@@ -143,28 +208,11 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     ),
                     side: MaterialStateProperty.all(
-                      const BorderSide(
+                      BorderSide(
                         color: Colors.grey,
                       ),
                     ),
-                    backgroundColor: MaterialStateProperty.all(Colors.deepOrangeAccent),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Scanner',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                        ),
-                      SizedBox(width: 8),
-                      Icon(
-                        Icons.scanner,
-                        color: Colors.black,
-                      ),
-                    ],
+                    backgroundColor: MaterialStateProperty.all(Colors.blueGrey.shade400),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -172,19 +220,25 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                   onPressed: () {
                     if (controller.formKey.currentState!.validate()) {
                       setState(() {
-                        widget.depos.montant = montantController.text;
-                        widget.depos.numeroTelephone = numeroTelephoneController.text;
-                        widget.depos.infoClient = infoClientController.text;
+                        widget.depos.montant = controller.montantController.text;
+                        widget.depos.numeroTelephone = controller.numeroTelephoneController.text;
+                        widget.depos.infoClient = controller.infoClientController.text;
+                        widget.depos.optionCreance = controller.depos.optionCreance;
+                        widget.depos.scanMessage = controller.scanMessageController.text;
+                        widget.depos.numeroIndependant = controller.numeroIndependantController.text;
                       });
                       controller.updateDeposData(
                         depos: widget.depos,
-                        montant: montantController.text,
-                        numeroTelephone: numeroTelephoneController.text,
-                        infoClient: infoClientController.text,
+                        montant: controller.montantController.text,
+                        numeroTelephone: controller.numeroTelephoneController.text,
+                        infoClient: controller.infoClientController.text,
+                        scanMessage: controller.scanMessageController.text,
+                        numeroIndependant: controller.numeroIndependantController.text,
+                        optionCreance: controller.depos.optionCreance,
                       );
-                      widget.refreshData(); // Actualiser les données
-                      Navigator.of(context).pop(); // Fermer la page de mise à jour
-                      widget.onRowClicked(widget.depos); // Actualiser la page d'historique
+                      widget.refreshData();
+                      Navigator.of(context).pop();
+                      widget.onRowClicked(widget.depos);
                     }
                   },
                   style: ButtonStyle(
@@ -194,20 +248,23 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
                       ),
                     ),
                     padding: MaterialStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                     ),
-                    side: MaterialStateProperty.all(const BorderSide(
-                      color: Colors.grey,
-                    )),
-                    backgroundColor: MaterialStateProperty.all(Colors.black12),
+                    side: MaterialStateProperty.all(
+                      BorderSide(
+                        color: Colors.grey,
+                      ),
+                    ),
+                    backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
                   ),
                   child: const Text(
                     'Valider',
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 20,
-                      fontWeight: FontWeight.bold),
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
                 ),
               ],
             ),

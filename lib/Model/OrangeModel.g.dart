@@ -18,23 +18,24 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
     };
     return OrangeModel(
       idoperation: fields[0] as int,
-      dateoperation: fields[1] as String,
-      montant: fields[2] as String,
-      numeroTelephone: fields[3] as String,
-      infoClient: fields[4] as String,
-      typeOperation: fields[5] as int,
-      operateur: fields[6] as String,
-      supprimer: fields[7] as int,
-      iddette: fields[8] as int,
-      optionCreance: fields[9] == null ? false : fields[9] as bool,
-      //optionCreance: fields[9] as bool,
+      dateoperation: fields[1] != null ? fields[1] as String : '',
+      montant: fields[2] != null ? fields[2] as String : '',
+      numeroTelephone: fields[3] != null ? fields[3] as String : '',
+      infoClient: fields[4] != null ? fields[4] as String : '',
+      typeOperation: fields[5] != null ? fields[5] as int : 0,
+      operateur: fields[6] != null ? fields[6] as String : '',
+      supprimer: fields[7] != null ? fields[7] as int : 0,
+      iddette: fields[8] != null ? fields[8] as int : 0,
+      optionCreance: fields[9] != null ? fields[9] as bool : false,
+      scanMessage: fields[10] != null ? fields[10] as String : '',
+      numeroIndependant: fields[11] != null ? fields[11] as String : '',
     );
   }
 
   @override
   void write(BinaryWriter writer, OrangeModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.idoperation)
       ..writeByte(1)
@@ -54,7 +55,11 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       ..writeByte(8)
       ..write(obj.iddette)
       ..writeByte(9)
-      ..write(obj.optionCreance);
+      ..write(obj.optionCreance)
+      ..writeByte(10)
+      ..write(obj.scanMessage)
+      ..writeByte(11)
+      ..write(obj.numeroIndependant);
   }
 
   @override

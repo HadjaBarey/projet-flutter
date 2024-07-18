@@ -32,7 +32,13 @@ class OrangeModel extends HiveObject {
   int iddette;
 
   @HiveField(9)
-  bool optionCreance; // Ajout de la nouvelle variable de type boolean
+  bool optionCreance;
+
+  @HiveField(10)
+  String scanMessage;
+
+  @HiveField(11)
+  String numeroIndependant;
 
   OrangeModel({
     required this.idoperation,
@@ -44,24 +50,26 @@ class OrangeModel extends HiveObject {
     required this.operateur,
     required this.supprimer,
     required this.iddette,
-     this.optionCreance = false, // Valeur par défaut
-    //required this.optionCreance, // Ajout du champ dans le constructeur
+    this.optionCreance = false,
+    required this.scanMessage,
+    required this.numeroIndependant,
   });
 
   factory OrangeModel.fromJSON(Map<String, dynamic> json) {
     return OrangeModel(
-      idoperation: json['idoperation'],
-      dateoperation: json['dateoperation'],
-      montant: json['montant'],
-      numeroTelephone: json['numeroTelephone'],
-      infoClient: json['infoClient'],
-      typeOperation: json['typeOperation'],
-      operateur: json['operateur'],
-      supprimer: json['supprimer'],
-      iddette: json['iddette'],
+      idoperation: json['idoperation'] ?? 0,
+      dateoperation: json['dateoperation'] ?? '',
+      montant: json['montant'] ?? '',
+      numeroTelephone: json['numeroTelephone'] ?? '',
+      infoClient: json['infoClient'] ?? '',
+      typeOperation: json['typeOperation'] ?? 0,
+      operateur: json['operateur'] ?? '',
+      supprimer: json['supprimer'] ?? 0,
+      iddette: json['iddette'] ?? 0,
       optionCreance: json['optionCreance'] ?? false,
+      scanMessage: json['scanMessage'] ?? '',
+      numeroIndependant: json['numeroIndependant'] ?? '',
     );
-    
   }
 
   OrangeModel.empty()
@@ -74,20 +82,24 @@ class OrangeModel extends HiveObject {
         operateur = '',
         supprimer = 0,
         iddette = 0,
-        optionCreance = false; // Initialisation du champ dans le constructeur vide
+        optionCreance = false,
+        scanMessage = '',
+        numeroIndependant = '';
 
-  factory OrangeModel.fromMap(Map<String, dynamic> map) {
-    return OrangeModel(
-      idoperation: map['idoperation'],
-      dateoperation: map['dateoperation'],
-      montant: map['montant'],
-      numeroTelephone: map['numeroTelephone'],
-      infoClient: map['infoClient'],
-      typeOperation: map['typeOperation'],
-      operateur: map['operateur'],
-      supprimer: map['supprimer'],
-      iddette: map['iddette'],
-      optionCreance: map['isNewField'], // Ajout du champ dans la méthode fromMap
-    );
+  Map<String, dynamic> toJson() {
+    return {
+      'idoperation': idoperation,
+      'dateoperation': dateoperation,
+      'montant': montant,
+      'numeroTelephone': numeroTelephone,
+      'infoClient': infoClient,
+      'typeOperation': typeOperation,
+      'operateur': operateur,
+      'supprimer': supprimer,
+      'iddette': iddette,
+      'optionCreance': optionCreance,
+      'scanMessage': scanMessage,
+      'numeroIndependant': numeroIndependant,
+    };
   }
 }

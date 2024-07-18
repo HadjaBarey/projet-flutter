@@ -18,9 +18,9 @@ class EntrepriseModelAdapter extends TypeAdapter<EntrepriseModel> {
     };
     return EntrepriseModel(
       idEntreprise: fields[0] as int,
-      NomEntreprise: fields[1] as String,
-      DirecteurEntreprise: fields[2] as String,
-      DateControle: fields[3] as String,
+      NomEntreprise: fields[1] != null ? fields[1] as String : '',
+      DirecteurEntreprise: fields[2] != null ? fields[2] as String : '',
+      DateControle: fields[3] != null ? fields[3] as String : '',
     );
   }
 

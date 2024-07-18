@@ -4,13 +4,14 @@ import 'package:kadoustransfert/Controller/OrangeController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/vue/UpdateDepos.dart';
 
-class HistoriquePage extends StatefulWidget {
-  const HistoriquePage({Key? key}) : super(key: key);
+class HistoriqueNScannePage extends StatefulWidget {
+  const HistoriqueNScannePage({Key? key}) : super(key: key);
 
   @override
-  State<HistoriquePage> createState() => _HistoriquePageState();
+  State<HistoriqueNScannePage> createState() => _HistoriqueNScannePageState();
 }
-class _HistoriquePageState extends State<HistoriquePage> {
+
+class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
   final OrangeController _controller = OrangeController([]);
   List<OrangeModel> _deposList = [];
   final TextEditingController _startDateController = TextEditingController();
@@ -24,72 +25,168 @@ class _HistoriquePageState extends State<HistoriquePage> {
   }
 
   Future<void> _initialize() async {
-    await _controller.initializeData();
+    try {
+      await _controller.initializeData();
 
-    // Récupération de la date de contrôle
-    await _controller.DateControleRecupere();
-    String dateControle = _controller.dateOperationController.text;
+      // Récupération de la date de contrôle
+      await _controller.DateControleRecupere();
+      String dateControle = _controller.dateOperationController.text;
 
-    // Formatage de la date
-    DateFormat formatter = DateFormat('dd/MM/yyyy');
-    DateTime? parsedDate = formatter.parse(dateControle, true);
+      // Formatage de la date
+      DateFormat formatter = DateFormat('dd/MM/yyyy');
+      DateTime? parsedDate = formatter.parse(dateControle, true);
 
-    if (parsedDate != null) {
-      setState(() {
-        _startDateController.text = formatter.format(parsedDate);
-        _endDateController.text = formatter.format(parsedDate);
-      });
+      if (parsedDate != null) {
+        setState(() {
+          _startDateController.text = formatter.format(parsedDate);
+          _endDateController.text = formatter.format(parsedDate);
+        });
+      }
+
+      await loadData();
+    } catch (e) {
+      print('Erreur pendant l\'initialisation : $e');
     }
-
-    await loadData();
   }
 
   Future<void> loadData() async {
-    List<OrangeModel> deposits = await _controller.loadData();
+    try {
+      List<OrangeModel> deposits = await _controller.loadData();
 
-    setState(() {
-      _deposList = deposits;
-    });
+      setState(() {
+        _deposList = deposits;
+      });
+    } catch (e) {
+      print('Erreur lors du chargement des données : $e');
+    }
   }
 
+  // void deleteItem(int index) async {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Confirmation'),
+  //         content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text('Annuler'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () async {
+  //               try {
+  //               //  setState(() {
+  //                   // Affecte 1 à la propriété supprimer de l'élément
+  //                   _deposList[index].supprimer = 1;
+  //                   //  _deposList[index].numeroIndependant = "058984";
+  //                // });
+  //                 // print('Model enregistré dans Hive: ${_deposList[index].toJson().toString()}');
+  //                 // Sauvegarde des changements dans Hive
+                 
+  //                   await _deposList[index].save().then((value){
+  //                     // print();
+  //                     print('Model enregistré dans Hive: ${_deposList[index].toJson().toString()}');
+                     
+  //                   });
+                    
+  //                 // } catch (e) {
+  //                 //   print('Erreur lors de la sauvegarde dans Hive : $e');
+  //                 // }
+
+  //                 // Affichage pour vérification
+  //                 // print('Supprimé : ${_deposList[index].supprimer}');
+
+  //                 // Rafraîchissement des données après la suppression
+  //                 await refreshData().then((v){
+  //                    Navigator.of(context).pop();
+  //                 });
+
+                  
+  //               } catch (e) {
+  //                 print('Erreur lors de la suppression de l\'élément : $e');
+  //               }
+  //             },
+  //             child: const Text('Supprimé'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
   void deleteItem(int index) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmation'),
-          content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () async {
-                setState(() {
-                  _deposList[index].supprimer = 1;
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirmation'),
+        content: const Text('Voulez-vous vraiment marquer cet élément comme supprimé ?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                // Modifie la propriété supprimer de l'élément
+                _deposList[index].supprimer = 1;
+
+                // Sauvegarde des changements dans Hive
+                await _controller.updateDeposInHiveDelete(_deposList[index]).then((value){
+                  print('Model enregistré dans Hive: ${_deposList[index].toJson().toString()}');
                 });
-                //await _controller.markAsDeleted(_deposList[index]);
-                await refreshData();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Supprimé'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+                
+                // Affichage pour vérification
+                
+
+                // Rafraîchissement des données après la suppression
+                // await refreshData();
+                
+                Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
+              } catch (e) {
+                print('Erreur lors de la suppression de l\'élément : $e');
+              }
+            },
+            child: const Text('Supprimer'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   Future<void> refreshData() async {
-    await _initialize();
+    try {
+      await loadData();
+    } catch (e) {
+      print('Erreur lors du rafraîchissement des données : $e');
+    }
   }
 
-  void _handleRowClicked(OrangeModel clickedDepos) {
-    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
-  }
+ // Dans votre méthode _handleRowClicked dans HistoriqueNScannePage
+
+void _handleRowClicked(OrangeModel clickedDepos) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => UpdateDeposOrange(
+        depos: clickedDepos,
+        onRowClicked: (updatedDepos) async {
+          await refreshData();
+        },
+        deposList: _deposList,
+        refreshData: refreshData,
+      ),
+    ),
+  );
+}
+
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     DateTime? pickedDate = await showDatePicker(
@@ -116,22 +213,23 @@ class _HistoriquePageState extends State<HistoriquePage> {
     } else if (depos.typeOperation == 4 && depos.operateur == '2') {
       return 'Opération: Dépôt Moov';
     } else if (depos.typeOperation == 3 && depos.operateur == '2') {
-      return 'Opération: Retrait Moov';}  
+      return 'Opération: Retrait Moov';
+    }  
     return '';
   }
 
   @override
   Widget build(BuildContext context) {
-   List<OrangeModel> filteredList = _deposList
-    .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanMessage == 'Message Scanné')
-    .toList();
+    List<OrangeModel> filteredList = _deposList
+      .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanMessage == '')
+      .toList();
 
-      // Trier la liste filtrée par ordre décroissant sur le champ idoperation
-      filteredList.sort((a, b) => b.idoperation.compareTo(a.idoperation));
+    // Trier la liste filtrée par ordre décroissant sur le champ idoperation
+    filteredList.sort((a, b) => b.idoperation.compareTo(a.idoperation));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''),
+        title: const Text('Historique'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -184,9 +282,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 16),
-
               Expanded(
                 child: ListView.builder(
                   itemCount: filteredList.length,
@@ -203,7 +299,6 @@ class _HistoriquePageState extends State<HistoriquePage> {
                                 onTap: () => deleteItem(index),
                                 child: const Icon(Icons.delete),
                               ),
-
                               const SizedBox(width: 10),
 
                               GestureDetector(
@@ -225,9 +320,9 @@ class _HistoriquePageState extends State<HistoriquePage> {
                                 },
                                 child: const Icon(Icons.update),
                               ),
+                              
                             ],
                           ),
-
                           title: Text(
                             'Montant: ${depos.montant}',
                             style: const TextStyle(fontSize: 18),
@@ -237,6 +332,14 @@ class _HistoriquePageState extends State<HistoriquePage> {
                             children: [
                               Text(
                                 'Numéro de téléphone: ${depos.numeroTelephone}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                               Text(
+                                'Numéro supprimer: ${depos.supprimer}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                               Text(
+                                'Numéro id: ${depos.numeroIndependant}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                               Text(

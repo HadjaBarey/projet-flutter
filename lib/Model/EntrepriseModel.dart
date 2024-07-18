@@ -23,4 +23,22 @@ class EntrepriseModel extends HiveObject {
     required this.DirecteurEntreprise,
     required this.DateControle,
   });
+
+  factory EntrepriseModel.fromJSON(Map<String, dynamic> json) {
+    return EntrepriseModel(
+      idEntreprise: json['idEntreprise'] ?? 0,      
+      NomEntreprise: json['NomEntreprise'] ?? '',
+      DateControle: json['DateControle'] ?? '',
+      DirecteurEntreprise: json['DirecteurEntreprise'] ?? '',
+    );
+  }
+
+   Map<String, dynamic> toJson() {
+    return {
+      'idEntreprise': idEntreprise,
+      'NomEntreprise': NomEntreprise,
+      'DirecteurEntreprise': DirecteurEntreprise,
+      'DateControle': DateControle,
+    };
+  }
 }

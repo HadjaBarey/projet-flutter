@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:kadoustransfert/vue/CaissePage.dart';
+import 'package:kadoustransfert/vue/DeposOrange.dart';
 import 'package:kadoustransfert/vue/Historique.dart';
-import 'package:kadoustransfert/vue/ListAddSim.dart';
+import 'package:kadoustransfert/vue/HistoriqueNScanne.dart';
+import 'package:kadoustransfert/vue/MoovPage.dart';
 import 'package:kadoustransfert/vue/Parametrage.dart';
-import 'package:kadoustransfert/vue/TransactionOrange.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,10 +18,27 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    HistoriquePage(),
-    PageListAddSim(),
+    MoovPage(),
+    CaissePage(),
     Parametrage(),
   ];
+
+  //  @override
+  // void initState() {
+  //   super.initState();
+  //   // Appeler la fonction de sauvegarde automatiquement lors du chargement de la page
+  //  exportDataToLocalStorage();
+
+  //   //exportDataToLocalStorage('/storage/emulated/0/Download/data_export.json');
+
+  //    ///storage/emulated/0/Android/data/com.example.kadoustransfert/files/data_export.json
+
+
+
+  //  // exportDataToLocalStorage('/chemin/vers/mon_fichier/data_export.json');
+
+
+  // }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -52,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 20.0),
                     child: Text(
-                      'Orange Money / Moov Money',
+                      'Orange Money',
                       style: TextStyle(
                         fontSize: 25.0,
                         fontWeight: FontWeight.bold,
@@ -60,18 +80,18 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 20.0),
-                    child: Text(
-                      'Choisissez votre opérateur',
-                      style: TextStyle(
-                        fontSize: 25.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
-                  ),
+                  // SizedBox(height: 5.0),
+                  // Padding(
+                  //   padding: EdgeInsets.only(bottom: 20.0),
+                  //   child: Text(
+                  //     'Choisissez votre opérateur',
+                  //     style: TextStyle(
+                  //       fontSize: 25.0,
+                  //       fontWeight: FontWeight.bold,
+                  //       color: Colors.blueAccent,
+                  //     ),
+                  //   ),
+                  // ),
                   SizedBox(height: 13.0),
                   Align(
                     alignment: Alignment.topCenter,
@@ -79,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => TransactionOrange()),
+                          MaterialPageRoute(builder: (context) => DeposOrangePage()),
                         );
                       },
                       child: Container(
@@ -129,12 +149,137 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
+
                   SizedBox(height: 40.0),
+
                   Align(
                     alignment: Alignment.topCenter,
                     child: GestureDetector(
                       onTap: () {
-                        // Add onTap logic for Moov Money
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) => DeposOrangePage()),
+                        // );
+                      },
+                      child: Container(
+                        width: 500.0,
+                        height: 90.0,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 90.0,
+                              height: double.infinity,
+                              child: Image.asset(
+                                'images/Depos.jpg',
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Unité',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 27.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.black,
+                              size: 30.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                   SizedBox(height: 40.0),
+
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HistoriqueNScannePage()),
+                        );
+                      },
+                      child: Container(
+                        width: 500.0,
+                        height: 90.0,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 90.0,
+                              height: double.infinity,
+                              child: Image.asset(
+                                'images/Depos.jpg',
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                'Opération à valider',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 27.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.black,
+                              size: 30.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 40.0),
+
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: () {
+                        {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HistoriquePage()),
+                        );
+                      }
                       },
                       child: Container(
                         width: 500.0,
@@ -164,7 +309,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Expanded(
                               child: Text(
-                                'Moov Money',
+                                'Historique',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.black,
@@ -210,8 +355,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          HistoriquePage(),
-          PageListAddSim(),
+          MoovPage(),
+          CaissePage(),
           Parametrage(),
         ],
       ),
@@ -220,15 +365,15 @@ class _HomePageState extends State<HomePage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.ad_units_rounded),
-            label: 'Transaction',
+            label: 'Orange',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.access_time),
-            label: 'Historique',
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            label: 'Moov',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_box),
-            label: 'Ajouter Sim',
+            label: 'Caisse',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_system_daydream),

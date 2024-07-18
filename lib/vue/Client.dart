@@ -165,6 +165,20 @@ class _ClientPageState extends State<ClientPage> {
                   }
                 },
                 child: const Text('Enregistrer'),
+                 style: ButtonStyle(
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                    ),
+                    side: MaterialStateProperty.all(const BorderSide(
+                      color: Colors.grey,
+                    )),
+                    backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
+                  ),
               ),
             ],
           ),

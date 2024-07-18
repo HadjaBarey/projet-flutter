@@ -26,4 +26,24 @@ class AddSimModel extends HiveObject {
     required this.CodeAgent,
     required this.supprimer,
   });
+
+  factory AddSimModel.fromJSON(Map<String, dynamic> json) {
+    return AddSimModel(
+      idOperateur: json['idOperateur'] ?? 0,
+      LibOperateur: json['LibOperateur'] ?? '',
+      NumPhone: json['NumPhone'] ?? '',
+      CodeAgent: json['CodeAgent'] ?? '',
+      supprimer: json['supprimer'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'idOperateur': idOperateur,
+      'LibOperateur': LibOperateur,
+      'NumPhone': NumPhone,
+      'CodeAgent': CodeAgent,
+      'supprimer': supprimer,
+    };
+  }
 }

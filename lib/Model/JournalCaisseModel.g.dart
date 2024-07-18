@@ -1,44 +1,44 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'OpTransactionModel.dart';
+part of 'JournalCaisseModel.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class OpTransactionModelAdapter extends TypeAdapter<OpTransactionModel> {
+class JournalCaisseModelAdapter extends TypeAdapter<JournalCaisseModel> {
   @override
-  final int typeId = 4;
+  final int typeId = 6;
 
   @override
-  OpTransactionModel read(BinaryReader reader) {
+  JournalCaisseModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return OpTransactionModel(
-      idOpTransaction: fields[0] as int,
-      CodeTransaction: fields[1] != null ? fields[1] as String : '',
-      TypeOperation: fields[2] != null ? fields[1] as String : '',
-      Operateur: fields[3] != null ? fields[3] as String : '',
-      supprimer: fields[4] != null ? fields[4] as int : 0,
+    return JournalCaisseModel(
+      idjournal: fields[0] as int,
+      dateJournal: fields[1] != null ? fields[1] as String : '',
+      montantJ: fields[2] != null ? fields[2] as String : '',
+      typeCompte: fields[3] != null ? fields[3] as String : '',
+      operateur: fields[4] != null ? fields[4] as String : '',
     );
   }
 
   @override
-  void write(BinaryWriter writer, OpTransactionModel obj) {
+  void write(BinaryWriter writer, JournalCaisseModel obj) {
     writer
       ..writeByte(5)
       ..writeByte(0)
-      ..write(obj.idOpTransaction)
+      ..write(obj.idjournal)
       ..writeByte(1)
-      ..write(obj.CodeTransaction)
+      ..write(obj.dateJournal)
       ..writeByte(2)
-      ..write(obj.TypeOperation)
+      ..write(obj.montantJ)
       ..writeByte(3)
-      ..write(obj.Operateur)
+      ..write(obj.typeCompte)
       ..writeByte(4)
-      ..write(obj.supprimer);
+      ..write(obj.operateur);
   }
 
   @override
@@ -47,7 +47,7 @@ class OpTransactionModelAdapter extends TypeAdapter<OpTransactionModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is OpTransactionModelAdapter &&
+      other is JournalCaisseModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

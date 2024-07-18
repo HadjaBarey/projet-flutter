@@ -26,4 +26,24 @@ class UtilisateurModel extends HiveObject {
     required this.NumPhoneUtilisateur,
     required this.supprimer,
   });
+
+  factory UtilisateurModel.fromJSON(Map<String, dynamic> json) {
+    return UtilisateurModel(
+      idUtilisateur: json['idUtilisateur'] ?? 0,
+      IdentiteUtilisateur: json['IdentiteUtilisateur'] ?? '',
+      RefCNIBUtilisateur: json['RefCNIBUtilisateur'] ?? '',
+      NumPhoneUtilisateur: json['NumPhoneUtilisateur'] ?? '',
+      supprimer: json['supprimer'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'idUtilisateur': idUtilisateur,
+      'IdentiteUtilisateur': IdentiteUtilisateur,
+      'RefCNIBUtilisateur': RefCNIBUtilisateur,
+      'NumPhoneUtilisateur': NumPhoneUtilisateur,
+      'supprimer':supprimer,
+    };
+  }
 }

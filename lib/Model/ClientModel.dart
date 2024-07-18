@@ -26,4 +26,24 @@ class ClientModel extends HiveObject {
     required this.numeroTelephone,
     required this.supprimer,
   });
+
+  factory ClientModel.fromJSON(Map<String, dynamic> json) {
+    return ClientModel(
+      idClient: json['idClient'] ?? 0,
+      Identite: json['Identite'] ?? '',
+      RefCNIB: json['RefCNIB'] ?? '',
+      numeroTelephone: json['numeroTelephone'] ?? '',
+      supprimer: json['supprimer'] ?? 0,
+    );
+  }
+
+   Map<String, dynamic> toJson() {
+    return {
+      'idClient': idClient,
+      'Identite': Identite,
+      'RefCNIB': RefCNIB,
+      'numeroTelephone': numeroTelephone,
+      'supprimer': supprimer,
+    };
+  }
 }

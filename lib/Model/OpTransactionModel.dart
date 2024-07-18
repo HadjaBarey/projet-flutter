@@ -26,4 +26,24 @@ class OpTransactionModel extends HiveObject {
     required this.Operateur,
     required this.supprimer,
   });
+
+  factory OpTransactionModel.fromJSON(Map<String, dynamic> json) {
+    return OpTransactionModel(
+      idOpTransaction: json['idOpTransaction'] ?? 0,
+      CodeTransaction: json['CodeTransaction'] ?? '',
+      TypeOperation: json['TypeOperation'] ?? '',
+      Operateur: json['Operateur'] ?? '',
+      supprimer: json['supprimer'] ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'idOpTransaction': idOpTransaction,
+      'CodeTransaction': CodeTransaction,
+      'TypeOperation': TypeOperation,
+      'Operateur': Operateur,
+      'supprimer':supprimer,
+    };
+  }
 }
