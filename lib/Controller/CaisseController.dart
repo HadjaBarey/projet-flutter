@@ -41,13 +41,16 @@ class CaisseController {
 
   List<Map<String, String>> operateurOptions = [
     {'value': '1', 'label': 'Orange'},
-    {'value': '2', 'label': 'Moov'}
+    {'value': '2', 'label': 'Moov'},
+    
+    
   ];
   String selectedOperateur = '1';
 
   List<Map<String, String>> TypeComptes = [
     {'value': '1', 'label': 'Transfert'},
     {'value': '2', 'label': 'Caisse'},
+    {'value': '3', 'label': 'unité'},
   ];
   String selectedTypeCpt = '1';
 
@@ -120,26 +123,32 @@ class CaisseController {
     }
     todobos6 = await Hive.openBox<JournalCaisseModel>("todobos6");
     await _initializeEntreprisesBox(); // Assurez-vous d'initialiser entrepriseBox
-    print('Hive and boxes initialized.');
+   // print('Hive and boxes initialized.');
   }
 
 
    Future<void> saveAddCaisseData() async {
-    try {
-      // Mettre à jour le modèle avec les valeurs des contrôleurs
-      Caisse.dateJournal = dateJournalController.text;
-      Caisse.montantJ = montantJController.text;
-      Caisse.typeCompte = selectedTypeCpt;
-      Caisse.operateur = selectedOperateur;
+  try {
+    // Générer un nouvel ID unique pour la nouvelle entrée
+    _initializeClientId(); // Assure que l'ID est bien initialisé
 
-      // Enregistrer dans la boîte Hive
-      await todobos6.put(Caisse.idjournal, Caisse);
-      print("Enregistrement réussi : $Caisse");
-      //await DateControleRecupere(); // Mettre à jour la date après enregistrement
-    } catch (e) {
-      print("Erreur lors de l'enregistrement : $e");
-    }
+    // Mettre à jour le modèle avec les valeurs des contrôleurs
+    Caisse.dateJournal = dateJournalController.text;
+    Caisse.montantJ = montantJController.text;
+    Caisse.typeCompte = selectedTypeCpt;
+    Caisse.operateur = selectedOperateur;
+
+    // Enregistrer dans la boîte Hive
+    await todobos6.put(Caisse.idjournal, Caisse);
+    print("Enregistrement réussi : $Caisse");
+
+    // Réinitialiser le formulaire après enregistrement
+    resetFormFields();
+  } catch (e) {
+    print("Erreur lors de l'enregistrement : $e");
   }
+}
+
 
   Future<void> _initializeEntreprisesBox() async {
     if (!Hive.isBoxOpen("todobos2")) {
@@ -149,14 +158,13 @@ class CaisseController {
   }
 
   Future<void> DateControleRecupere() async {
-    print('Appel de DateControleRecupere...');
     await _initializeEntreprisesBox();
     
     if (entrepriseBox.isEmpty) {
       print("Boîte Hive des entreprises non initialisée ou vide");
       dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     } else {
-      print('La boîte Hive des entreprises contient des données.');
+      //print('La boîte Hive des entreprises contient des données.');
       var entreprise = entrepriseBox.values.last;
       if (entreprise != null) {
         try {
@@ -165,16 +173,36 @@ class CaisseController {
             DateTime parsedDate = dateFormat.parseStrict(entreprise.DateControle);
             dateJournalController.text = dateFormat.format(parsedDate);
           } else {
-            print("La date de contrôle est vide");
+           // print("La date de contrôle est vide");
           }
         } catch (e) {
-          print("Erreur lors de la conversion de la date : $e");
+          //print("Erreur lors de la conversion de la date : $e");
           dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
         }
       } else {
         dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-        print('Aucune entreprise trouvée');
+       // print('Aucune entreprise trouvée');
       }
     }
   }
+
+  void showErrorDialog(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text(''),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 }

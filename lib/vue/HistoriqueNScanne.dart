@@ -175,9 +175,9 @@ void _handleRowClicked(OrangeModel clickedDepos) {
       return 'Opération: Dépôt Orange';
     } else if (depos.typeOperation == 2 && depos.operateur == '1') {
       return 'Opération: Retrait Orange';
-    } else if (depos.typeOperation == 4 && depos.operateur == '2') {
+    } else if (depos.typeOperation == 1 && depos.operateur == '2') {
       return 'Opération: Dépôt Moov';
-    } else if (depos.typeOperation == 3 && depos.operateur == '2') {
+    } else if (depos.typeOperation == 2 && depos.operateur == '2') {
       return 'Opération: Retrait Moov';
     }  
     return '';

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 import 'package:kadoustransfert/vue/AddCaisse.dart';
+import 'package:kadoustransfert/Controller/OrangeController.dart'; // Importez votre OrangeController
 
 class CaissePage extends StatefulWidget {
   const CaissePage({super.key});
@@ -12,105 +14,192 @@ class CaissePage extends StatefulWidget {
 
 class _CaissePageState extends State<CaissePage> {
   final CaisseController _controller = CaisseController();
-  List<JournalCaisseModel> listCaiss=[];
-  List<TableRow> buildTableRows() {
-      return listCaiss.map((item) {
-        return TableRow(
+  List<JournalCaisseModel> listCaiss = [];
+  final OrangeController _orangeController = OrangeController([]);
+
+  String getTypeCompteLabel(String operateur, String typeCompte) {
+    if (operateur == '1') {
+      if (typeCompte == '1') {
+        return 'Transfert Orange';
+      } else if (typeCompte == '3') {
+        return 'Unité Orange';
+      }
+    } else if (operateur == '2') {
+      if (typeCompte == '1') {
+        return 'Transfert Moov';
+      } else if (typeCompte == '3') {
+        return 'Unité Moov';
+      }
+    }
+    return 'Caisse';
+  }
+
+  double getSumMontantJ() {
+    double sum = 0.0;
+    for (var item in listCaiss) {
+      sum += double.tryParse(item.montantJ) ?? 0.0;
+    }
+    return sum;
+  }
+
+  Future<List<TableRow>> buildTableRows() async {
+    final formatter = NumberFormat('###,###', 'fr_FR');
+
+    // Créez une copie de la liste
+    List<JournalCaisseModel> modifiedList = List.from(listCaiss);
+
+    // Remplacez temporairement les valeurs de 'operateur'
+    for (var item in modifiedList) {
+      if (item.typeCompte == '2') {
+        item.operateur = '9';
+      }
+    }
+
+    // Triez la liste modifiée
+    modifiedList.sort((a, b) {
+      int operateurComparison = a.operateur.compareTo(b.operateur);
+      if (operateurComparison != 0) {
+        return operateurComparison;
+      }
+      return a.typeCompte.compareTo(b.typeCompte);
+    });
+
+    // Map pour stocker les sommes regroupées
+    Map<String, double> sumMap = {};
+
+    // Calculer les sommes regroupées
+    for (var item in modifiedList) {
+      String key = '${item.operateur}_${item.typeCompte}';
+      double montant = double.tryParse(item.montantJ) ?? 0.0;
+      if (sumMap.containsKey(key)) {
+        sumMap[key] = sumMap[key]! + montant;
+      } else {
+        sumMap[key] = montant;
+      }
+    }
+
+    // Calculer l'augmentation et la diminution
+    final sumResult = await _orangeController.calculateSum();
+    final augmentation = sumResult['augmentation'] ?? 0.0;
+    final diminution = sumResult['diminution'] ?? 0.0;
+
+    print("augmentation---------------- $augmentation");
+    print("diminution---------------- $diminution");
+
+    // Construisez les lignes du tableau
+    List<TableRow> rows = [];
+    sumMap.forEach((key, sum) {
+      List<String> parts = key.split('_');
+      String operateur = parts[0];
+      String typeCompte = parts[1];
+      String formattedMontantJ = formatter.format(sum).replaceAll(',', ' ');
+
+    rows.add(
+        TableRow(
           children: [
             TableCell(
-              child: Center(
-                child: Text(item.typeCompte == '1' ? 'Transfert' : 'caisse'),
+              child: Align(
+                alignment: Alignment.center, // Aligne à droite
+                child: Text(getTypeCompteLabel(operateur, typeCompte)),
               ),
             ),
-            // TableCell(
-            //   child: Center(
-            //     child: Text(item.operateur == '1' ? 'Orange' : 'Moov'),
-            //   ),
-            // ),
-            TableCell(child: Center(child: Text(item.montantJ))),
-            TableCell(child: Center(child: Text("---"))),
-            TableCell(child: Center(child: Text("---"))),
-            TableCell(child: Center(child: Text('---'))),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight, // Aligne à droite
+                child: Text(formattedMontantJ),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight, // Aligne à droite
+                child: Text(formatter.format(augmentation).replaceAll(',', ' ')),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight, // Aligne à droite
+                child: Text(formatter.format(diminution).replaceAll(',', ' ')),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight, // Aligne à droite
+                child: Text("---"),
+              ),
+            ),
           ],
-        );
+        ),
+      );
 
-      }).toList();
-    }
-  Future iniData() async{
-    try{
-      await _controller.loadData().then((value){
-        setState(() {
-          listCaiss = value;
-        });
+    });
+
+    return rows;
+  }
+
+  Future iniData() async {
+    try {
+      await _controller.loadData().then((value) async {
+        listCaiss = value;
+        setState(() {});
       });
-      print("taille ${listCaiss.length}");
-    }catch(e){
-      print("ERREUR SUR LE LA RECUP DE LA LISTE $e");
+    } catch (e) {
+      // Handle error
+      print(e);
     }
   }
 
-@override
-void initState() {
-  super.initState();
-  iniData();
-}
+  @override
+  void initState() {
+    super.initState();
+    iniData();
+  }
 
- @override
+  @override
   Widget build(BuildContext context) {
+    double totalMontantJ = getSumMontantJ();
+    final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR').format(totalMontantJ).replaceAll(',', ' ');
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('caisse'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Table(
-          border: TableBorder.all(width: 1.0),
-          children: [
-            TableRow(
-              decoration: BoxDecoration(color: Colors.grey[200]),
-              children: [
-                TableCell(
-                  child: Center(
-                    child: Text('Compte'),
+        child: FutureBuilder<List<TableRow>>(
+          future: buildTableRows(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Erreur: ${snapshot.error}'));
+            } else {
+              return Table(
+                border: TableBorder.all(width: 1.0),
+                children: [
+                  TableRow(
+                    decoration: BoxDecoration(color: Colors.grey[200]),
+                    children: [
+                      TableCell(child: Center(child: Text('Compte'))),
+                      TableCell(child: Center(child: Text('Solde Initial'))),
+                      TableCell(child: Center(child: Text('Augmentation'))),
+                      TableCell(child: Center(child: Text('Diminution'))),
+                      TableCell(child: Center(child: Text('Solde Final'))),
+                    ],
                   ),
-                ),
-                TableCell(
-                  child: Center(
-                    child: Text('Solde Initial'),
+                  ...snapshot.data!,
+                  TableRow(
+                    children: [
+                      TableCell(child: Center(child: Text('Totaux'))),
+                      TableCell(child: Center(child: Text(formattedTotalMontantJ))),
+                      TableCell(child: Text('Cell 8')),
+                      TableCell(child: Text('Cell 9')),
+                      TableCell(child: Text('Cell 10')),
+                    ],
                   ),
-                ),
-                TableCell(
-                  child: Center(
-                    child: Text('Mvt Aug'),
-                  ),
-                ),
-                TableCell(
-                  child: Center(
-                    child: Text('Mvt Dimi'),
-                  ),
-                ),
-                TableCell(
-                  child: Center(
-                    child: Text('Solde Final'),
-                  ),
-                ),
-              ],
-            ),
-            ...buildTableRows(),
-            TableRow(
-              children: [
-                TableCell(
-                  child: Center(
-                    child: Text('Totaux'),
-                  ),
-                ),
-                TableCell(child: Text('Cell 7')),
-                TableCell(child: Text('Cell 8')),
-                TableCell(child: Text('Cell 9')),
-                TableCell(child: Text('Cell 10')),
-              ],
-            ),
-          ],
+                ],
+              );
+            }
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -122,9 +211,7 @@ void initState() {
             ),
           );
           if (result == true) {
-            setState(() {
-              _controller.loadData();
-            });
+            await iniData(); // Réactualise les données après la fermeture de la vue d'ajout
           }
         },
         child: const Icon(Icons.add),

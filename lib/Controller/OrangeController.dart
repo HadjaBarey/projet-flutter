@@ -45,6 +45,8 @@ class OrangeController {
   late Box<AddSimModel>  OperateurBox;
 
   int scan = 0;
+  double diminution = 0.0;
+  double augmentation = 0.0;
 
   // Setter pour la variable scan
   void setScan(int value) {
@@ -68,7 +70,8 @@ class OrangeController {
 
 
   // Liste des opérations
-  final List<OrangeModel> _deposList;
+  //final 
+  List<OrangeModel> _deposList;
 
   OrangeController(this._deposList, {bool isDepos = false}) {
     _initializeBox();
@@ -642,6 +645,64 @@ Future<void> _initializeClientsBox() async {
     },
   );
 }
+
+Future<void> _initializeAndLoadData() async {
+    await _initializeBox();
+    _deposList = await loadData();
+    print('Données initialisées: ${_deposList.length} éléments');
+  }
+  // Fonction publique pour calculer la somme des montants en fonction de l'opérateur, du type d'opération et de la date d'opération
+ 
+
+// Votre méthode calculateSum avec chargement de données
+   // Votre méthode calculateSum avec chargement de données
+  Future<Map<String, double>> calculateSum() async {
+    // Assurez-vous que les données sont chargées avant de continuer
+    await _initializeAndLoadData();
+
+    Map<String, double> diminution = {};
+    Map<String, double> augmentation = {};
+
+    // Vérifiez si _deposList est vide
+    if (_deposList.isEmpty) {
+      print('La liste _deposList est vide.');
+      return {
+        'augmentation': 0.0,
+        'diminution': 0.0,
+      };
+    }
+
+    // Boucle pour calculer les sommes
+    for (var item in _deposList) {
+      double montant = double.tryParse(item.montant) ?? 0.0;
+      String key = '${item.operateur}_${item.typeOperation}';
+
+      print('Item: ${item.idoperation}, Montant: ${item.montant}, TypeOperation: ${item.typeOperation}, Key: $key, MontantParsed: $montant');
+
+      // Ajoutez les montants aux augmentations ou diminutions selon le type d'opération
+      if (item.typeOperation == 1) {
+        // Diminution
+        if (diminution.containsKey(key)) {
+          diminution[key] = diminution[key]! + montant;
+        } else {
+          diminution[key] = montant;
+        }
+      } else if (item.typeOperation == 2) {
+        // Augmentation
+        if (augmentation.containsKey(key)) {
+          augmentation[key] = augmentation[key]! + montant;
+        } else {
+          augmentation[key] = montant;
+        }
+      }
+    }
+    // Retourner une map contenant les résultats sous forme de somme totale pour augmentation et diminution
+    return {
+      'augmentation': augmentation.values.fold(0.0, (sum, value) => sum + value),
+      'diminution': diminution.values.fold(0.0, (sum, value) => sum + value),
+    };
+  }
+
 
 
 // Demander la permission d'appeler
