@@ -157,34 +157,35 @@ class CaisseController {
     entrepriseBox = Hive.box<EntrepriseModel>("todobos2");
   }
 
-  Future<void> DateControleRecupere() async {
-    await _initializeEntreprisesBox();
-    
-    if (entrepriseBox.isEmpty) {
-      print("Boîte Hive des entreprises non initialisée ou vide");
-      dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    } else {
-      //print('La boîte Hive des entreprises contient des données.');
-      var entreprise = entrepriseBox.values.last;
-      if (entreprise != null) {
-        try {
-          if (entreprise.DateControle.isNotEmpty) {
-            DateFormat dateFormat = DateFormat('dd/MM/yyyy');
-            DateTime parsedDate = dateFormat.parseStrict(entreprise.DateControle);
-            dateJournalController.text = dateFormat.format(parsedDate);
-          } else {
-           // print("La date de contrôle est vide");
-          }
-        } catch (e) {
-          //print("Erreur lors de la conversion de la date : $e");
+ Future<void> DateControleRecupere() async {
+  await _initializeEntreprisesBox();
+
+  if (entrepriseBox.isEmpty) {
+    print("Boîte Hive des entreprises non initialisée ou vide");
+    dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  } else {
+    var entreprise = entrepriseBox.values.last;
+    if (entreprise != null) {
+      try {
+        if (entreprise.DateControle.isNotEmpty) {
+          DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+          DateTime parsedDate = dateFormat.parseStrict(entreprise.DateControle);
+          dateJournalController.text = dateFormat.format(parsedDate);
+        } else {
           dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
         }
-      } else {
+      } catch (e) {
+        print("Erreur lors de la conversion de la date : $e");
         dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-       // print('Aucune entreprise trouvée');
       }
+    } else {
+      dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     }
   }
+
+  print('Valeur de dateJournalController.text: ${dateJournalController.text}');
+}
+
 
   void showErrorDialog(BuildContext context, String message) {
   showDialog(

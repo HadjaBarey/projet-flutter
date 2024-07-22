@@ -649,59 +649,80 @@ Future<void> _initializeClientsBox() async {
 Future<void> _initializeAndLoadData() async {
     await _initializeBox();
     _deposList = await loadData();
-    print('Données initialisées: ${_deposList.length} éléments');
+   // print('Données initialisées: ${_deposList.length} éléments');
   }
-  // Fonction publique pour calculer la somme des montants en fonction de l'opérateur, du type d'opération et de la date d'opération
- 
+
+
 
 // Votre méthode calculateSum avec chargement de données
-   // Votre méthode calculateSum avec chargement de données
-  Future<Map<String, double>> calculateSum() async {
-    // Assurez-vous que les données sont chargées avant de continuer
-    await _initializeAndLoadData();
+Future<Map<String, Map<String, double>>> calculateSum() async {
+  // Assurez-vous que la date de contrôle est récupérée avant de continuer
+  await DateControleRecupere();
 
-    Map<String, double> diminution = {};
-    Map<String, double> augmentation = {};
+  // Assurez-vous que les données sont chargées avant de continuer
+  await _initializeAndLoadData();
 
-    // Vérifiez si _deposList est vide
-    if (_deposList.isEmpty) {
-      print('La liste _deposList est vide.');
-      return {
-        'augmentation': 0.0,
-        'diminution': 0.0,
-      };
-    }
+  // Maps pour stocker les sommes regroupées par opérateur
+  Map<String, double> diminution = {};
+  Map<String, double> augmentation = {};
 
-    // Boucle pour calculer les sommes
-    for (var item in _deposList) {
-      double montant = double.tryParse(item.montant) ?? 0.0;
-      String key = '${item.operateur}_${item.typeOperation}';
+  // Filtrer les données en fonction de la date de contrôle récupérée
+  DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+  DateTime controlDate = dateFormat.parse(dateOperationController.text);
 
-      print('Item: ${item.idoperation}, Montant: ${item.montant}, TypeOperation: ${item.typeOperation}, Key: $key, MontantParsed: $montant');
+  _deposList = _deposList.where((item) {
+    DateTime itemDate = dateFormat.parse(item.dateoperation); // Adaptez selon votre modèle
+    return itemDate.year == controlDate.year &&
+           itemDate.month == controlDate.month &&
+           itemDate.day == controlDate.day;
+  }).toList();
 
-      // Ajoutez les montants aux augmentations ou diminutions selon le type d'opération
-      if (item.typeOperation == 1) {
-        // Diminution
-        if (diminution.containsKey(key)) {
-          diminution[key] = diminution[key]! + montant;
-        } else {
-          diminution[key] = montant;
-        }
-      } else if (item.typeOperation == 2) {
-        // Augmentation
-        if (augmentation.containsKey(key)) {
-          augmentation[key] = augmentation[key]! + montant;
-        } else {
-          augmentation[key] = montant;
-        }
-      }
-    }
-    // Retourner une map contenant les résultats sous forme de somme totale pour augmentation et diminution
+  // Vérifiez si _deposList est vide après filtrage
+  if (_deposList.isEmpty) {
+    print('La liste _deposList est vide pour la date de contrôle.');
     return {
-      'augmentation': augmentation.values.fold(0.0, (sum, value) => sum + value),
-      'diminution': diminution.values.fold(0.0, (sum, value) => sum + value),
+      'augmentation': {},
+      'diminution': {},
     };
   }
+
+  // Parcourez les éléments de _deposList pour calculer les sommes
+  for (var item in _deposList) {
+    double montant = double.tryParse(item.montant) ?? 0.0;
+    String operateurKey = item.operateur;
+
+    if (item.typeOperation == 1) {
+      if (diminution.containsKey(operateurKey)) {
+        diminution[operateurKey] = diminution[operateurKey]! + montant;
+      } else {
+        diminution[operateurKey] = montant;
+      }
+    } else if (item.typeOperation == 2) {
+      if (augmentation.containsKey(operateurKey)) {
+        augmentation[operateurKey] = augmentation[operateurKey]! + montant;
+      } else {
+        augmentation[operateurKey] = montant;
+      }
+    }
+  }
+
+  // Assurez-vous que les clés existent avant d'effectuer l'addition
+  double diminution1 = diminution['1'] ?? 0.0;
+  double diminution2 = diminution['2'] ?? 0.0;
+  double augmentation1 = augmentation['1'] ?? 0.0;
+  double augmentation2 = augmentation['2'] ?? 0.0;
+
+  // Ajoutez les valeurs des opérateurs 1 et 2 et affectez-les à l'opérateur 9
+  augmentation['9'] = diminution1 + diminution2;
+  diminution['9'] = augmentation1 + augmentation2;
+
+  // Retourner une map contenant les résultats sous forme de somme totale pour chaque opérateur
+  return {
+    'augmentation': augmentation,
+    'diminution': diminution,
+  };
+}
+
 
 
 

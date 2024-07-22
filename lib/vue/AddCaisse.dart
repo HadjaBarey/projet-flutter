@@ -15,7 +15,7 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
   void initState() {
     super.initState();
     widget.caisseController.DateControleRecupere();
-    print(widget.caisseController.dateJournalController.text); // Reset des champs du formulaire
+   // print(widget.caisseController.dateJournalController.text); // Reset des champs du formulaire
   }
 
   @override
@@ -23,8 +23,8 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Caisse',
-          style: TextStyle(
+            'Caisse',
+            style: TextStyle(
             fontSize: 25.0,
             fontWeight: FontWeight.bold,
             color: Colors.black,

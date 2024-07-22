@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 import 'package:kadoustransfert/vue/AddCaisse.dart';
-import 'package:kadoustransfert/Controller/OrangeController.dart'; // Importez votre OrangeController
+import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class CaissePage extends StatefulWidget {
   const CaissePage({super.key});
@@ -16,6 +16,7 @@ class _CaissePageState extends State<CaissePage> {
   final CaisseController _controller = CaisseController();
   List<JournalCaisseModel> listCaiss = [];
   final OrangeController _orangeController = OrangeController([]);
+  String? dateControle;
 
   String getTypeCompteLabel(String operateur, String typeCompte) {
     if (operateur == '1') {
@@ -42,11 +43,25 @@ class _CaissePageState extends State<CaissePage> {
     return sum;
   }
 
+  Future<void> DateControleRecupere() async {
+    await _controller.DateControleRecupere();
+    setState(() {
+      dateControle = _controller.dateJournalController.text;
+    });
+  }
+
   Future<List<TableRow>> buildTableRows() async {
     final formatter = NumberFormat('###,###', 'fr_FR');
 
     // Créez une copie de la liste
     List<JournalCaisseModel> modifiedList = List.from(listCaiss);
+
+    // Filtrer la liste modifiée par date
+    if (dateControle != null) {
+      modifiedList = modifiedList.where((item) {
+        return item.dateJournal == dateControle;
+      }).toList();
+    }
 
     // Remplacez temporairement les valeurs de 'operateur'
     for (var item in modifiedList) {
@@ -67,6 +82,8 @@ class _CaissePageState extends State<CaissePage> {
     // Map pour stocker les sommes regroupées
     Map<String, double> sumMap = {};
 
+    sumMap['9_2'] = 0.0;
+
     // Calculer les sommes regroupées
     for (var item in modifiedList) {
       String key = '${item.operateur}_${item.typeCompte}';
@@ -78,15 +95,17 @@ class _CaissePageState extends State<CaissePage> {
       }
     }
 
+    
     // Calculer l'augmentation et la diminution
     final sumResult = await _orangeController.calculateSum();
-    final augmentation = sumResult['augmentation'] ?? 0.0;
-    final diminution = sumResult['diminution'] ?? 0.0;
+    final augmentation = sumResult['augmentation'] ?? {};
+    final diminution = sumResult['diminution'] ?? {};
 
-    print("augmentation---------------- $augmentation");
-    print("diminution---------------- $diminution");
+    // Variables pour stocker la somme totale des soldes initiaux et finaux
+    double totalSoldeInitial = 0.0;
+    double totalSoldeFinal = 0.0;
 
-    // Construisez les lignes du tableau
+    // Construire les lignes du tableau
     List<TableRow> rows = [];
     sumMap.forEach((key, sum) {
       List<String> parts = key.split('_');
@@ -94,44 +113,70 @@ class _CaissePageState extends State<CaissePage> {
       String typeCompte = parts[1];
       String formattedMontantJ = formatter.format(sum).replaceAll(',', ' ');
 
-    rows.add(
+      double augmentationValue = augmentation[operateur] ?? 0.0;
+      double diminutionValue = diminution[operateur] ?? 0.0;
+
+      // Calculer le solde final
+      double soldeFinal = sum + augmentationValue - diminutionValue;
+      String formattedSoldeFinal = formatter.format(soldeFinal).replaceAll(',', ' ');
+
+      // Ajouter aux totaux
+      totalSoldeInitial += sum;
+      totalSoldeFinal += soldeFinal;
+
+      rows.add(
         TableRow(
           children: [
             TableCell(
               child: Align(
-                alignment: Alignment.center, // Aligne à droite
+                alignment: Alignment.center,
                 child: Text(getTypeCompteLabel(operateur, typeCompte)),
               ),
             ),
             TableCell(
               child: Align(
-                alignment: Alignment.centerRight, // Aligne à droite
+                alignment: Alignment.centerRight,
                 child: Text(formattedMontantJ),
               ),
             ),
             TableCell(
               child: Align(
-                alignment: Alignment.centerRight, // Aligne à droite
-                child: Text(formatter.format(augmentation).replaceAll(',', ' ')),
+                alignment: Alignment.centerRight,
+                child: Text(formatter.format(augmentationValue).replaceAll(',', ' ')),
               ),
             ),
             TableCell(
               child: Align(
-                alignment: Alignment.centerRight, // Aligne à droite
-                child: Text(formatter.format(diminution).replaceAll(',', ' ')),
+                alignment: Alignment.centerRight,
+                child: Text(formatter.format(diminutionValue).replaceAll(',', ' ')),
               ),
             ),
             TableCell(
               child: Align(
-                alignment: Alignment.centerRight, // Aligne à droite
-                child: Text("---"),
+                alignment: Alignment.centerRight,
+                child: Text(formattedSoldeFinal),
               ),
             ),
           ],
         ),
       );
-
     });
+
+    // Ajouter la ligne de totaux au tableau
+    final formattedTotalSoldeInitial = formatter.format(totalSoldeInitial).replaceAll(',', ' ');
+    final formattedTotalSoldeFinal = formatter.format(totalSoldeFinal).replaceAll(',', ' ');
+
+    rows.add(
+      TableRow(
+        children: [
+          TableCell(child: Center(child: Text('Totaux'))),
+          TableCell(child: Center(child: Text(formattedTotalSoldeInitial))),
+          TableCell(child: Center(child: Text(''))), // Adjust this as needed
+          TableCell(child: Center(child: Text(''))), // Adjust this as needed
+          TableCell(child: Center(child: Text(formattedTotalSoldeFinal))),
+        ],
+      ),
+    );
 
     return rows;
   }
@@ -151,6 +196,7 @@ class _CaissePageState extends State<CaissePage> {
   @override
   void initState() {
     super.initState();
+    DateControleRecupere(); // Appel de la fonction pour récupérer la date
     iniData();
   }
 
@@ -158,10 +204,10 @@ class _CaissePageState extends State<CaissePage> {
   Widget build(BuildContext context) {
     double totalMontantJ = getSumMontantJ();
     final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR').format(totalMontantJ).replaceAll(',', ' ');
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('caisse'),
+        title: const Text('Caisse'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -187,15 +233,6 @@ class _CaissePageState extends State<CaissePage> {
                     ],
                   ),
                   ...snapshot.data!,
-                  TableRow(
-                    children: [
-                      TableCell(child: Center(child: Text('Totaux'))),
-                      TableCell(child: Center(child: Text(formattedTotalMontantJ))),
-                      TableCell(child: Text('Cell 8')),
-                      TableCell(child: Text('Cell 9')),
-                      TableCell(child: Text('Cell 10')),
-                    ],
-                  ),
                 ],
               );
             }
