@@ -19,8 +19,6 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
   void initState() {
     super.initState();
     entrepriseController.initializeBox().then((_) {
-      // Assurez-vous que l'initialisation est terminée avant d'utiliser le contrôleur
-      // Vous pouvez appeler d'autres méthodes après cela si nécessaire
     });
 
     controller.initializeData().then((_) {

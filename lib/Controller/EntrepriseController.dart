@@ -104,14 +104,17 @@ class EntrepriseController {
     if (DateControle != null) Entreprise.DateControle = DateControle;
   }
 
-  Future<void> saveEntrepriseData() async {
+   Future<void> saveEntrepriseData(BuildContext context, EntrepriseModel entreprise) async {
     try {
-      await todobos2.put(Entreprise.idEntreprise, Entreprise);
-      print("Enregistrement réussi : $Entreprise");
+      await todobos2.put(entreprise.idEntreprise, entreprise);
+      print("Enregistrement réussi : $entreprise");
+      _showDialog(context, "Succès", "Enregistrement réussi ");
     } catch (e) {
       print("Erreur lors de l'enregistrement : $e");
+      _showDialog(context, "Erreur", "Erreur lors de l'enregistrement ");
     }
   }
+
 
   Future<void> markAsDeleted(EntrepriseModel entreprise) async {
     if (todobos2 != null) {
@@ -145,4 +148,26 @@ class EntrepriseController {
   String getDateControle() {
     return dateControleText;
   }
+
+
+   void _showDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fermer la boîte de dialogue
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }

@@ -60,7 +60,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
           child: Column(
             children: [
               Offstage(
-                offstage: false,
+                offstage: true,
                 child: TextFormField(
                   controller: entrepriseController.idEntrepriseController,
                   decoration: InputDecoration(
@@ -136,7 +136,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                 onPressed: () {
                   if (entrepriseController.formKey.currentState!.validate()) {
                     entrepriseController.formKey.currentState!.save();
-                    entrepriseController.saveEntrepriseData().then((_) {
+                    entrepriseController.saveEntrepriseData(context,entrepriseController.Entreprise).then((_) {
                       setState(() {
                         entrepriseController.resetFormFields();
                       });

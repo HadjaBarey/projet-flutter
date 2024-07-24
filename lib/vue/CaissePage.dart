@@ -17,6 +17,7 @@ class _CaissePageState extends State<CaissePage> {
   List<JournalCaisseModel> listCaiss = [];
   final OrangeController _orangeController = OrangeController([]);
   String? dateControle;
+  final ValueNotifier<List<JournalCaisseModel>> _filteredListNotifier = ValueNotifier<List<JournalCaisseModel>>([]);
 
   String getTypeCompteLabel(String operateur, String typeCompte) {
     if (operateur == '1') {
@@ -37,7 +38,7 @@ class _CaissePageState extends State<CaissePage> {
 
   double getSumMontantJ() {
     double sum = 0.0;
-    for (var item in listCaiss) {
+    for (var item in _filteredListNotifier.value) {
       sum += double.tryParse(item.montantJ) ?? 0.0;
     }
     return sum;
@@ -48,30 +49,29 @@ class _CaissePageState extends State<CaissePage> {
     setState(() {
       dateControle = _controller.dateJournalController.text;
     });
+    filterListByDate();
   }
 
-  Future<List<TableRow>> buildTableRows() async {
+  void filterListByDate() {
+    if (dateControle != null) {
+      _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == dateControle).toList();
+    } else {
+      _filteredListNotifier.value = listCaiss;
+    }
+  }
+
+  Future<List<TableRow>> buildTableRows(List<JournalCaisseModel> filteredList) async {
     final formatter = NumberFormat('###,###', 'fr_FR');
 
-    // Créez une copie de la liste
-    List<JournalCaisseModel> modifiedList = List.from(listCaiss);
-
-    // Filtrer la liste modifiée par date
-    if (dateControle != null) {
-      modifiedList = modifiedList.where((item) {
-        return item.dateJournal == dateControle;
-      }).toList();
-    }
-
     // Remplacez temporairement les valeurs de 'operateur'
-    for (var item in modifiedList) {
+    for (var item in filteredList) {
       if (item.typeCompte == '2') {
         item.operateur = '9';
       }
     }
 
     // Triez la liste modifiée
-    modifiedList.sort((a, b) {
+    filteredList.sort((a, b) {
       int operateurComparison = a.operateur.compareTo(b.operateur);
       if (operateurComparison != 0) {
         return operateurComparison;
@@ -81,11 +81,10 @@ class _CaissePageState extends State<CaissePage> {
 
     // Map pour stocker les sommes regroupées
     Map<String, double> sumMap = {};
-
     sumMap['9_2'] = 0.0;
 
     // Calculer les sommes regroupées
-    for (var item in modifiedList) {
+    for (var item in filteredList) {
       String key = '${item.operateur}_${item.typeCompte}';
       double montant = double.tryParse(item.montantJ) ?? 0.0;
       if (sumMap.containsKey(key)) {
@@ -95,7 +94,6 @@ class _CaissePageState extends State<CaissePage> {
       }
     }
 
-    
     // Calculer l'augmentation et la diminution
     final sumResult = await _orangeController.calculateSum();
     final augmentation = sumResult['augmentation'] ?? {};
@@ -129,7 +127,7 @@ class _CaissePageState extends State<CaissePage> {
           children: [
             TableCell(
               child: Align(
-                alignment: Alignment.center,
+                alignment: Alignment.topLeft,
                 child: Text(getTypeCompteLabel(operateur, typeCompte)),
               ),
             ),
@@ -169,11 +167,36 @@ class _CaissePageState extends State<CaissePage> {
     rows.add(
       TableRow(
         children: [
-          TableCell(child: Center(child: Text('Totaux'))),
-          TableCell(child: Center(child: Text(formattedTotalSoldeInitial))),
-          TableCell(child: Center(child: Text(''))), // Adjust this as needed
-          TableCell(child: Center(child: Text(''))), // Adjust this as needed
-          TableCell(child: Center(child: Text(formattedTotalSoldeFinal))),
+          TableCell(
+            child: Align(
+              alignment: Alignment.center,
+              child: Text('Totaux'),
+            ),
+          ),
+          TableCell(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(formattedTotalSoldeInitial),
+            ),
+          ),
+          TableCell(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(''),
+            ),
+          ),
+          TableCell(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(''),
+            ),
+          ),
+          TableCell(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(formattedTotalSoldeFinal),
+            ),
+          ),
         ],
       ),
     );
@@ -181,11 +204,11 @@ class _CaissePageState extends State<CaissePage> {
     return rows;
   }
 
-  Future iniData() async {
+  Future<void> iniData() async {
     try {
       await _controller.loadData().then((value) async {
         listCaiss = value;
-        setState(() {});
+        filterListByDate();
       });
     } catch (e) {
       // Handle error
@@ -207,36 +230,58 @@ class _CaissePageState extends State<CaissePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Caisse'),
+        title: const Text('TABLEAUX DES TRANSACTIONS'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: FutureBuilder<List<TableRow>>(
-          future: buildTableRows(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Erreur: ${snapshot.error}'));
-            } else {
-              return Table(
-                border: TableBorder.all(width: 1.0),
-                children: [
-                  TableRow(
-                    decoration: BoxDecoration(color: Colors.grey[200]),
-                    children: [
-                      TableCell(child: Center(child: Text('Compte'))),
-                      TableCell(child: Center(child: Text('Solde Initial'))),
-                      TableCell(child: Center(child: Text('Augmentation'))),
-                      TableCell(child: Center(child: Text('Diminution'))),
-                      TableCell(child: Center(child: Text('Solde Final'))),
-                    ],
-                  ),
-                  ...snapshot.data!,
-                ],
-              );
-            }
-          },
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Date de contrôle',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  dateControle = value;
+                });
+                filterListByDate();
+              },
+            ),
+            Expanded(
+              child: ValueListenableBuilder<List<JournalCaisseModel>>(
+                valueListenable: _filteredListNotifier,
+                builder: (context, filteredList, child) {
+                  return FutureBuilder<List<TableRow>>(
+                    future: buildTableRows(filteredList),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Erreur: ${snapshot.error}'));
+                      } else {
+                        return Table(
+                          border: TableBorder.all(width: 1.0),
+                          children: [
+                            TableRow(
+                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              children: [
+                                TableCell(child: Center(child: Text('Compte'))),
+                                TableCell(child: Center(child: Text('Solde Initial'))),
+                                TableCell(child: Center(child: Text('Augmentation'))),
+                                TableCell(child: Center(child: Text('Diminution'))),
+                                TableCell(child: Center(child: Text('Solde Final'))),
+                              ],
+                            ),
+                            ...snapshot.data!,
+                          ],
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

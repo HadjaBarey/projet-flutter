@@ -258,6 +258,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                       children: [
                         ListTile(
                           leading: Row(
+                            key: ValueKey(depos.idoperation), // Utilisez une clé unique pour chaque élément
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
@@ -266,7 +267,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                               ),
                               const SizedBox(width: 10),
 
-                              GestureDetector(
+                              InkWell(
                                 onTap: () async {
                                   final result = await Navigator.push(
                                     context,
@@ -283,9 +284,11 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                                     await refreshData();
                                   }
                                 },
-                                child: const Icon(Icons.update),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.update),
+                                ),
                               ),
-                              
                             ],
                           ),
                           title: Text(

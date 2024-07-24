@@ -379,6 +379,7 @@ Future<void> _initializeOperateursBox() async {
       optionCreance: false,
       scanMessage: '',
       numeroIndependant: '',
+      
     );
     idOperationController.text = depos.idoperation.toString();
     dateOperationController.text = depos.dateoperation;
@@ -415,7 +416,7 @@ Future<void> _initializeOperateursBox() async {
 
 
 
- Future<void> detecterText(BuildContext context, InputImage inputImage) async {
+Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
   try {
     print("Début de la détection de texte..."); // Log de début
@@ -424,20 +425,18 @@ Future<void> _initializeOperateursBox() async {
     if (recognizedText.blocks.isEmpty) {
       print("Aucun texte détecté."); // Log si aucun texte n'est détecté
       scanMessageController.text = ''; // Réinitialiser le champ de texte
-      return;
+      return 0;
     }
     String extractedMessage = '';
     for (TextBlock block in recognizedText.blocks) {
       for (TextLine line in block.lines) {
-        extractedMessage += line.text + '';
+        extractedMessage += line.text + ' ';
       }
     }
-   // print("Texte extrait : $extractedMessage"); // Log du texte extrait
 
     // Expressions régulières pour rechercher "transfere" et "numero"
     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*(\d{8})');
-
 
     // Recherche des mots clés dans le texte
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
@@ -473,41 +472,43 @@ Future<void> _initializeOperateursBox() async {
       scanMessageController.text = ''; // Réinitialiser le champ message
       // Afficher une boîte de dialogue sur l'appareil Android
       showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
-      return; // Arrêter la fonction ici
+      return 0; // Arrêter la fonction ici
     }
 
-//     print("Montant extrait : $montant"); // Log du montant extrait
-//     print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
+    print("Montant extrait : $montant"); // Log du montant extrait
+    print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
 
-   if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
-      montantController.text = montant;
-      numeroTelephoneController.text = numero;
-      updateInfoClientController();
-      scanMessageController.text = 'Message Scanné';
-      print('Updated montantController: 1');
-     
-    } else {
-      
-    }if (montantController.text == montant && numeroTelephoneController.text == numero){     
-         recognizedText2  = 'Message Scanné';        
-      } else {
-        recognizedText2= '';
-      }
-  
-    List<String> keywords = ['recu'];
+    // Mettre à jour les contrôleurs
+    montantController.text = montant;
+    numeroTelephoneController.text = numero;
+    scanMessageController.text = 'Message Scanné';
+    updateInfoClientController();
 
-    // Mettre à jour le champ ScanMessage en fonction du résultat
-    if (keywords.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()))) {     
-      typeOperationController.text = '2'; // Mettre à jour le champ de texte      
-    } else {     
-      typeOperationController.text = '1'; // Réinitialiser le champ de texte     
+    // Déterminer le type d'opération en fonction des mots-clés
+    List<String> keywordsDepos = ['recu'];
+    bool isRetrait = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+    List<String> keywordsRetrait = ['transfere'];
+    bool isDepos = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+    List<String> keywordsSansCompte = ['vous avez recu'];
+    bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+    if (isDepos) {
+      return 1;
+    } else if (isRetrait) {
+      return 2;
+    } else if (isSansCompte) {
+      return 3;
     }
 
   } catch (e) {
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
+    return 0;
   } finally {
     textRecognizer.close();
   }
+  return 0;
 }
 
 
@@ -666,20 +667,23 @@ Future<Map<String, Map<String, double>>> calculateSum() async {
   Map<String, double> diminution = {};
   Map<String, double> augmentation = {};
 
-  // Filtrer les données en fonction de la date de contrôle récupérée
+  // Filtrer les données en fonction de la date de contrôle récupérée et de scanMessage
   DateFormat dateFormat = DateFormat('dd/MM/yyyy');
   DateTime controlDate = dateFormat.parse(dateOperationController.text);
 
   _deposList = _deposList.where((item) {
     DateTime itemDate = dateFormat.parse(item.dateoperation); // Adaptez selon votre modèle
-    return itemDate.year == controlDate.year &&
-           itemDate.month == controlDate.month &&
-           itemDate.day == controlDate.day;
+    bool dateMatches = itemDate.year == controlDate.year &&
+                       itemDate.month == controlDate.month &&
+                       itemDate.day == controlDate.day;
+    bool scanMessageMatches = item.scanMessage == 'Message Scanné'; // Filtrage par scanMessage
+
+    return dateMatches && scanMessageMatches;
   }).toList();
 
   // Vérifiez si _deposList est vide après filtrage
   if (_deposList.isEmpty) {
-    print('La liste _deposList est vide pour la date de contrôle.');
+    print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
     return {
       'augmentation': {},
       'diminution': {},
@@ -722,6 +726,7 @@ Future<Map<String, Map<String, double>>> calculateSum() async {
     'diminution': diminution,
   };
 }
+
 
 
 

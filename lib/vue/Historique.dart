@@ -236,6 +236,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ListTile(
+                          key: ValueKey(depos.idoperation), // Utilisez une clé unique pour chaque élément
                           leading: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
