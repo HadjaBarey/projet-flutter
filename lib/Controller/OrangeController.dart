@@ -54,7 +54,7 @@ class OrangeController {
   }
 
 
- late int selectedOption = 1;
+  int selectedOption = 1;
 
   // Contrôleurs pour les champs de saisie
   TextEditingController idOperationController = TextEditingController();
@@ -151,7 +151,7 @@ Future<void> _initializeEntreprisesBox() async {
 
  void updateSelectedOption(int value) {
     selectedOption = value;
-    if (selectedOption == 1) {
+    if (selectedOption == 1){
       typeOperationController.text = '1';
       scanMessageController.text = '';
       numeroIndependantController.text = '';
@@ -494,13 +494,25 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     List<String> keywordsSansCompte = ['vous avez recu'];
     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
-    if (isDepos) {
-      return 1;
+     if (isDepos) {
+      selectedOption= 1;
     } else if (isRetrait) {
-      return 2;
+      selectedOption= 2;
     } else if (isSansCompte) {
-      return 3;
+      selectedOption= 3;
     }
+
+
+    // Mettre à jour le champ ScanMessage en fonction du résultat
+    if (isRetrait && isSansCompte) {     
+      typeOperationController.text = '2'; // Mettre à jour le champ de texte      
+    } else {     
+      typeOperationController.text = '1'; // Réinitialiser le champ de texte     
+    }
+
+   
+
+   // print("pppppp: $selectedOption");
 
   } catch (e) {
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
@@ -512,8 +524,55 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 }
 
 
+// void detecterTextSansParametres() {
+//       final textRecognizer = GoogleMlKit.vision.textRecognizer();
+//   try {
+//     print("Début de la détection de texte..."); // Log de début
+//     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+//     if (recognizedText.blocks.isEmpty) {
+//       print("Aucun texte détecté."); // Log si aucun texte n'est détecté
+//       scanMessageController.text = ''; // Réinitialiser le champ de texte
+//     }
+//     String extractedMessage = '';
+//     for (TextBlock block in recognizedText.blocks) {
+//       for (TextLine line in block.lines) {
+//         extractedMessage += line.text + ' ';
+//       }
+//     }
+
+
+//     // Déterminer le type d'opération en fonction des mots-clés
+//     List<String> keywordsDepos = ['recu'];
+//     bool isRetrait = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+//     List<String> keywordsRetrait = ['transfere'];
+//     bool isDepos = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+//     List<String> keywordsSansCompte = ['vous avez recu'];
+//     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+//     if (isDepos) {
+//       selectedOption= 1;
+//     } else if (isRetrait) {
+//       selectedOption= 2;
+//     } else if (isSansCompte) {
+//       selectedOption= 3;
+//     }
+
+//     print("pppppp: $selectedOption");
+
+ 
+//     textRecognizer.close();
+//   }
+
+//   }
+
+
+
+
   // Reconnaître le texte à partir de l'image
-  Future<void> recognizeText(BuildContext context, InputImage inputImage) async {
+Future<void> recognizeText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
 
   final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
@@ -532,12 +591,28 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     }
   }
 
+  // Débogage : Afficher le texte extrait
+  // print('Texte extrait : $extractedText');
+
   String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
   String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
-  String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
-  String reference = extractInfo(extractedText, r'\bB\d{5}\s\d{2}\b');
+  String reference = extractInfo(extractedText, r'\b(B\d+(\s?\d+)*)\b');
 
-   if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
+  // Extraire et trier toutes les dates au format français
+  List<String> dateStrings = extractAllDates(extractedText, r'\b\d{2}/\d{2}/\d{4}\b');
+  List<DateTime> dates = dateStrings.map((dateStr) => DateFormat('dd/MM/yyyy').parse(dateStr)).toList();
+  dates.sort();
+
+  // Récupérer l'avant-dernière date
+  String delivreeLe = dates.length >= 2 ? DateFormat('dd/MM/yyyy').format(dates[dates.length - 2]) : '';
+
+  // Débogage : Afficher les valeurs extraites
+  // print('Nom : $nom');
+  // print('Prénoms : $prenoms');
+  // print('Délivrée le : $delivreeLe');
+  // print('Référence : $reference');
+
+  if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
     this.recognizedText = '';
     showErrorDialog(context, 'Veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
     return;
@@ -558,18 +633,26 @@ String extractInfo(String text, String pattern) {
   return '';
 }
 
- bool isValidDate(String dateStr) {
+List<String> extractAllDates(String text, String pattern) {
+  final regExp = RegExp(pattern);
+  final matches = regExp.allMatches(text);
+  List<String> dates = matches.map((match) => match.group(0)!).toList();
+  return dates;
+}
+
+bool isValidDate(String dateStr) {
   try {
     if (dateStr.isEmpty) {
       return false;
     }
-    DateFormat dateFormat = DateFormat('dd/MM/yyyy'); // Utilisez le format de date attendu
+    DateFormat dateFormat = DateFormat('dd/MM/yyyy');
     dateFormat.parseStrict(dateStr);
     return true;
   } catch (e) {
     return false;
   }
 }
+
 
  Future<void> deleteDeposInHive(int idoperation) async {
     try {
@@ -656,7 +739,7 @@ Future<void> _initializeAndLoadData() async {
 
 
 // Votre méthode calculateSum avec chargement de données
-Future<Map<String, Map<String, double>>> calculateSum() async {
+Future calculateSum(DateFormat dateFormat) async {
   // Assurez-vous que la date de contrôle est récupérée avant de continuer
   await DateControleRecupere();
 
@@ -668,8 +751,9 @@ Future<Map<String, Map<String, double>>> calculateSum() async {
   Map<String, double> augmentation = {};
 
   // Filtrer les données en fonction de la date de contrôle récupérée et de scanMessage
-  DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+  // DateFormat dateFormat = DateFormat('dd/MM/yyyy');
   DateTime controlDate = dateFormat.parse(dateOperationController.text);
+  print('ma date $controlDate');
 
   _deposList = _deposList.where((item) {
     DateTime itemDate = dateFormat.parse(item.dateoperation); // Adaptez selon votre modèle
@@ -685,10 +769,10 @@ Future<Map<String, Map<String, double>>> calculateSum() async {
   if (_deposList.isEmpty) {
     print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
     return {
-      'augmentation': {},
-      'diminution': {},
-    };
-  }
+    'augmentation': {},
+    'diminution': {},
+  };
+  }else{
 
   // Parcourez les éléments de _deposList pour calculer les sommes
   for (var item in _deposList) {
@@ -724,7 +808,7 @@ Future<Map<String, Map<String, double>>> calculateSum() async {
   return {
     'augmentation': augmentation,
     'diminution': diminution,
-  };
+  };}
 }
 
 

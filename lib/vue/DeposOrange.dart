@@ -14,13 +14,14 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
   final EntrepriseController entrepriseController = EntrepriseController(); // Création d'une instance de EntrepriseController
   bool isChecked = false; // Variable pour suivre l'état de la case à cocher
    // Variable pour suivre l'option sélectionnée
+  // int ?optionSelect;
 
   @override
   void initState() {
     super.initState();
     entrepriseController.initializeBox().then((_) {
     });
-
+   // optionSelect = controller.selectedOption;
     controller.initializeData().then((_) {
       setState(() {
         // Mettre à jour le texte du contrôleur infoClient
@@ -95,7 +96,6 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     },
                   ),
                     Text('Sans Compte'),
-
                   ],
                 ),
 
@@ -305,9 +305,13 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                           width: buttonWidth, // Largeur calculée pour le bouton
                           height: 50, // Hauteur fixe pour le bouton
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: ()async {
                               controller.setScan(1); // Définir la valeur de scan à 1
-                              controller.pickImageCamera(context);
+                              await controller.pickImageCamera(context).then((v){
+                                setState(() {
+                                 controller.selectedOption;
+                                });
+                              });
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -435,6 +439,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
           ),
         ),
       ),
+      
     );
   }
 }

@@ -149,8 +149,17 @@ void updateClient({
 
     String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
     String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
-    String delivreeLe = extractInfo(extractedText, r'Délivrée le:\s*(.*)');
-    String reference = extractInfo(extractedText, r'\bB\d{5}\s\d{2}\b');
+    String reference = extractInfo(extractedText, r'\b(B\d+(\s?\d+)*)\b');
+
+
+  // Extraire et trier toutes les dates au format français
+    List<String> dateStrings = extractAllDates(extractedText, r'\b\d{2}/\d{2}/\d{4}\b');
+    List<DateTime> dates = dateStrings.map((dateStr) => DateFormat('dd/MM/yyyy').parse(dateStr)).toList();
+    dates.sort();
+
+    // Récupérer l'avant-dernière date
+    String delivreeLe = dates.length >= 2 ? DateFormat('dd/MM/yyyy').format(dates[dates.length - 2]) : '';
+
 
     print('Nom: $nom');
     print('Prénoms: $prenoms');
@@ -183,6 +192,14 @@ void updateClient({
     }
     return '';
   }
+
+  List<String> extractAllDates(String text, String pattern) {
+  final regExp = RegExp(pattern);
+  final matches = regExp.allMatches(text);
+  List<String> dates = matches.map((match) => match.group(0)!).toList();
+  return dates;
+  }
+
 
   bool isValidDate(String dateStr) {
     try {

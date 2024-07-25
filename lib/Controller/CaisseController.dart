@@ -42,9 +42,7 @@ class CaisseController {
   List<Map<String, String>> operateurOptions = [
     {'value': '1', 'label': 'Orange'},
     {'value': '2', 'label': 'Moov'},
-    
-    
-  ];
+    ];
   String selectedOperateur = '1';
 
   List<Map<String, String>> TypeComptes = [

@@ -17,6 +17,7 @@ class _CaissePageState extends State<CaissePage> {
   List<JournalCaisseModel> listCaiss = [];
   final OrangeController _orangeController = OrangeController([]);
   String? dateControle;
+  DateTime dateJour = new DateTime.now();
   final ValueNotifier<List<JournalCaisseModel>> _filteredListNotifier = ValueNotifier<List<JournalCaisseModel>>([]);
 
   String getTypeCompteLabel(String operateur, String typeCompte) {
@@ -45,14 +46,20 @@ class _CaissePageState extends State<CaissePage> {
   }
 
   Future<void> DateControleRecupere() async {
-    await _controller.DateControleRecupere();
-    setState(() {
-      dateControle = _controller.dateJournalController.text;
+    await _controller.DateControleRecupere().then((v){
+       setState(() {
+        dateControle = _controller.dateJournalController.text;
+        filterListByDate();
+      });
+      
     });
-    filterListByDate();
+   
+    
   }
 
+
   void filterListByDate() {
+    // print("ma date ");
     if (dateControle != null) {
       _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == dateControle).toList();
     } else {
@@ -95,7 +102,7 @@ class _CaissePageState extends State<CaissePage> {
     }
 
     // Calculer l'augmentation et la diminution
-    final sumResult = await _orangeController.calculateSum();
+    final sumResult = await _orangeController.calculateSum(DateFormat('dd/MM/yyyy'));
     final augmentation = sumResult['augmentation'] ?? {};
     final diminution = sumResult['diminution'] ?? {};
 
@@ -207,8 +214,11 @@ class _CaissePageState extends State<CaissePage> {
   Future<void> iniData() async {
     try {
       await _controller.loadData().then((value) async {
-        listCaiss = value;
-        filterListByDate();
+        setState(() {
+          listCaiss = value;
+          // filterListByDate();
+          DateControleRecupere();
+        });
       });
     } catch (e) {
       // Handle error
@@ -219,13 +229,14 @@ class _CaissePageState extends State<CaissePage> {
   @override
   void initState() {
     super.initState();
-    DateControleRecupere(); // Appel de la fonction pour récupérer la date
+    // DateControleRecupere(); // Appel de la fonction pour récupérer la date
     iniData();
   }
 
   @override
   Widget build(BuildContext context) {
     double totalMontantJ = getSumMontantJ();
+     _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == _controller.dateJournalController.text).toList();
     final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR').format(totalMontantJ).replaceAll(',', ' ');
 
     return Scaffold(
