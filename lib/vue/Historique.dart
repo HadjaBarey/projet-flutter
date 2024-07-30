@@ -176,7 +176,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanMessage == 'Message Scanné')
+      .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanMessage == 'Message Scanné' && depos.optionCreance==false)
       .toList();
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
@@ -276,26 +276,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
                                 onTap: () => deleteItem(index),
                                 child: const Icon(Icons.delete),
                               ),
-                              // Uncomment and fix the UpdateDeposOrange usage if needed
-                              // GestureDetector(
-                              //   onTap: () async {
-                              //     final result = await Navigator.push(
-                              //       context,
-                              //       MaterialPageRoute(
-                              //         builder: (context) => UpdateDeposOrange(
-                              //           depos: depos,
-                              //           onRowClicked: _handleRowClicked,
-                              //           deposList: _deposList,
-                              //           refreshData: refreshData,
-                              //         ),
-                              //       ),
-                              //     );
-                              //     if (result == true) {
-                              //       await refreshData();
-                              //     }
-                              //   },
-                              //   child: const Icon(Icons.update),
-                              // ),
+                             
                             ],
                           ),
                           title: Text(

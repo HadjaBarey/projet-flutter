@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:kadoustransfert/vue/AutresPage.dart';
 import 'package:kadoustransfert/vue/CaissePage.dart';
 import 'package:kadoustransfert/vue/DeposOrange.dart';
 import 'package:kadoustransfert/vue/Historique.dart';
 import 'package:kadoustransfert/vue/HistoriqueNScanne.dart';
 import 'package:kadoustransfert/vue/MoovPage.dart';
 import 'package:kadoustransfert/vue/Parametrage.dart';
+import 'package:kadoustransfert/vue/UnitePage.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -19,6 +21,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     MoovPage(),
+    AutresPage(),
     CaissePage(),
     Parametrage(),
   ];
@@ -93,6 +96,7 @@ class _HomePageState extends State<HomePage> {
                   //   ),
                   // ),
                   SizedBox(height: 13.0),
+                  
                   Align(
                     alignment: Alignment.topCenter,
                     child: GestureDetector(
@@ -152,64 +156,64 @@ class _HomePageState extends State<HomePage> {
 
                   SizedBox(height: 40.0),
 
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: GestureDetector(
-                      onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) => DeposOrangePage()),
-                        // );
-                      },
-                      child: Container(
-                        width: 500.0,
-                        height: 90.0,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 5,
-                              blurRadius: 7,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 90.0,
-                              height: double.infinity,
-                              child: Image.asset(
-                                'images/Depos.jpg',
-                                fit: BoxFit.fill,
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                'Unité',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 27.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              color: Colors.black,
-                              size: 30.0,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Align(
+                  //   alignment: Alignment.topCenter,
+                  //   child: GestureDetector(
+                  //     onTap: () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(builder: (context) => UnitePage()),
+                  //       );
+                  //     },
+                  //     child: Container(
+                  //       width: 500.0,
+                  //       height: 90.0,
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.white,
+                  //         borderRadius: BorderRadius.circular(20.0),
+                  //         boxShadow: [
+                  //           BoxShadow(
+                  //             color: Colors.grey.withOpacity(0.5),
+                  //             spreadRadius: 5,
+                  //             blurRadius: 7,
+                  //             offset: Offset(0, 3),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //       child: Row(
+                  //         mainAxisAlignment: MainAxisAlignment.center,
+                  //         children: [
+                  //           Container(
+                  //             width: 90.0,
+                  //             height: double.infinity,
+                  //             child: Image.asset(
+                  //               'images/Depos.jpg',
+                  //               fit: BoxFit.fill,
+                  //             ),
+                  //           ),
+                  //           Expanded(
+                  //             child: Text(
+                  //               'Unité',
+                  //               textAlign: TextAlign.center,
+                  //               style: TextStyle(
+                  //                 color: Colors.black,
+                  //                 fontSize: 27.0,
+                  //                 fontWeight: FontWeight.bold,
+                  //               ),
+                  //             ),
+                  //           ),
+                  //           Icon(
+                  //             Icons.arrow_forward_ios_rounded,
+                  //             color: Colors.black,
+                  //             size: 30.0,
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
 
-                   SizedBox(height: 40.0),
+                  //  SizedBox(height: 40.0),
 
                   Align(
                     alignment: Alignment.topCenter,
@@ -328,34 +332,35 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20.0),
+                 // SizedBox(height: 20.0),
                   // Adding WhatsApp and Phone icons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.whatshot),
-                        color: Colors.green,
-                        iconSize: 30.0,
-                        onPressed: () {
-                          // Add logic for WhatsApp action
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.phone),
-                        color: Colors.blue,
-                        iconSize: 30.0,
-                        onPressed: () {
-                          // Add logic for Phone action
-                        },
-                      ),
-                    ],
-                  ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.end,
+                  //   children: [
+                  //     IconButton(
+                  //       icon: Icon(Icons.whatshot),
+                  //       color: Colors.green,
+                  //       iconSize: 30.0,
+                  //       onPressed: () {
+                  //         // Add logic for WhatsApp action
+                  //       },
+                  //     ),
+                  //     IconButton(
+                  //       icon: Icon(Icons.phone),
+                  //       color: Colors.blue,
+                  //       iconSize: 30.0,
+                  //       onPressed: () {
+                  //         // Add logic for Phone action
+                  //       },
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
           ),
           MoovPage(),
+          AutresPage(),
           CaissePage(),
           Parametrage(),
         ],
@@ -370,6 +375,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet_outlined),
             label: 'Moov',
+          ),
+           BottomNavigationBarItem(
+            icon: Icon(Icons.ads_click),
+            label: 'Autres',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_box),

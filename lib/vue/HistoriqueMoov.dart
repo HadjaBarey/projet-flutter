@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kadoustransfert/Controller/OrangeController.dart';
+import 'package:kadoustransfert/Controller/MoovController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/vue/UpdateDepos.dart';
 
-class HistoriqueNScannePage extends StatefulWidget {
-  const HistoriqueNScannePage({Key? key}) : super(key: key);
+class HistoriqueMoovPage extends StatefulWidget {
+  const HistoriqueMoovPage({Key? key}) : super(key: key);
 
   @override
-  State<HistoriqueNScannePage> createState() => _HistoriqueNScannePageState();
+  State<HistoriqueMoovPage> createState() => _HistoriqueMoovPageState();
 }
 
-class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
-  final OrangeController _controller = OrangeController([]);
+class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
+  final MoovController _controller = MoovController([]);
   List<OrangeModel> _deposList = [];
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController(); // Déclaration manquante
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     _initialize();
+    _searchController.addListener(() {
+      loadData(); // Recharger les données lorsque la recherche change
+    });
   }
 
   Future<void> _initialize() async {
@@ -45,118 +49,99 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
 
       await loadData();
     } catch (e) {
-     // print('Erreur pendant l\'initialisation : $e');
+      print('Erreur pendant l\'initialisation : $e');
     }
   }
 
   Future<void> loadData() async {
     try {
-      List<OrangeModel> deposits = await _controller.loadNonScannedData();
+      List<OrangeModel> deposits = await _controller.loadData();
 
       DateTime? startDate = _startDateController.text.isNotEmpty
-        ? DateFormat('dd/MM/yyyy').parse(_startDateController.text)
-        : null;
-    DateTime? endDate = _endDateController.text.isNotEmpty
-        ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
-        : null;
+          ? DateFormat('dd/MM/yyyy').parse(_startDateController.text)
+          : null;
+      DateTime? endDate = _endDateController.text.isNotEmpty
+          ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
+          : null;
 
-          setState(() {
-    _deposList = deposits.where((depos) {
-      try {
-        DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
-        if (startDate != null && dateOperation.isBefore(startDate)) {
-          return false;
-        }
-        if (endDate != null && dateOperation.isAfter(endDate)) {
-          return false;
-        }
-        return true;
-      } catch (e) {
-     //  print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
-        return false;
-      }
-    }).toList();
-  });
+      String searchQuery = _searchController.text.toLowerCase(); // Convertir en minuscule pour la recherche insensible à la casse
+
+      setState(() {
+        _deposList = deposits.where((depos) {
+          try {
+            DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
+            if (startDate != null && dateOperation.isBefore(startDate)) {
+              return false;
+            }
+            if (endDate != null && dateOperation.isAfter(endDate)) {
+              return false;
+            }
+            // Filtrage par numéro de téléphone
+            if (searchQuery.isNotEmpty && !depos.numeroTelephone.toLowerCase().contains(searchQuery)) {
+              return false;
+            }
+
+            return true;
+          } catch (e) {
+            print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
+            return false;
+          }
+        }).toList();
+      });
     } catch (e) {
-     // print('Erreur lors du chargement des données : $e');
-     }
-  }
-
-
- void deleteItem(int index) async {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirmation'),
-        content: const Text('Voulez-vous vraiment supprimer cet élément ?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final idoperation = _deposList[index].idoperation;
-                // Supprime l'élément de Hive
-                await _controller.deleteNonScannedDeposInHive(idoperation);
-
-
-                // Obtenez l'élément sélectionné
-                // OrangeModel selectedDepos = _deposList[index];
-                
-                // // Marquez l'élément comme supprimé
-                // await _controller.markAsDeleted(selectedDepos);
-
-                
-
-                // Rafraîchit les données après la suppression
-                await refreshData();
-
-                Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
-              } catch (e) {
-                print('Erreur lors de la suppression de l\'élément : $e');
-              }
-            },
-            child: const Text('Supprimer'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
-
-  Future<void> refreshData() async {
-    try {
-      await loadData();
-    } catch (e) {
-      print('Erreur lors du rafraîchissement des données : $e');
+      print('Erreur lors du chargement des données : $e');
     }
   }
 
- // Dans votre méthode _handleRowClicked dans HistoriqueNScannePage
+  void deleteItem(int index) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmation'),
+          content: const Text('Voulez-vous vraiment supprimer cet élément ?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  // Assurez-vous que l'idoperation est bien défini
+                  final idoperation = _deposList[index].idoperation;
+                  print('Suppression de l\'élément avec idoperation: $idoperation');
 
-void _handleRowClicked(OrangeModel clickedDepos) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => UpdateDeposOrange(
-        depos: clickedDepos,
-        onRowClicked: (updatedDepos) async {
-          await refreshData();
-        },
-        deposList: _deposList,
-        refreshData: refreshData,
-      ),
-    ),
-  );
-}
+                  // Supprime l'élément de Hive en utilisant idoperation
+                  await _controller.deleteDeposInHive(idoperation);
 
+                  // Supprime l'élément de la liste
+                  setState(() {
+                    _deposList.removeAt(index);
+                  });
+
+                  Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
+                } catch (e) {
+                  print('Erreur lors de la suppression de l\'élément : $e');
+                }
+              },
+              child: const Text('Supprimer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> refreshData() async {
+    await _initialize();
+  }
+
+  void _handleRowClicked(OrangeModel clickedDepos) {
+    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
+  }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     DateTime? pickedDate = await showDatePicker(
@@ -176,22 +161,22 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '1') {
+    if (depos.typeOperation == 1 && depos.operateur == '2') {
       return 'Opération: Dépôt Orange';
-    } else if (depos.typeOperation == 2 && depos.operateur == '1') {
+    } else if (depos.typeOperation == 2 && depos.operateur == '2') {
       return 'Opération: Retrait Orange';
     } else if (depos.typeOperation == 1 && depos.operateur == '2') {
       return 'Opération: Dépôt Moov';
     } else if (depos.typeOperation == 2 && depos.operateur == '2') {
       return 'Opération: Retrait Moov';
-    }  
+    }
     return '';
   }
 
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.operateur == '1' && depos.scanMessage == '' && depos.optionCreance==true)
+      .where((depos) => depos.supprimer == 0 && depos.operateur == '2' && depos.scanMessage == 'Message Scanné' && depos.optionCreance==false)
       .toList();
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
@@ -199,7 +184,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Historique Non Scanné'),
+        title: const Text('Historique'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -252,7 +237,28 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+
+              TextFormField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Recherche',
+                  labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  suffixIcon: Icon(Icons.search), // Correction de l'icône
+                ),
+                keyboardType: TextInputType.text, // Correction du type de clavier
+                enabled: true,
+                onChanged: (value) {
+                  setState(() {
+                    // Recharger les données en filtrant selon le numéro de téléphone
+                    loadData();
+                  });
+                },
+              ),
+
               const SizedBox(height: 16),
+
               Expanded(
                 child: ListView.builder(
                   itemCount: filteredList.length,
@@ -262,38 +268,15 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ListTile(
+                          key: ValueKey(depos.idoperation), // Utilisez une clé unique pour chaque élément
                           leading: Row(
-                            key: ValueKey(depos.idoperation), // Utilisez une clé unique pour chaque élément
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
                                 onTap: () => deleteItem(index),
                                 child: const Icon(Icons.delete),
                               ),
-                              const SizedBox(width: 10),
-
-                              InkWell(
-                                onTap: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UpdateDeposOrange(
-                                        depos: depos,
-                                        onRowClicked: _handleRowClicked,
-                                        deposList: _deposList,
-                                        refreshData: refreshData,
-                                      ),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    await refreshData();
-                                  }
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Icon(Icons.update),
-                                ),
-                              ),
+                             
                             ],
                           ),
                           title: Text(

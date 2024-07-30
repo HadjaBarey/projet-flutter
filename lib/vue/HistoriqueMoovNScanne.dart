@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kadoustransfert/Controller/OrangeController.dart';
+import 'package:kadoustransfert/Controller/MoovController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
-import 'package:kadoustransfert/vue/UpdateDepos.dart';
+import 'package:kadoustransfert/vue/UpdateTransactionMoov.dart';
 
-class HistoriqueNScannePage extends StatefulWidget {
-  const HistoriqueNScannePage({Key? key}) : super(key: key);
+
+class HistoriqueNScanMoovPage extends StatefulWidget {
+  const HistoriqueNScanMoovPage({Key? key}) : super(key: key);
 
   @override
-  State<HistoriqueNScannePage> createState() => _HistoriqueNScannePageState();
+  State<HistoriqueNScanMoovPage> createState() => _HistoriqueNScanMoovPageState();
 }
 
-class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
-  final OrangeController _controller = OrangeController([]);
+class _HistoriqueNScanMoovPageState extends State<HistoriqueNScanMoovPage> {
+  final MoovController _controller = MoovController([]);
   List<OrangeModel> _deposList = [];
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
@@ -139,13 +140,13 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
     }
   }
 
- // Dans votre méthode _handleRowClicked dans HistoriqueNScannePage
+ // Dans votre méthode _handleRowClicked dans HistoriqueNScanMoovPage
 
 void _handleRowClicked(OrangeModel clickedDepos) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => UpdateDeposOrange(
+      builder: (context) => UpdateTransactionMoov(
         depos: clickedDepos,
         onRowClicked: (updatedDepos) async {
           await refreshData();
@@ -176,7 +177,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '1') {
+    if (depos.typeOperation == 1 && depos.operateur == '') {
       return 'Opération: Dépôt Orange';
     } else if (depos.typeOperation == 2 && depos.operateur == '1') {
       return 'Opération: Retrait Orange';
@@ -191,7 +192,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.operateur == '1' && depos.scanMessage == '' && depos.optionCreance==true)
+      .where((depos) => depos.operateur == '2' && depos.scanMessage == '' && depos.optionCreance==true)
       .toList();
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
@@ -277,7 +278,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                                   final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => UpdateDeposOrange(
+                                      builder: (context) => UpdateTransactionMoov(
                                         depos: depos,
                                         onRowClicked: _handleRowClicked,
                                         deposList: _deposList,

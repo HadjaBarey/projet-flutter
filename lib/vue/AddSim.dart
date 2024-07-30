@@ -60,14 +60,12 @@ class _PageAddSimState extends State<PageAddSim> {
                   labelText: 'Code Agent',
                   labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                // validator: (value) {
-                //   if (value == null || value.isEmpty) {
-                //     return 'Ce champ est requis';
-                //   }
-                //   widget.SimController.updateAddSim(CodeAgent: value);
-                //   return null;
-                // },
+                onChanged: (value) {
+                  widget.SimController.updateAddSim(CodeAgent: value);
+                },
               ),
+
+
               SizedBox(height: 15),
               
               TextFormField(
@@ -77,13 +75,10 @@ class _PageAddSimState extends State<PageAddSim> {
                   labelText: 'Operateur',
                   labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ce champ est requis';
-                  }
+                  onChanged: (value) {
                   widget.SimController.updateAddSim(LibOperateur: value);
-                  return null;
-                },
+                }
+              
               ),
               SizedBox(height: 15),
 
@@ -95,13 +90,13 @@ class _PageAddSimState extends State<PageAddSim> {
                   labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   suffixIcon: Icon(Icons.contact_page),
                 ),
-                // validator: (value) {
-                //   if (value == null || value.isEmpty) {
-                //     return 'Ce champ est requis';
-                //   }
-                //   widget.SimController.updateAddSim(NumPhone: value);
-                //   return null;
-                // },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Ce champ est requis';
+                  }
+                   widget.SimController.updateAddSim(NumPhone: value);
+                  return null;
+                },
                 keyboardType: TextInputType.phone,
               ),
 

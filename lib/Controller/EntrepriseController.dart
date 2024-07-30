@@ -72,9 +72,9 @@ class EntrepriseController {
     todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
 
     if (todobos2.isEmpty) {
-      print("La boîte Hive des entreprises est vide");
+     // print("La boîte Hive des entreprises est vide");
     } else {
-      print("La boîte Hive des entreprises contient des données");
+     // print("La boîte Hive des entreprises contient des données");
     }
 
     _initializeEntrepriseId();
@@ -119,9 +119,9 @@ class EntrepriseController {
   Future<void> markAsDeleted(EntrepriseModel entreprise) async {
     if (todobos2 != null) {
       await todobos2.put(entreprise.idEntreprise, entreprise).then((value) {
-        print("Entreprise marquée comme supprimée : $entreprise");
+       // print("Entreprise marquée comme supprimée : $entreprise");
       }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
+       // print("Erreur lors de la mise à jour : $error");
       });
     }
   }
