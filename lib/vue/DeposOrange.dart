@@ -256,13 +256,18 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(width: 0),
-                    Checkbox(
-                      value: isChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          isChecked = value ?? false;
-                          controller.updateOptionCreance(isChecked);
-                        });
+                     ValueListenableBuilder<bool>(
+                      valueListenable: controller.optionCreanceController,
+                      builder: (context, value, __) {
+                        return Checkbox(
+                          value: value,
+                          onChanged: (bool? newValue) {
+                            setState(() {
+                              isChecked = newValue ?? false;
+                              controller.updateOptionCreance(isChecked);
+                            });
+                          },
+                        );
                       },
                     ),
                   ],

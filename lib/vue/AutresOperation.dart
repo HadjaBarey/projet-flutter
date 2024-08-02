@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kadoustransfert/Controller/MoovController.dart';
+import 'package:kadoustransfert/Controller/OrangeController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
-import 'package:kadoustransfert/vue/UpdateDepos.dart';
+import 'package:kadoustransfert/vue/AjoutOtreOperation.dart';
 
-class HistoriqueMoovPage extends StatefulWidget {
-  const HistoriqueMoovPage({Key? key}) : super(key: key);
+
+class AutreOperationPage extends StatefulWidget {
+  const AutreOperationPage({Key? key}) : super(key: key);
 
   @override
-  State<HistoriqueMoovPage> createState() => _HistoriqueMoovPageState();
+  State<AutreOperationPage> createState() => _AutreOperationPageState();
 }
 
-class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
-  final MoovController _controller = MoovController([]);
+class _AutreOperationPageState extends State<AutreOperationPage> {
+  final OrangeController _controller = OrangeController([]);
   List<OrangeModel> _deposList = [];
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  final TextEditingController _searchController = TextEditingController(); // Déclaration manquante
+  final TextEditingController _searchController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -24,7 +25,7 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
     super.initState();
     _initialize();
     _searchController.addListener(() {
-      loadData(); // Recharger les données lorsque la recherche change
+      loadData();
     });
   }
 
@@ -32,11 +33,9 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
     try {
       await _controller.initializeData();
 
-      // Récupération de la date de contrôle
       await _controller.DateControleRecupere();
       String dateControle = _controller.dateOperationController.text;
 
-      // Formatage de la date
       DateFormat formatter = DateFormat('dd/MM/yyyy');
       DateTime? parsedDate = formatter.parse(dateControle, true);
 
@@ -64,7 +63,7 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
           ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
           : null;
 
-      String searchQuery = _searchController.text.toLowerCase(); // Convertir en minuscule pour la recherche insensible à la casse
+      String searchQuery = _searchController.text.toLowerCase();
 
       setState(() {
         _deposList = deposits.where((depos) {
@@ -76,7 +75,6 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
             if (endDate != null && dateOperation.isAfter(endDate)) {
               return false;
             }
-            // Filtrage par numéro de téléphone
             if (searchQuery.isNotEmpty && !depos.numeroTelephone.toLowerCase().contains(searchQuery)) {
               return false;
             }
@@ -110,19 +108,16 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
             TextButton(
               onPressed: () async {
                 try {
-                  // Assurez-vous que l'idoperation est bien défini
                   final idoperation = _deposList[index].idoperation;
                   print('Suppression de l\'élément avec idoperation: $idoperation');
 
-                  // Supprime l'élément de Hive en utilisant idoperation
                   await _controller.deleteDeposInHive(idoperation);
 
-                  // Supprime l'élément de la liste
                   setState(() {
                     _deposList.removeAt(index);
                   });
 
-                  Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
+                  Navigator.of(context).pop();
                 } catch (e) {
                   print('Erreur lors de la suppression de l\'élément : $e');
                 }
@@ -133,10 +128,6 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
         );
       },
     );
-  }
-
-  Future<void> refreshData() async {
-    await _initialize();
   }
 
   void _handleRowClicked(OrangeModel clickedDepos) {
@@ -161,30 +152,30 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '1') {
-      return 'Opération: Dépôt Orange';
-    } else if (depos.typeOperation == 2 && depos.operateur == '1') {
-      return 'Opération: Retrait Orange';
-    } else if (depos.typeOperation == 1 && depos.operateur == '2') {
-      return 'Opération: Dépôt Moov';
-    } else if (depos.typeOperation == 2 && depos.operateur == '2') {
-      return 'Opération: Retrait Moov';
+    if (depos.typeOperation == 1 && depos.operateur != '1' && depos.operateur != '2') {
+      return 'Transaction: Dépôt';
+    } else if (depos.typeOperation == 2 && depos.operateur != '1' && depos.operateur != '2') {
+      return 'Transaction: Retrait';
+    } else {
+      return '';
     }
-    return '';
   }
 
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.supprimer == 0 && depos.operateur == '2' && depos.scanMessage == 'Message Scanné' && depos.optionCreance==false)
-      .toList();
+        .where((depos) => depos.supprimer == 0 &&
+                          depos.operateur != '1' &&
+                          depos.operateur != '2' && 
+                          depos.scanMessage == 'Message Scanné' && 
+                          depos.optionCreance==false)
+        .toList();
 
-    // Trier la liste filtrée par ordre décroissant sur le champ idoperation
     filteredList.sort((a, b) => b.idoperation.compareTo(a.idoperation));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Historique'),
+        title: const Text('Historique autres opérations'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -245,13 +236,12 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
                   border: OutlineInputBorder(),
                   labelText: 'Recherche',
                   labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  suffixIcon: Icon(Icons.search), // Correction de l'icône
+                  suffixIcon: Icon(Icons.search),
                 ),
-                keyboardType: TextInputType.text, // Correction du type de clavier
+                keyboardType: TextInputType.text,
                 enabled: true,
                 onChanged: (value) {
                   setState(() {
-                    // Recharger les données en filtrant selon le numéro de téléphone
                     loadData();
                   });
                 },
@@ -268,7 +258,7 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ListTile(
-                          key: ValueKey(depos.idoperation), // Utilisez une clé unique pour chaque élément
+                          key: ValueKey(depos.idoperation),
                           leading: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -276,12 +266,11 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
                                 onTap: () => deleteItem(index),
                                 child: const Icon(Icons.delete),
                               ),
-                             
                             ],
                           ),
                           title: Text(
                             'Montant: ${depos.montant}',
-                            style: const TextStyle(fontSize: 18),
+                            style: const TextStyle(fontSize: 16),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,27 +278,34 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
                               Text(
                                 'Numéro de téléphone: ${depos.numeroTelephone}',
                                 style: const TextStyle(fontSize: 14),
-                              ),
-                              Text(
-                                'Information client: ${depos.infoClient}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                              Text(
-                                'Date Operation: ${depos.dateoperation}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
+                              ),                          
                               Text(
                                 _getOperationDescription(depos),
                                 style: const TextStyle(fontSize: 14),
                               ),
+                              Text(
+                                'Operateur: ${depos.operateur}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
                             ],
                           ),
+                          onTap: () => _handleRowClicked(depos),
                         ),
                         const Divider(),
                       ],
                     );
                   },
                 ),
+              ),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AjoutOtreOperationPage()),
+                  );
+                },
+                  child: const Icon(Icons.add),
               ),
             ],
           ),

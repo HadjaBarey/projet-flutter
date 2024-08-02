@@ -177,7 +177,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '') {
+    if (depos.typeOperation == 1 && depos.operateur == '1') {
       return 'Opération: Dépôt Orange';
     } else if (depos.typeOperation == 2 && depos.operateur == '1') {
       return 'Opération: Retrait Orange';

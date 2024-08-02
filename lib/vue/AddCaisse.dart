@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
+import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class AddCaisssePage extends StatefulWidget {
   final CaisseController caisseController;
 
-  const AddCaisssePage({required this.caisseController, Key? key}) : super(key: key);
+  AddCaisssePage({required this.caisseController, Key? key}) : super(key: key);
 
   @override
   State<AddCaisssePage> createState() => _AddCaisssePageState();
 }
 
 class _AddCaisssePageState extends State<AddCaisssePage> {
+  late OrangeController controllerOrange;
+
   @override
   void initState() {
     super.initState();
+    controllerOrange = OrangeController([]);
     widget.caisseController.DateControleRecupere();
-   // print(widget.caisseController.dateJournalController.text); // Reset des champs du formulaire
+    controllerOrange.CaisseOperateursController();
   }
 
   @override
@@ -23,8 +27,8 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-            'Caisse',
-            style: TextStyle(
+          'Caisse',
+          style: TextStyle(
             fontSize: 25.0,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -35,7 +39,7 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: widget.caisseController.formKey, // Assurez-vous que le formulaire a une clé
+          key: widget.caisseController.formKey,
           child: Column(
             children: [
               Offstage(
@@ -158,25 +162,33 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                       Container(
                         width: 379,
                         child: DropdownButtonFormField<String>(
-                          value: widget.caisseController.selectedOperateur,
-                          onChanged: (value) {
+                          value: controllerOrange.operateurController.text.isNotEmpty 
+                              ? controllerOrange.operateurController.text 
+                              : null,
+                          onChanged: (newValue) {
                             setState(() {
-                              widget.caisseController.selectedOperateur = value!;
+                              controllerOrange.operateurController.text = newValue!;
                             });
                           },
-                          items: widget.caisseController.operateurOptions
-                              .map<DropdownMenuItem<String>>(
-                                (item) => DropdownMenuItem<String>(
-                                  value: item['value'],
-                                  child: Text(item['label']!),
-                                ),
-                              )
-                              .toList(),
+                          items: controllerOrange.operateurOptions.map((option) {
+                            print('Option: ${option['value']}, Label: ${option['label']}'); // Debugging
+                            return DropdownMenuItem<String>(
+                              value: option['value'],
+                              child: Text(option['label']!),
+                            );
+                          }).toList(),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'Opérateur',
                             labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            //suffixIcon: Icon(Icons.arrow_drop_down),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez sélectionner une option';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -192,7 +204,7 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                       setState(() {
                         widget.caisseController.resetFormFields();
                       });
-                      Navigator.pop(context, true); // Fermer la page avec un résultat vrai
+                      Navigator.pop(context, true);
                     }).catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Erreur lors de l\'enregistrement')),

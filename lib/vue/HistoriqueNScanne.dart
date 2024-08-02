@@ -190,9 +190,11 @@ void _handleRowClicked(OrangeModel clickedDepos) {
 
   @override
   Widget build(BuildContext context) {
-    List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.operateur == '1' && depos.scanMessage == '' && depos.optionCreance==true)
-      .toList();
+ List<OrangeModel> filteredList = _deposList
+    .where((depos) => (depos.operateur == '1' && depos.scanMessage == '') || depos.optionCreance == true)
+    .toList(); 
+
+
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
     filteredList.sort((a, b) => b.idoperation.compareTo(a.idoperation));
@@ -268,7 +270,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                             children: [
                               GestureDetector(
                                 onTap: () => deleteItem(index),
-                                child: const Icon(Icons.delete),
+                                child: const Icon(Icons.delete, color: Colors.red),
                               ),
                               const SizedBox(width: 10),
 
@@ -298,26 +300,26 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                           ),
                           title: Text(
                             'Montant: ${depos.montant}',
-                            style: const TextStyle(fontSize: 18),
+                            style: const TextStyle(fontSize: 16),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Numéro de téléphone: ${depos.numeroTelephone}',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 'Information client: ${depos.infoClient}',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 'Date Operation: ${depos.dateoperation}',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 _getOperationDescription(depos),
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),

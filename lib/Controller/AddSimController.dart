@@ -24,6 +24,33 @@ class AddSimController {
     supprimer: 0,
   );
 
+  Future<void> initializeBox() async {
+    await Hive.initFlutter();
+    if (!Hive.isAdapterRegistered(AddSimModelAdapter().typeId)) {
+      Hive.registerAdapter(AddSimModelAdapter());
+    }
+    todobos5 = await Hive.openBox<AddSimModel>("todobos5");
+    _initializeClientId();
+  }
+
+  Future<void> _initializeClientId() async {
+    // Attendre que la boîte Hive soit complètement prête
+    await Future.delayed(Duration(milliseconds: 500)); // Optionnel : attendre un court instant pour la synchronisation
+    final existingIds = todobos5.values.map((e) => e.idOperateur).toSet();
+   // print("ID existants : $existingIds"); // Débogage
+    int nextId = 1;
+
+    while (existingIds.contains(nextId)) {
+      nextId++;
+    }
+
+    //print("Prochain ID disponible : $nextId"); // Débogage
+    Operateur.idOperateur = nextId;
+    idOperateurController.text = Operateur.idOperateur.toString();
+    // print("ID après initialisation : ${Operateur.idOperateur}");
+    // print("Valeur du contrôleur après initialisation : ${idOperateurController.text}");
+  }
+
   void resetFormFields() {
     // Réinitialiser les champs du formulaire
     LibOperateurController.clear();
@@ -42,29 +69,6 @@ class AddSimController {
       CodeAgent: '',
       supprimer: 0,
     );
-  }
-
-  void _initializeClientId() {
-    if (todobos5.isNotEmpty) {
-      final existingIds = todobos5.values.map((e) => e.idOperateur).toSet();
-      int nextId = 1;
-      while (existingIds.contains(nextId)) {
-        nextId++;
-      }
-      Operateur.idOperateur = nextId;
-    } else {
-      Operateur.idOperateur = 1;
-    }
-    idOperateurController.text = Operateur.idOperateur.toString();
-  }
-
-  Future<void> initializeBox() async {
-    await Hive.initFlutter();
-    if (!Hive.isAdapterRegistered(AddSimModelAdapter().typeId)) {
-      Hive.registerAdapter(AddSimModelAdapter());
-    }
-    todobos5 = await Hive.openBox<AddSimModel>("todobos5");
-    _initializeClientId();
   }
 
   Future<List<AddSimModel>> loadData() async {
@@ -90,9 +94,9 @@ class AddSimController {
   Future<void> saveAddSimData() async {
     try {
       await todobos5.put(Operateur.idOperateur, Operateur);
-      print("Enregistrement réussi : $Operateur");
+     // print("Enregistrement réussi : $Operateur");
     } catch (e) {
-      print("Erreur lors de l'enregistrement : $e");
+      //print("Erreur lors de l'enregistrement : $e");
     }
   }
 

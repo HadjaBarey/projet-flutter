@@ -10,6 +10,7 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:velocity_x/velocity_x.dart';
 import 'call_service.dart'; // Importez le service d'appel
 import 'package:kadoustransfert/Controller/OpTransactionController.dart';
 import 'package:kadoustransfert/Controller/AddSimController.dart';
@@ -62,11 +63,14 @@ class OrangeController {
   TextEditingController operateurController = TextEditingController(text: '1'); // Valeur par défaut pour l'Opérateur orange
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
-  TextEditingController optionCreanceController = TextEditingController(text: 'false'); // Valeur par défaut pour pas supprimer par defaut
+  //TextEditingController optionCreanceController = TextEditingController(text: 'false'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController numeroIndependantController = TextEditingController(); 
+  // Assurez-vous que optionCreanceController est un ValueNotifier<bool>
+  ValueNotifier<bool> optionCreanceController = ValueNotifier<bool>(false); // Utiliser ValueNotifier<bool>
 
  // Liste des opérateurs
   List<AddSimModel> operateurList = [];
+   List<Map<String, String>> operateurOptions = [];
 
 
  // Liste des opérationsl 
@@ -148,31 +152,37 @@ Future<void> _initializeEntreprisesBox() async {
   EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
 }
 
- void updateSelectedOption(int value) {
-    selectedOption = value;
-    if (selectedOption == 1){
-      typeOperationController.text = '1';
-      scanMessageController.text = '';
-      numeroIndependantController.text = '';
-      infoClientController.text = '';
-      montantController.text = '';
-      numeroTelephoneController.text = '';
-    } else if (selectedOption == 2) {
-      typeOperationController.text = '2';
-      scanMessageController.text = ''; 
-      numeroIndependantController.text = '';
-      infoClientController.text = '';
-      montantController.text = '';
-      numeroTelephoneController.text = '';
-    }else if (selectedOption == 3) {
-      typeOperationController.text = '2';
-      scanMessageController.text = 'Message Scanné'; 
-      numeroIndependantController.text = '';
-      infoClientController.text = '';
-      montantController.text = '';
-      numeroTelephoneController.text = '';
-    }
+
+void updateSelectedOption(int value) {
+  selectedOption = value;
+  if (selectedOption == 1) {
+    typeOperationController.text = '1';
+    scanMessageController.text = '';
+    numeroIndependantController.text = '';
+    infoClientController.text = '';
+    montantController.text = '';
+    numeroTelephoneController.text = '';
+    optionCreanceController.value = false; // Mettez à jour la valeur directement
+  } else if (selectedOption == 2) {
+    typeOperationController.text = '2';
+    scanMessageController.text = '';
+    numeroIndependantController.text = '';
+    infoClientController.text = '';
+    montantController.text = '';
+    numeroTelephoneController.text = '';
+    optionCreanceController.value = false; // Mettez à jour la valeur directement
+  } else if (selectedOption == 3) {
+    typeOperationController.text = '2';
+    scanMessageController.text = 'Message Scanné';
+    numeroIndependantController.text = '';
+    infoClientController.text = '';
+    montantController.text = '';
+    numeroTelephoneController.text = '';
+    optionCreanceController.value = false; // Mettez à jour la valeur directement
   }
+}
+
+
 
 
 Future<void> DateControleRecupere() async {
@@ -239,9 +249,11 @@ Future<void> DateControleRecupere() async {
     if (numeroIndependant != null) depos.numeroIndependant = numeroIndependant;
   }
 
-  void updateOptionCreance(bool value) {
+
+
+ void updateOptionCreance(bool value) {
   depos.optionCreance = value;
-  optionCreanceController.text = value.toString();
+  optionCreanceController.value = value; // Mettez à jour directement la valeur
   updateDepos(optionCreance: value);
 }
 
@@ -261,7 +273,6 @@ Future<void> DateControleRecupere() async {
   }
 
     
-
   // Mettre à jour les données d'un dépôt
   void updateDeposData({
     required OrangeModel depos,
@@ -286,13 +297,15 @@ Future<void> DateControleRecupere() async {
         operateur: depos.operateur,
         supprimer: depos.supprimer,
         iddette: depos.iddette,
-        optionCreance :depos.optionCreance,
-        scanMessage :depos.scanMessage,
-        numeroIndependant : depos.numeroIndependant,
+        optionCreance: optionCreance,  // Correction ici
+        //optionCreance :depos.optionCreance,
+        scanMessage :scanMessage,
+        numeroIndependant :numeroIndependant,
       );
       updateDeposInHive(_deposList[index]);
     }
   }
+  
 
 
   // Enregistrer les données dans la boîte Hive
@@ -309,13 +322,6 @@ Future<void> DateControleRecupere() async {
   }
 }
 
-
-// Future<void> _initializeOperateursBox() async {
-//   if (!Hive.isBoxOpen("todobos5")) {
-//     await Hive.openBox<AddSimModel>("todobos5");
-//   }
-//   OperateurBox = Hive.box<AddSimModel>("todobos5");
-// }
 
   // Image sélectionnée et texte reconnu
   late XFile selectedImage;
@@ -567,8 +573,13 @@ bool isValidDate(String dateStr) {
 
 
  Future<List<OrangeModel>> loadNonScannedData() async {
-    var box = await Hive.openBox<OrangeModel>('todobos');
-    return box.values.where((depos) => depos.scanMessage == '').toList();
+   List<OrangeModel> deposits = [];
+    if (todobos != null) {
+      deposits = await _loadDeposFromHive();
+    }
+    return deposits;
+    // var box = await Hive.openBox<OrangeModel>('todobos');
+    // return box.values.where((depos) => depos.scanMessage == '').toList();
   }
 
  Future<void> deleteDeposInHive(int idoperation) async {
@@ -601,7 +612,6 @@ Future<void> markAsDeleted(OrangeModel depos) async {
     print("Boîte Hive non initialisée");
   }
 }
-
 
 
 
@@ -800,6 +810,100 @@ Future calculateSum(DateFormat dateFormat) async {
 
     operateurController.text = operateur.idOperateur.toString();
   }
+  
+
+
+  void AutresOperationsController() {
+  final filteredList = operateurList.where((operateur) => 
+    operateur.idOperateur != 1 && operateur.idOperateur != 2).toList();
+
+  if (filteredList.isNotEmpty) {
+    operateurOptions = filteredList.map((operateur) {
+      return {
+        'value': operateur.idOperateur.toString(),
+        'label': operateur.LibOperateur,
+      };
+    }).toList();
+    
+    // Débogage : Imprimez les options pour vérifier leur contenu
+    print('Operateur Options: $operateurOptions');
+
+    // Définir la première option comme sélectionnée
+    operateurController.text = operateurOptions.isNotEmpty ? operateurOptions.first['value']! : '0';
+  } else {
+    // Gérer le cas où il n'y a pas d'options disponibles
+    operateurOptions = [];
+    operateurController.text = '0';
+  }
+}
+
+
+void CaisseOperateursController() {
+  // Assurez-vous que operateurList est définie et initialisée correctement
+  final filteredList = operateurList;
+
+  if (filteredList.isNotEmpty) {
+    operateurOptions = filteredList.map((operateur) {
+      return {
+        'value': operateur.idOperateur.toString(),
+        'label': operateur.LibOperateur,
+      };
+    }).toList();
+    
+    // Débogage : Imprimez les options pour vérifier leur contenu
+    print('Operateur Options: $operateurOptions');
+
+    // Définir la première option comme sélectionnée
+    operateurController.text = operateurOptions.isNotEmpty ? operateurOptions.first['value']! : '0';
+  } else {
+    // Gérer le cas où il n'y a pas d'options disponibles
+    operateurOptions = [];
+    operateurController.text = '0';
+  }
+}
+
+
+
+
+Future<Map<int, String>> getOperatorLabels() async {
+  final simBox = await Hive.openBox<AddSimModel>('todobox5');
+  final labels = <int, String>{};
+
+  for (var sim in simBox.values) {
+    labels[sim.idOperateur] = sim.LibOperateur;
+  }
+
+  return labels;
+}
+
+Future<List<Map<String, dynamic>>> getOperationsWithOperatorLabels() async {
+  final orangeBox = await Hive.openBox<OrangeModel>('todobox');
+  final labelsMap = await getOperatorLabels();
+  
+  final operationsWithLabels = <Map<String, dynamic>>[];
+
+  for (var operation in orangeBox.values) {
+    operationsWithLabels.add({
+      'idoperation': operation.idoperation,
+      'dateoperation': operation.dateoperation,
+      'montant': operation.montant,
+      'numeroTelephone': operation.numeroTelephone,
+      'infoClient': operation.infoClient,
+      'typeOperation': operation.typeOperation,
+      'operateur': labelsMap[operation.idoperation] ?? 'Unknown',
+      'supprimer': operation.supprimer,
+      'iddette': operation.iddette,
+      'optionCreance': operation.optionCreance,
+      'scanMessage': operation.scanMessage,
+      'numeroIndependant': operation.numeroIndependant,
+    });
+  }
+
+  return operationsWithLabels;
+}
+
+
+
 
 
 

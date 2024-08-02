@@ -566,9 +566,14 @@ bool isValidDate(String dateStr) {
 }
 
 
- Future<List<OrangeModel>> loadNonScannedData() async {
-    var box = await Hive.openBox<OrangeModel>('todobos');
-    return box.values.where((depos) => depos.scanMessage == '').toList();
+  Future<List<OrangeModel>> loadNonScannedData() async {
+   List<OrangeModel> deposits = [];
+    if (todobos != null) {
+      deposits = await _loadDeposFromHive();
+    }
+    return deposits;
+    // var box = await Hive.openBox<OrangeModel>('todobos');
+    // return box.values.where((depos) => depos.scanMessage == '').toList();
   }
 
  Future<void> deleteDeposInHive(int idoperation) async {

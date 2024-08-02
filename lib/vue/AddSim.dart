@@ -16,9 +16,10 @@ class _PageAddSimState extends State<PageAddSim> {
   @override
   void initState() {
     super.initState();
-    widget.SimController.resetFormFields(); // Reset des champs du formulaire
+    widget.SimController.initializeBox().then((_) {
+    widget.SimController.resetFormFields(); // Reset des champs du formulaire après l'initialisation
+    });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,23 +83,20 @@ class _PageAddSimState extends State<PageAddSim> {
               ),
               SizedBox(height: 15),
 
-              TextFormField(
-                controller: widget.SimController.NumPhoneController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Numéro Téléphone',
-                  labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  suffixIcon: Icon(Icons.contact_page),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ce champ est requis';
-                  }
-                   widget.SimController.updateAddSim(NumPhone: value);
-                  return null;
-                },
-                keyboardType: TextInputType.phone,
+             TextFormField(
+              controller: widget.SimController.NumPhoneController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Numéro Téléphone',
+                labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                suffixIcon: Icon(Icons.contact_page),
               ),
+              onChanged: (value) {
+                widget.SimController.updateAddSim(NumPhone: value);
+              },
+              keyboardType: TextInputType.phone,
+            ),
+
 
               SizedBox(height: 20),
               ElevatedButton(

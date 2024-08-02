@@ -107,14 +107,14 @@ class _PageListAddSimState extends State<PageListAddSim> {
                     ],
                   ),
                   title: Text(
-                    'Code Agent: ${Sim.CodeAgent}',
-                    style: const TextStyle(fontSize: 18),
+                    'Opérateur: ${Sim.LibOperateur}',
+                    style: const TextStyle(fontSize: 16),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Opérateur: ${Sim.LibOperateur}',
+                        'Code Agent: ${Sim.CodeAgent}',
                         style: const TextStyle(fontSize: 14),
                       ),
                       Text(

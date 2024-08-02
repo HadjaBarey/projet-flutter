@@ -246,7 +246,7 @@ class _HomePageState extends State<HomePage> {
                               width: 90.0,
                               height: double.infinity,
                               child: Image.asset(
-                                'images/HistoriqueNV.jpg',
+                                'images/HNS.png',
                                 fit: BoxFit.fill,
                               ),
                             ),
