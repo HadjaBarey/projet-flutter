@@ -48,7 +48,7 @@ Future<void> _updateDepos() async {
 
   if (box.isOpen) {
     OrangeModel updatedDepos = OrangeModel(
-      idoperation: widget.depos.idoperation,
+       idoperation: widget.depos.idoperation,
       montant: controller.montantController.text,
       numeroTelephone: controller.numeroTelephoneController.text,
       infoClient: controller.infoClientController.text,
@@ -66,14 +66,23 @@ Future<void> _updateDepos() async {
     print("New scanMessage: ${updatedDepos.scanMessage}");
     print("New optionCreance: ${updatedDepos.optionCreance}");
 
-    var existingDepos = box.get(updatedDepos.idoperation);
-    print("Existing deposit before update: ${existingDepos?.toJson()}");
+    var existingDeposKey = updatedDepos.idoperation;
+    var existingDepos = box.get(existingDeposKey);
+    if (existingDepos != null) {
+      await box.delete(existingDeposKey);
+      print("Deleted deposit with id: ${existingDeposKey}");
+    } else {
+      print("Deposit with id: ${existingDeposKey} not found for deletion");
+    }
 
-    await box.put(updatedDepos.idoperation, updatedDepos);
+    await box.put(existingDeposKey, updatedDepos);
+    print("Added/Updated deposit with id: ${existingDeposKey}");
 
-    var updatedDeposFromHive = box.get(updatedDepos.idoperation);
+    // Vérifiez les données mises à jour
+    var updatedDeposFromHive = box.get(existingDeposKey);
     print("Updated deposit from Hive: ${updatedDeposFromHive?.toJson()}");
 
+    // Mettez à jour la liste locale
     if (mounted) {
       final index = widget.deposList.indexWhere((d) => d.idoperation == updatedDepos.idoperation);
       if (index != -1) {
@@ -88,11 +97,14 @@ Future<void> _updateDepos() async {
       print("Warning: setState() called after dispose");
     }
 
+    print("Depos list after update: ${widget.deposList.map((d) => d.toJson()).toList()}");
+
     await box.close();
   } else {
     print("Box is not open.");
   }
 }
+
 
 
 

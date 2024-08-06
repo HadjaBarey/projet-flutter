@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
-import 'package:kadoustransfert/Controller/OrangeController.dart';
+//import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class AddCaisssePage extends StatefulWidget {
   final CaisseController caisseController;
@@ -12,14 +12,11 @@ class AddCaisssePage extends StatefulWidget {
 }
 
 class _AddCaisssePageState extends State<AddCaisssePage> {
-  late OrangeController controllerOrange;
-
   @override
   void initState() {
     super.initState();
-    controllerOrange = OrangeController([]);
     widget.caisseController.DateControleRecupere();
-    controllerOrange.CaisseOperateursController();
+    widget.caisseController.CaisseOperateursController();
   }
 
   @override
@@ -35,7 +32,7 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
           ),
         ),
         backgroundColor: Colors.orange,
-      ), 
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -69,16 +66,13 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                         borderRadius: BorderRadius.all(Radius.circular(5)),
                         color: Colors.grey,
                       ),
-                      child: Offstage(
-                        offstage: false,
-                        child: TextFormField(
-                          controller: widget.caisseController.dateJournalController,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          enabled: false,
+                      child: TextFormField(
+                        controller: widget.caisseController.dateJournalController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
+                        enabled: false,
                       ),
                     ),
                   ),
@@ -99,23 +93,20 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                         borderRadius: BorderRadius.all(Radius.circular(5)),
                         color: Colors.redAccent,
                       ),
-                      child: Offstage(
-                        offstage: false,
-                        child: TextFormField(
-                          controller: widget.caisseController.montantJController,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          enabled: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Erreur';
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.phone,
+                      child: TextFormField(
+                        controller: widget.caisseController.montantJController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
+                        enabled: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Erreur';
+                          }
+                          return null;
+                        },
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
                       ),
                     ),
                   ),
@@ -135,7 +126,7 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                           value: widget.caisseController.selectedTypeCpt,
                           onChanged: (value) {
                             setState(() {
-                              widget.caisseController.selectedTypeCpt = value!;
+                              widget.caisseController.updateSelectedTypeOpe(value!);
                             });
                           },
                           items: widget.caisseController.TypeComptes
@@ -162,16 +153,15 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                       Container(
                         width: 379,
                         child: DropdownButtonFormField<String>(
-                          value: controllerOrange.operateurController.text.isNotEmpty 
-                              ? controllerOrange.operateurController.text 
+                          value: widget.caisseController.operateurController.text.isNotEmpty 
+                              ? widget.caisseController.operateurController.text 
                               : null,
                           onChanged: (newValue) {
                             setState(() {
-                              controllerOrange.operateurController.text = newValue!;
+                              widget.caisseController.operateurController.text = newValue!;
                             });
                           },
-                          items: controllerOrange.operateurOptions.map((option) {
-                            print('Option: ${option['value']}, Label: ${option['label']}'); // Debugging
+                          items: widget.caisseController.operateurOptions.map((option) {
                             return DropdownMenuItem<String>(
                               value: option['value'],
                               child: Text(option['label']!),
@@ -181,7 +171,6 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                             border: OutlineInputBorder(),
                             labelText: 'Opérateur',
                             labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            //suffixIcon: Icon(Icons.arrow_drop_down),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {

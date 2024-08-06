@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
+import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 import 'package:kadoustransfert/vue/AddCaisse.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
@@ -20,22 +22,8 @@ class _CaissePageState extends State<CaissePage> {
   DateTime dateJour = new DateTime.now();
   final ValueNotifier<List<JournalCaisseModel>> _filteredListNotifier = ValueNotifier<List<JournalCaisseModel>>([]);
 
-  String getTypeCompteLabel(String operateur, String typeCompte) {
-    if (operateur == '1') {
-      if (typeCompte == '1') {
-        return 'Transfert Orange';
-      } else if (typeCompte == '3') {
-        return 'Unité Orange';
-      }
-    } else if (operateur == '2') {
-      if (typeCompte == '1') {
-        return 'Transfert Moov';
-      } else if (typeCompte == '3') {
-        return 'Unité Moov';
-      }
-    }
-    return 'Caisse';
-  }
+
+
 
   double getSumMontantJ() {
     double sum = 0.0;
@@ -50,12 +38,11 @@ class _CaissePageState extends State<CaissePage> {
        setState(() {
         dateControle = _controller.dateJournalController.text;
         filterListByDate();
-      });
-      
-    });
-   
+      });  
+    }); 
     
   }
+
 
 
   void filterListByDate() {
@@ -73,7 +60,7 @@ class _CaissePageState extends State<CaissePage> {
     // Remplacez temporairement les valeurs de 'operateur'
     for (var item in filteredList) {
       if (item.typeCompte == '2') {
-        item.operateur = '9';
+        item.operateur = '100';
       }
     }
 
@@ -88,7 +75,7 @@ class _CaissePageState extends State<CaissePage> {
 
     // Map pour stocker les sommes regroupées
     Map<String, double> sumMap = {};
-    sumMap['9_2'] = 0.0;
+    sumMap['100_2'] = 0.0;
 
     // Calculer les sommes regroupées
     for (var item in filteredList) {
@@ -132,10 +119,23 @@ class _CaissePageState extends State<CaissePage> {
       rows.add(
         TableRow(
           children: [
-            TableCell(
+          TableCell(
               child: Align(
                 alignment: Alignment.topLeft,
-                child: Text(getTypeCompteLabel(operateur, typeCompte)),
+                child: FutureBuilder<String>(
+                  future: _controller.getLibOperateur(operateur),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Erreur');
+                    } else if (!snapshot.hasData) {
+                      return Text('Non disponible');
+                    } else {
+                      return Text(snapshot.data ?? 'Caisse');
+                    }
+                  },
+                ),
               ),
             ),
             TableCell(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
+import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/vue/AjoutOtreOperation.dart';
 
@@ -28,6 +30,41 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
       loadData();
     });
   }
+
+
+  Future<String> getLibOperateur(String operateur) async {
+  // Ouvrir la boîte Hive
+  var addSimBox = await Hive.openBox<AddSimModel>('todobos5');
+
+  // Déboguer le contenu de la boîte pour s'assurer qu'elle contient des données
+  print('Contenu de addSimBox: ${addSimBox.values.toList()}');
+
+  // Rechercher le modèle correspondant
+  AddSimModel? correspondingAddSimModel = addSimBox.values.firstWhere(
+    (addSim) => addSim.idOperateur.toString() == operateur,
+    orElse:  () => AddSimModel(
+          idOperateur: 0,
+          LibOperateur: '',
+          NumPhone: '',
+          CodeAgent: '',
+          supprimer: 0,
+        ), // Retourner null si aucune correspondance n'est trouvée
+  );
+
+  // Déboguer le résultat de la recherche
+  if (correspondingAddSimModel != null) {
+    print('Modèle trouvé: ${correspondingAddSimModel.LibOperateur}');
+  } else {
+    print('Aucun modèle trouvé pour l\'opérateur $operateur');
+  }
+
+  // Retourner le libellé ou 'Caisse' si aucune correspondance n'est trouvée
+  return correspondingAddSimModel?.LibOperateur.isNotEmpty == true
+      ? correspondingAddSimModel.LibOperateur
+      : '0';
+}
+
+
 
   Future<void> _initialize() async {
     try {
@@ -283,10 +320,21 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
                                 _getOperationDescription(depos),
                                 style: const TextStyle(fontSize: 14),
                               ),
-                              Text(
-                                'Operateur: ${depos.operateur}',
-                                style: const TextStyle(fontSize: 14),
+
+                              FutureBuilder<String>(
+                                future: getLibOperateur(depos.operateur),
+                                builder: (context, snapshot) {
+                                  String libelle = snapshot.connectionState == ConnectionState.waiting
+                                      ? 'Chargement...'
+                                      : snapshot.data ?? '';
+
+                                  return Text(
+                                    'Opérateur: $libelle',
+                                    style: const TextStyle(fontSize: 14),
+                                  );
+                                },
                               ),
+                              
                             ],
                           ),
                           onTap: () => _handleRowClicked(depos),
