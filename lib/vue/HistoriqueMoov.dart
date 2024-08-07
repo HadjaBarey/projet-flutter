@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/MoovController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
-import 'package:kadoustransfert/vue/UpdateDepos.dart';
 
 class HistoriqueMoovPage extends StatefulWidget {
   const HistoriqueMoovPage({Key? key}) : super(key: key);
@@ -49,7 +48,7 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
 
       await loadData();
     } catch (e) {
-      print('Erreur pendant l\'initialisation : $e');
+    //  print('Erreur pendant l\'initialisation : $e');
     }
   }
 
@@ -83,17 +82,17 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
 
             return true;
           } catch (e) {
-            print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
+          //  print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
             return false;
           }
         }).toList();
       });
     } catch (e) {
-      print('Erreur lors du chargement des données : $e');
+     // print('Erreur lors du chargement des données : $e');
     }
   }
 
-  void deleteItem(int index) async {
+  void deleteItem(OrangeModel depos) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -111,15 +110,15 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
               onPressed: () async {
                 try {
                   // Assurez-vous que l'idoperation est bien défini
-                  final idoperation = _deposList[index].idoperation;
+                  final idoperation = depos.idoperation;
                   print('Suppression de l\'élément avec idoperation: $idoperation');
 
                   // Supprime l'élément de Hive en utilisant idoperation
                   await _controller.deleteDeposInHive(idoperation);
 
-                  // Supprime l'élément de la liste
+                 // Supprime l'élément de la liste
                   setState(() {
-                    _deposList.removeAt(index);
+                    _deposList.removeWhere((item) => item.idoperation == idoperation);
                   });
 
                   Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
@@ -161,14 +160,14 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '1') {
-      return 'Opération: Dépôt Orange';
-    } else if (depos.typeOperation == 2 && depos.operateur == '1') {
-      return 'Opération: Retrait Orange';
-    } else if (depos.typeOperation == 1 && depos.operateur == '2') {
+    if (depos.typeOperation == 1 && depos.operateur == '2') {
       return 'Opération: Dépôt Moov';
     } else if (depos.typeOperation == 2 && depos.operateur == '2') {
       return 'Opération: Retrait Moov';
+    // } else if (depos.typeOperation == 1 && depos.operateur == '2') {
+    //   return 'Opération: Dépôt Moov';
+    // } else if (depos.typeOperation == 2 && depos.operateur == '2') {
+    //   return 'Opération: Retrait Moov';
     }
     return '';
   }
@@ -273,7 +272,7 @@ class _HistoriqueMoovPageState extends State<HistoriqueMoovPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
-                                onTap: () => deleteItem(index),
+                                onTap: () => deleteItem(depos),
                                 child: const Icon(Icons.delete),
                               ),
                              

@@ -4,7 +4,6 @@ import 'package:kadoustransfert/Controller/MoovController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/vue/UpdateTransactionMoov.dart';
 
-
 class HistoriqueNScanMoovPage extends StatefulWidget {
   const HistoriqueNScanMoovPage({Key? key}) : super(key: key);
 
@@ -84,7 +83,7 @@ class _HistoriqueNScanMoovPageState extends State<HistoriqueNScanMoovPage> {
   }
 
 
- void deleteItem(int index) async {
+ void deleteItem(OrangeModel depos) async {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -101,25 +100,21 @@ class _HistoriqueNScanMoovPageState extends State<HistoriqueNScanMoovPage> {
           TextButton(
             onPressed: () async {
               try {
-                final idoperation = _deposList[index].idoperation;
+                final idoperation = depos.idoperation;
                 // Supprime l'élément de Hive
                 await _controller.deleteNonScannedDeposInHive(idoperation);
 
-
-                // Obtenez l'élément sélectionné
-                // OrangeModel selectedDepos = _deposList[index];
-                
-                // // Marquez l'élément comme supprimé
-                // await _controller.markAsDeleted(selectedDepos);
-
-                
-
+                // Supprime l'élément de la liste
+                setState(() {
+                  _deposList.removeWhere((item) => item.idoperation == idoperation);
+                });
+              
                 // Rafraîchit les données après la suppression
-                await refreshData();
+                //await refreshData();
 
                 Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
               } catch (e) {
-                print('Erreur lors de la suppression de l\'élément : $e');
+               // print('Erreur lors de la suppression de l\'élément : $e');
               }
             },
             child: const Text('Supprimer'),
@@ -136,7 +131,7 @@ class _HistoriqueNScanMoovPageState extends State<HistoriqueNScanMoovPage> {
     try {
       await loadData();
     } catch (e) {
-      print('Erreur lors du rafraîchissement des données : $e');
+      //print('Erreur lors du rafraîchissement des données : $e');
     }
   }
 
@@ -146,7 +141,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => UpdateTransactionMoov(
+      builder: (context) => UpdateMoov(
         depos: clickedDepos,
         onRowClicked: (updatedDepos) async {
           await refreshData();
@@ -177,23 +172,25 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '1') {
-      return 'Opération: Dépôt Orange';
-    } else if (depos.typeOperation == 2 && depos.operateur == '1') {
-      return 'Opération: Retrait Orange';
-    } else if (depos.typeOperation == 1 && depos.operateur == '2') {
+    if (depos.typeOperation == 1 && depos.operateur == '2') {
       return 'Opération: Dépôt Moov';
     } else if (depos.typeOperation == 2 && depos.operateur == '2') {
       return 'Opération: Retrait Moov';
-    }  
+    // } else if (depos.typeOperation == 1 && depos.operateur == '2') {
+    //   return 'Opération: Dépôt Moov';
+    // } else if (depos.typeOperation == 2 && depos.operateur == '2') {
+    //   return 'Opération: Retrait Moov';
+     }  
     return '';
   }
 
   @override
   Widget build(BuildContext context) {
-    List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.operateur == '2' && depos.scanMessage == '' && depos.optionCreance==true)
-      .toList();
+ List<OrangeModel> filteredList = _deposList
+    .where((depos) => (depos.operateur == '2' && depos.scanMessage == '') || depos.optionCreance == true)
+    .toList(); 
+
+
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
     filteredList.sort((a, b) => b.idoperation.compareTo(a.idoperation));
@@ -268,8 +265,8 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
-                                onTap: () => deleteItem(index),
-                                child: const Icon(Icons.delete),
+                                onTap: () => deleteItem(depos),
+                                child: const Icon(Icons.delete, color: Colors.red),
                               ),
                               const SizedBox(width: 10),
 
@@ -278,7 +275,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                                   final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => UpdateTransactionMoov(
+                                      builder: (context) => UpdateMoov(
                                         depos: depos,
                                         onRowClicked: _handleRowClicked,
                                         deposList: _deposList,
@@ -299,26 +296,26 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                           ),
                           title: Text(
                             'Montant: ${depos.montant}',
-                            style: const TextStyle(fontSize: 18),
+                            style: const TextStyle(fontSize: 16),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Numéro de téléphone: ${depos.numeroTelephone}',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 'Information client: ${depos.infoClient}',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 'Date Operation: ${depos.dateoperation}',
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 _getOperationDescription(depos),
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),

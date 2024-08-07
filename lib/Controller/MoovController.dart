@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:io';
+//import 'dart:ffi';
+//import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +10,7 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+//import 'package:velocity_x/velocity_x.dart';
 import 'call_service.dart'; // Importez le service d'appel
 import 'package:kadoustransfert/Controller/OpTransactionController.dart';
 import 'package:kadoustransfert/Controller/AddSimController.dart';
@@ -59,14 +60,16 @@ class MoovController {
   TextEditingController idOperationController = TextEditingController();
   TextEditingController dateOperationController = TextEditingController();
   TextEditingController typeOperationController = TextEditingController(text: '1');  
-  TextEditingController operateurController = TextEditingController(text: '2'); // Valeur par défaut pour l'Opérateur orange
+  TextEditingController operateurController = TextEditingController(text: '2'); // Valeur par défaut pour l'Opérateur Moov
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
-  TextEditingController optionCreanceController = TextEditingController(text: 'false'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController numeroIndependantController = TextEditingController(); 
+  // Assurez-vous que optionCreanceController est un ValueNotifier<bool>
+  ValueNotifier<bool> optionCreanceController = ValueNotifier<bool>(false); // Utiliser ValueNotifier<bool>
 
  // Liste des opérateurs
-  List<AddSimModel> operateurList = [];
+   List<AddSimModel> operateurList = [];
+   List<Map<String, String>> operateurOptions = [];
 
 
  // Liste des opérationsl 
@@ -148,47 +151,48 @@ Future<void> _initializeEntreprisesBox() async {
   EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
 }
 
- void updateSelectedOption(int value) {
-    selectedOption = value;
-    if (selectedOption == 1){
-      typeOperationController.text = '1';
-      scanMessageController.text = '';
-      numeroIndependantController.text = '';
-      infoClientController.text = '';
-      montantController.text = '';
-      numeroTelephoneController.text = '';
-    } else if (selectedOption == 2) {
-      typeOperationController.text = '2';
-      scanMessageController.text = ''; 
-      numeroIndependantController.text = '';
-      infoClientController.text = '';
-      montantController.text = '';
-      numeroTelephoneController.text = '';
-    }else if (selectedOption == 3) {
-      typeOperationController.text = '2';
-      scanMessageController.text = 'Message Scanné'; 
-      numeroIndependantController.text = '';
-      infoClientController.text = '';
-      montantController.text = '';
-      numeroTelephoneController.text = '';
-    }
+
+void updateSelectedOption(int value) {
+  selectedOption = value;
+  if (selectedOption == 1) {
+    typeOperationController.text = '1';
+    scanMessageController.text = '';
+    numeroIndependantController.text = '';
+    infoClientController.text = '';
+    montantController.text = '';
+    numeroTelephoneController.text = '';
+    optionCreanceController.value = false; // Mettez à jour la valeur directement
+  } else if (selectedOption == 2) {
+    typeOperationController.text = '2';
+    scanMessageController.text = '';
+    numeroIndependantController.text = '';
+    infoClientController.text = '';
+    montantController.text = '';
+    numeroTelephoneController.text = '';
+    optionCreanceController.value = false; // Mettez à jour la valeur directement
+  } else if (selectedOption == 3) {
+    typeOperationController.text = '2';
+    scanMessageController.text = 'Message Scanné';
+    numeroIndependantController.text = '';
+    infoClientController.text = '';
+    montantController.text = '';
+    numeroTelephoneController.text = '';
+    optionCreanceController.value = false; // Mettez à jour la valeur directement
   }
+}
+
+
 
 
 Future<void> DateControleRecupere() async {
   var EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
   
   if (EntrepriseBox.isEmpty) {
-    print("Boîte Hive des entreprises non initialisée ou vide");
+   // print("Boîte Hive des entreprises non initialisée ou vide");
     // Initialisez avec une date par défaut ou gérez cette condition comme nécessaire
     dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   } else {
-    // Recherchez l'entreprise correspondante dans la boîte Hive
-    // var entreprise = EntrepriseBox.values.firstWhereOrNull(
-    //   (entreprise) => entreprise.idEntreprise == 1);
-
-    var entreprise = EntrepriseBox.values.last;
-    
+    var entreprise = EntrepriseBox.values.last;    
     if (entreprise != null) {
       try {
         // Vérifiez si la date n'est pas vide avant de la parser
@@ -239,9 +243,11 @@ Future<void> DateControleRecupere() async {
     if (numeroIndependant != null) depos.numeroIndependant = numeroIndependant;
   }
 
-  void updateOptionCreance(bool value) {
+
+
+ void updateOptionCreance(bool value) {
   depos.optionCreance = value;
-  optionCreanceController.text = value.toString();
+  optionCreanceController.value = value; // Mettez à jour directement la valeur
   updateDepos(optionCreance: value);
 }
 
@@ -261,7 +267,6 @@ Future<void> DateControleRecupere() async {
   }
 
     
-
   // Mettre à jour les données d'un dépôt
   void updateDeposData({
     required OrangeModel depos,
@@ -286,13 +291,15 @@ Future<void> DateControleRecupere() async {
         operateur: depos.operateur,
         supprimer: depos.supprimer,
         iddette: depos.iddette,
-        optionCreance :depos.optionCreance,
-        scanMessage :depos.scanMessage,
-        numeroIndependant : depos.numeroIndependant,
+        optionCreance: optionCreance,  // Correction ici
+        //optionCreance :depos.optionCreance,
+        scanMessage :scanMessage,
+        numeroIndependant :numeroIndependant,
       );
       updateDeposInHive(_deposList[index]);
     }
   }
+  
 
 
   // Enregistrer les données dans la boîte Hive
@@ -309,13 +316,6 @@ Future<void> DateControleRecupere() async {
   }
 }
 
-
-// Future<void> _initializeOperateursBox() async {
-//   if (!Hive.isBoxOpen("todobos5")) {
-//     await Hive.openBox<AddSimModel>("todobos5");
-//   }
-//   OperateurBox = Hive.box<AddSimModel>("todobos5");
-// }
 
   // Image sélectionnée et texte reconnu
   late XFile selectedImage;
@@ -436,8 +436,8 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       return 0; // Arrêter la fonction ici
     }
 
-    print("Montant extrait : $montant"); // Log du montant extrait
-    print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
+    // print("Montant extrait : $montant"); // Log du montant extrait
+    // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
 
     // Mettre à jour les contrôleurs
     montantController.text = montant;
@@ -566,7 +566,7 @@ bool isValidDate(String dateStr) {
 }
 
 
-  Future<List<OrangeModel>> loadNonScannedData() async {
+ Future<List<OrangeModel>> loadNonScannedData() async {
    List<OrangeModel> deposits = [];
     if (todobos != null) {
       deposits = await _loadDeposFromHive();
@@ -592,21 +592,20 @@ bool isValidDate(String dateStr) {
 
 
    // Marquer comme supprimé
-Future<void> markAsDeleted(OrangeModel depos) async {
-  await _initializeBox(); // Assurez-vous que la boîte est ouverte
-  if (todobos != null) {
-    // Marque l'élément comme supprimé en mettant à jour un champ spécifique
-    depos.scanMessage = 'Message supprimé'; // Met à jour le champ pour indiquer que l'élément est supprimé
-    await todobos!.put(depos.idoperation, depos).then((value) {
-      print("Dépôt marqué comme supprimé : ${depos.idoperation}");
-    }).catchError((error) {
-      print("Erreur lors de la mise à jour : $error");
-    });
-  } else {
-    print("Boîte Hive non initialisée");
-  }
-}
-
+// Future<void> markAsDeleted(OrangeModel depos) async {
+//   await _initializeBox(); // Assurez-vous que la boîte est ouverte
+//   if (todobos != null) {
+//     // Marque l'élément comme supprimé en mettant à jour un champ spécifique
+//     depos.scanMessage = 'Message supprimé'; // Met à jour le champ pour indiquer que l'élément est supprimé
+//     await todobos!.put(depos.idoperation, depos).then((value) {
+//       print("Dépôt marqué comme supprimé : ${depos.idoperation}");
+//     }).catchError((error) {
+//       print("Erreur lors de la mise à jour : $error");
+//     });
+//   } else {
+//     print("Boîte Hive non initialisée");
+//   }
+// }
 
 
 
@@ -622,16 +621,15 @@ Future<void> deleteNonScannedDeposInHive(int idoperation) async {
     final OrangeModel? value = box.get(key);
     if (value != null && value.idoperation == idoperation && value.scanMessage == '') {
       keyToDelete = key;
-      print('Trouvé pour suppression - Clé: $key, Valeur: ${value.idoperation}');
+    // print('Trouvé pour suppression - Clé: $key, Valeur: ${value.idoperation}');
       break; // Une fois trouvé, vous pouvez sortir de la boucle
     }
   }
-
   if (keyToDelete != null) {
-    print('Suppression de la clé: $keyToDelete');
+   // print('Suppression de la clé: $keyToDelete');
     await box.delete(keyToDelete);
   } else {
-    print('Aucun élément trouvé avec idoperation: $idoperation');
+   // print('Aucun élément trouvé avec idoperation: $idoperation');
   }
 }
 
@@ -655,7 +653,6 @@ Future<void> _initializeClientsBox() async {
         infoClientController.text = ''; // Vide infoClientController
         return; // Sortir de la méthode si le numéro est vide
       }
-
 
     // Vérifiez si la boîte Hive des clients est initialisée
     if (clientsBox != null && clientsBox.isNotEmpty) {
@@ -697,6 +694,8 @@ Future<void> _initializeClientsBox() async {
   );
 }
 
+
+
 Future<void> _initializeAndLoadData() async {
     await _initializeBox();
     _deposList = await loadData();
@@ -704,9 +703,8 @@ Future<void> _initializeAndLoadData() async {
   }
 
 
-
 // Votre méthode calculateSum avec chargement de données
-Future calculateSum(DateFormat dateFormat) async {
+Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) async {
   // Assurez-vous que la date de contrôle est récupérée avant de continuer
   await DateControleRecupere();
 
@@ -718,65 +716,75 @@ Future calculateSum(DateFormat dateFormat) async {
   Map<String, double> augmentation = {};
 
   // Filtrer les données en fonction de la date de contrôle récupérée et de scanMessage
-  // DateFormat dateFormat = DateFormat('dd/MM/yyyy');
   DateTime controlDate = dateFormat.parse(dateOperationController.text);
-  //print('ma date $controlDate');
 
   _deposList = _deposList.where((item) {
-    DateTime itemDate = dateFormat.parse(item.dateoperation); // Adaptez selon votre modèle
+    DateTime itemDate = dateFormat.parse(item.dateoperation);
     bool dateMatches = itemDate.year == controlDate.year &&
                        itemDate.month == controlDate.month &&
                        itemDate.day == controlDate.day;
-    bool scanMessageMatches = item.scanMessage == 'Message Scanné'; // Filtrage par scanMessage
+    bool scanMessageMatches = item.scanMessage == 'Message Scanné';
+    bool optionCreanceMatches = !item.optionCreance;
 
-    return dateMatches && scanMessageMatches;
+    return dateMatches && scanMessageMatches && optionCreanceMatches;
   }).toList();
+
+
+  // Récupérer les opérateurs depuis Hive
+  var box = await Hive.openBox<AddSimModel>('addSimBox');
+  List<AddSimModel> operateursList = box.values.toList();
+
+  // Initialiser les clés pour les opérateurs récupérés depuis Hive
+  for (AddSimModel operateur in operateursList) {
+    String operateurKey = operateur.idOperateur.toString();
+    diminution[operateurKey] = 0.0;
+    augmentation[operateurKey] = 0.0;
+  }
 
   // Vérifiez si _deposList est vide après filtrage
   if (_deposList.isEmpty) {
-    print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
+    //print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
     return {
-    'augmentation': {},
-    'diminution': {},
-  };
-  }else{
+      'augmentation': {},
+      'diminution': {},
+    };
+  } else {
+    // Parcourez les éléments de _deposList pour calculer les sommes
+    for (var item in _deposList) {
+      double montant = double.tryParse(item.montant) ?? 0.0;
+      String operateurKey = item.operateur;
 
-  // Parcourez les éléments de _deposList pour calculer les sommes
-  for (var item in _deposList) {
-    double montant = double.tryParse(item.montant) ?? 0.0;
-    String operateurKey = item.operateur;
-
-    if (item.typeOperation == 1) {
-      if (diminution.containsKey(operateurKey)) {
-        diminution[operateurKey] = diminution[operateurKey]! + montant;
-      } else {
-        diminution[operateurKey] = montant;
-      }
-    } else if (item.typeOperation == 2) {
-      if (augmentation.containsKey(operateurKey)) {
-        augmentation[operateurKey] = augmentation[operateurKey]! + montant;
-      } else {
-        augmentation[operateurKey] = montant;
+      if (item.typeOperation == 1) {
+        if (diminution.containsKey(operateurKey)) {
+          diminution[operateurKey] = diminution[operateurKey]! + montant;
+        } else {
+          diminution[operateurKey] = montant;
+        }
+      } else if (item.typeOperation == 2) {
+        if (augmentation.containsKey(operateurKey)) {
+          augmentation[operateurKey] = augmentation[operateurKey]! + montant;
+        } else {
+          augmentation[operateurKey] = montant;
+        }
       }
     }
+
+    // Assurez-vous que les clés existent avant d'effectuer l'addition
+    double diminutionTotal = diminution.values.fold(0.0, (sum, value) => sum + value);
+    double augmentationTotal = augmentation.values.fold(0.0, (sum, value) => sum + value);
+
+    // Ajoutez les valeurs des opérateurs et affectez-les à l'opérateur 100
+    augmentation['100'] = diminutionTotal;
+    diminution['100'] = augmentationTotal;
+
+    // Retourner une map contenant les résultats sous forme de somme totale pour chaque opérateur
+    return {
+      'augmentation': augmentation,
+      'diminution': diminution,
+    };
   }
-
-  // Assurez-vous que les clés existent avant d'effectuer l'addition
-  double diminution1 = diminution['1'] ?? 0.0;
-  double diminution2 = diminution['2'] ?? 0.0;
-  double augmentation1 = augmentation['1'] ?? 0.0;
-  double augmentation2 = augmentation['2'] ?? 0.0;
-
-  // Ajoutez les valeurs des opérateurs 1 et 2 et affectez-les à l'opérateur 9
-  augmentation['9'] = diminution1 + diminution2;
-  diminution['9'] = augmentation1 + augmentation2;
-
-  // Retourner une map contenant les résultats sous forme de somme totale pour chaque opérateur
-  return {
-    'augmentation': augmentation,
-    'diminution': diminution,
-  };}
 }
+
 
 
 
@@ -789,24 +797,45 @@ Future calculateSum(DateFormat dateFormat) async {
   }
 
  // Méthode pour définir la valeur par défaut
-   void initializeOperateurController(String libOperateur) {
-    final operateur = operateurList.firstWhere(
-      (operateur) => operateur.LibOperateur == 'Unité Orange',
-      orElse: () => AddSimModel(
-        idOperateur: 0, 
-        LibOperateur: "",
-        NumPhone:"",
-        CodeAgent:"",
-        supprimer:0
+  //  void initializeOperateurController(String libOperateur) {
+  //   final operateur = operateurList.firstWhere(
+  //     (operateur) => operateur.LibOperateur == 'Unité Orange',
+  //     orElse: () => AddSimModel(
+  //       idOperateur: 0, 
+  //       LibOperateur: "",
+  //       NumPhone:"",
+  //       CodeAgent:"",
+  //       supprimer:0
+  //       ), // Valeur par défaut
+  //   );
+  //   operateurController.text = operateur.idOperateur.toString();
+  // }
+  
 
+  void AutresOperationsController() {
 
-        ), // Valeur par défaut
-    );
+  final filteredList = operateurList.where((operateur) => 
+    operateur.idOperateur != 1 && operateur.idOperateur != 2).toList();
 
-    operateurController.text = operateur.idOperateur.toString();
+  if (filteredList.isNotEmpty) {
+    operateurOptions = filteredList.map((operateur) {
+      return {
+        'value': operateur.idOperateur.toString(),
+        'label': operateur.LibOperateur,
+      };
+    }).toList();
+    
+    // Débogage : Imprimez les options pour vérifier leur contenu
+   // print('Operateur Options: $operateurOptions');
+
+    // Définir la première option comme sélectionnée
+    operateurController.text = operateurOptions.isNotEmpty ? operateurOptions.first['value']! : '0';
+  } else {
+    // Gérer le cas où il n'y a pas d'options disponibles
+    operateurOptions = [];
+    operateurController.text = '0';
   }
-
-
+}
 
 
 

@@ -37,7 +37,7 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
   var addSimBox = await Hive.openBox<AddSimModel>('todobos5');
 
   // Déboguer le contenu de la boîte pour s'assurer qu'elle contient des données
-  print('Contenu de addSimBox: ${addSimBox.values.toList()}');
+  //print('Contenu de addSimBox: ${addSimBox.values.toList()}');
 
   // Rechercher le modèle correspondant
   AddSimModel? correspondingAddSimModel = addSimBox.values.firstWhere(
@@ -53,9 +53,9 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
 
   // Déboguer le résultat de la recherche
   if (correspondingAddSimModel != null) {
-    print('Modèle trouvé: ${correspondingAddSimModel.LibOperateur}');
+    //print('Modèle trouvé: ${correspondingAddSimModel.LibOperateur}');
   } else {
-    print('Aucun modèle trouvé pour l\'opérateur $operateur');
+   // print('Aucun modèle trouvé pour l\'opérateur $operateur');
   }
 
   // Retourner le libellé ou 'Caisse' si aucune correspondance n'est trouvée
@@ -128,7 +128,7 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
     }
   }
 
-  void deleteItem(int index) async {
+  void deleteItem(OrangeModel depos) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -145,14 +145,15 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
             TextButton(
               onPressed: () async {
                 try {
-                  final idoperation = _deposList[index].idoperation;
+                 final idoperation = depos.idoperation;
                   print('Suppression de l\'élément avec idoperation: $idoperation');
 
                   await _controller.deleteDeposInHive(idoperation);
 
-                  setState(() {
-                    _deposList.removeAt(index);
+                    setState(() {
+                    _deposList.removeWhere((item) => item.idoperation == idoperation);
                   });
+
 
                   Navigator.of(context).pop();
                 } catch (e) {
@@ -300,7 +301,7 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
-                                onTap: () => deleteItem(index),
+                                onTap: () => deleteItem(depos),
                                 child: const Icon(Icons.delete),
                               ),
                             ],
@@ -309,9 +310,14 @@ class _AutreOperationPageState extends State<AutreOperationPage> {
                             'Montant: ${depos.montant}',
                             style: const TextStyle(fontSize: 16),
                           ),
+                          
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                               Text(
+                                'Info Client: ${depos.infoClient}',
+                                style: const TextStyle(fontSize: 14),
+                              ), 
                               Text(
                                 'Numéro de téléphone: ${depos.numeroTelephone}',
                                 style: const TextStyle(fontSize: 14),

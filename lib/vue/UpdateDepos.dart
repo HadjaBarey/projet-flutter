@@ -44,65 +44,44 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
 
 
 Future<void> _updateDepos() async {
-  var box = await Hive.openBox<OrangeModel>('todobox');
+  var box = await Hive.openBox<OrangeModel>('todobos');
+ // print("Box opened: ${box.isOpen}");
+  
+  OrangeModel updatedDepos = OrangeModel(
+    idoperation: widget.depos.idoperation,
+    montant: controller.montantController.text,
+    numeroTelephone: controller.numeroTelephoneController.text,
+    infoClient: controller.infoClientController.text,
+    optionCreance: controller.optionCreanceController.value,
+    scanMessage: controller.scanMessageController.text,
+    numeroIndependant: controller.numeroIndependantController.text,
+    operateur: widget.depos.operateur,
+    dateoperation: widget.depos.dateoperation,
+    typeOperation: widget.depos.typeOperation,
+    iddette: widget.depos.iddette,
+    supprimer: widget.depos.supprimer,
+  );
 
-  if (box.isOpen) {
-    OrangeModel updatedDepos = OrangeModel(
-       idoperation: widget.depos.idoperation,
-      montant: controller.montantController.text,
-      numeroTelephone: controller.numeroTelephoneController.text,
-      infoClient: controller.infoClientController.text,
-      optionCreance: controller.optionCreanceController.value,
-      scanMessage: controller.scanMessageController.text,
-      numeroIndependant: controller.numeroIndependantController.text,
-      operateur: widget.depos.operateur,
-      dateoperation: widget.depos.dateoperation,
-      typeOperation: widget.depos.typeOperation,
-      iddette: widget.depos.iddette,
-      supprimer: widget.depos.supprimer,
-    );
+  var existingDeposKey = updatedDepos.idoperation;
+  var existingDepos = box.get(existingDeposKey);
+//  print("Existing deposit: ${existingDepos?.toJson()}");
 
-    print("Updating deposit with id: ${updatedDepos.idoperation}");
-    print("New scanMessage: ${updatedDepos.scanMessage}");
-    print("New optionCreance: ${updatedDepos.optionCreance}");
-
-    var existingDeposKey = updatedDepos.idoperation;
-    var existingDepos = box.get(existingDeposKey);
-    if (existingDepos != null) {
-      await box.delete(existingDeposKey);
-      print("Deleted deposit with id: ${existingDeposKey}");
-    } else {
-      print("Deposit with id: ${existingDeposKey} not found for deletion");
-    }
-
-    await box.put(existingDeposKey, updatedDepos);
-    print("Added/Updated deposit with id: ${existingDeposKey}");
-
-    // Vérifiez les données mises à jour
-    var updatedDeposFromHive = box.get(existingDeposKey);
-    print("Updated deposit from Hive: ${updatedDeposFromHive?.toJson()}");
-
-    // Mettez à jour la liste locale
-    if (mounted) {
-      final index = widget.deposList.indexWhere((d) => d.idoperation == updatedDepos.idoperation);
-      if (index != -1) {
-        setState(() {
-          widget.deposList[index] = updatedDepos;
-        });
-        print("Updated local list: ${widget.deposList[index].toJson()}");
-      } else {
-        print("Error: Deposit with id ${updatedDepos.idoperation} not found in the local list.");
-      }
-    } else {
-      print("Warning: setState() called after dispose");
-    }
-
-    print("Depos list after update: ${widget.deposList.map((d) => d.toJson()).toList()}");
-
-    await box.close();
+  if (existingDepos != null) {
+    await box.delete(existingDeposKey);
+ //   print("Deleted deposit with id: ${existingDeposKey}");
   } else {
-    print("Box is not open.");
+  //  print("Deposit with id: ${existingDeposKey} not found for deletion");
   }
+
+  await box.put(existingDeposKey, updatedDepos);
+ // print("Added/Updated deposit with id: ${existingDeposKey}");
+
+  // Vérifiez les données mises à jour
+  var updatedDeposFromHive = box.get(existingDeposKey);
+ // print("Updated deposit from Hive: ${updatedDeposFromHive?.toJson()}");
+
+  await box.close();
+//  print("Box closed");
 }
 
 

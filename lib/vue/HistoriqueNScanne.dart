@@ -83,7 +83,7 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
   }
 
 
- void deleteItem(int index) async {
+ void deleteItem(OrangeModel depos) async {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -100,21 +100,17 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
           TextButton(
             onPressed: () async {
               try {
-                final idoperation = _deposList[index].idoperation;
+                final idoperation = depos.idoperation;
                 // Supprime l'élément de Hive
                 await _controller.deleteNonScannedDeposInHive(idoperation);
 
-
-                // Obtenez l'élément sélectionné
-                // OrangeModel selectedDepos = _deposList[index];
-                
-                // // Marquez l'élément comme supprimé
-                // await _controller.markAsDeleted(selectedDepos);
-
-                
-
+                // Supprime l'élément de la liste
+                setState(() {
+                  _deposList.removeWhere((item) => item.idoperation == idoperation);
+                });
+              
                 // Rafraîchit les données après la suppression
-                await refreshData();
+                //await refreshData();
 
                 Navigator.of(context).pop(); // Ferme la boîte de dialogue après la suppression
               } catch (e) {
@@ -180,10 +176,10 @@ void _handleRowClicked(OrangeModel clickedDepos) {
       return 'Opération: Dépôt Orange';
     } else if (depos.typeOperation == 2 && depos.operateur == '1') {
       return 'Opération: Retrait Orange';
-    } else if (depos.typeOperation == 1 && depos.operateur == '2') {
-      return 'Opération: Dépôt Moov';
-    } else if (depos.typeOperation == 2 && depos.operateur == '2') {
-      return 'Opération: Retrait Moov';
+    // } else if (depos.typeOperation == 1 && depos.operateur == '2') {
+    //   return 'Opération: Dépôt Moov';
+    // } else if (depos.typeOperation == 2 && depos.operateur == '2') {
+    //   return 'Opération: Retrait Moov';
     }  
     return '';
   }
@@ -191,7 +187,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
  List<OrangeModel> filteredList = _deposList
-    .where((depos) => (depos.operateur == '1' && depos.scanMessage == '') || depos.optionCreance == true)
+    .where((depos) => (depos.operateur == '2' && depos.scanMessage == '') || depos.optionCreance == true)
     .toList(); 
 
 
@@ -269,7 +265,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
-                                onTap: () => deleteItem(index),
+                                onTap: () => deleteItem(depos),
                                 child: const Icon(Icons.delete, color: Colors.red),
                               ),
                               const SizedBox(width: 10),

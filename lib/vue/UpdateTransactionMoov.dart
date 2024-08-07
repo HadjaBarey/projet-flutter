@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:kadoustransfert/Controller/MoovController.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 
-class UpdateTransactionMoov extends StatefulWidget {
+class UpdateMoov extends StatefulWidget {
   final OrangeModel depos;
   final Function(OrangeModel) onRowClicked;
   final List<OrangeModel> deposList;
   final Function() refreshData;
 
-  const UpdateTransactionMoov({
+  const UpdateMoov({
     Key? key,
     required this.depos,
     required this.onRowClicked,
@@ -17,12 +18,11 @@ class UpdateTransactionMoov extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<UpdateTransactionMoov> createState() => _UpdateTransactionMoovState();
+  State<UpdateMoov> createState() => _UpdateMoovState();
 }
 
-class _UpdateTransactionMoovState extends State<UpdateTransactionMoov> {
+class _UpdateMoovState extends State<UpdateMoov> {
   late MoovController controller;
-  
 
   @override
   void initState() {
@@ -34,10 +34,60 @@ class _UpdateTransactionMoovState extends State<UpdateTransactionMoov> {
     controller.numeroTelephoneController.text = widget.depos.numeroTelephone;
     controller.infoClientController.text = widget.depos.infoClient;
     controller.numeroIndependantController.text = widget.depos.numeroIndependant;
-    // controller.scanMessageController.text = widget.depos.scanMessage;
+    controller.scanMessageController.text = widget.depos.scanMessage;
+    controller.optionCreanceController.value = widget.depos.optionCreance;
+
+    // Imprimez les valeurs pour le débogage
+    print("Initial idoperation: ${widget.depos.idoperation}");
   }
 
+
+
+Future<void> _updateDepos() async {
+  var box = await Hive.openBox<OrangeModel>('todobos');
+ // print("Box opened: ${box.isOpen}");
   
+  OrangeModel updatedDepos = OrangeModel(
+    idoperation: widget.depos.idoperation,
+    montant: controller.montantController.text,
+    numeroTelephone: controller.numeroTelephoneController.text,
+    infoClient: controller.infoClientController.text,
+    optionCreance: controller.optionCreanceController.value,
+    scanMessage: controller.scanMessageController.text,
+    numeroIndependant: controller.numeroIndependantController.text,
+    operateur: widget.depos.operateur,
+    dateoperation: widget.depos.dateoperation,
+    typeOperation: widget.depos.typeOperation,
+    iddette: widget.depos.iddette,
+    supprimer: widget.depos.supprimer,
+  );
+
+  var existingDeposKey = updatedDepos.idoperation;
+  var existingDepos = box.get(existingDeposKey);
+//  print("Existing deposit: ${existingDepos?.toJson()}");
+
+  if (existingDepos != null) {
+    await box.delete(existingDeposKey);
+ //   print("Deleted deposit with id: ${existingDeposKey}");
+  } else {
+  //  print("Deposit with id: ${existingDeposKey} not found for deletion");
+  }
+
+  await box.put(existingDeposKey, updatedDepos);
+ // print("Added/Updated deposit with id: ${existingDeposKey}");
+
+  // Vérifiez les données mises à jour
+  var updatedDeposFromHive = box.get(existingDeposKey);
+ // print("Updated deposit from Hive: ${updatedDeposFromHive?.toJson()}");
+
+  await box.close();
+//  print("Box closed");
+}
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -127,43 +177,40 @@ class _UpdateTransactionMoovState extends State<UpdateTransactionMoov> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
+                    const Text(
                       'Message:',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(width: 0),
-
+                    const SizedBox(width: 0),
                     Expanded(
-                        child: TextFormField(
-                          controller: controller.scanMessageController, // Utilisez directement le TextEditingController
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),                            
-                            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            filled: true,
-                            fillColor: controller.scanMessageController.text.isEmpty ? Colors.red : Colors.black, // Utilisez le texte actuel du TextEditingController
-                          ),
-                          style: TextStyle(
-                            color: controller.scanMessageController.text.isEmpty ? Colors.black : Colors.white, // Utilisez le texte actuel du TextEditingController
-                          ),
-                          enabled: false,
+                      child: TextFormField(
+                        controller: controller.scanMessageController,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          filled: true,
+                          fillColor: controller.scanMessageController.text.isEmpty ? Colors.red : Colors.black,
                         ),
+                        style: TextStyle(
+                          color: controller.scanMessageController.text.isEmpty ? Colors.black : Colors.white,
+                        ),
+                        enabled: false,
                       ),
-                      
-                    SizedBox(width: 7),
-                    Text(
+                    ),
+                    const SizedBox(width: 7),
+                    const Text(
                       'Crédit?',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(width: 0),
+                    const SizedBox(width: 0),
                     Checkbox(
-                        value: controller.depos.optionCreance,
-                        onChanged: (value) {
-                          setState(() {
-                            controller.updateOptionCreance(value ?? false);
-                          });
-                        },
-                       // enabled: true, // Rend la case à cocher activable
-                      ),                    
+                      value: controller.optionCreanceController.value,
+                      onChanged: (value) {
+                        setState(() {
+                          controller.updateOptionCreance(value ?? false);
+                        });
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -177,7 +224,7 @@ class _UpdateTransactionMoovState extends State<UpdateTransactionMoov> {
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
+                    children: const [
                       Text(
                         'Message',
                         style: TextStyle(
@@ -200,67 +247,28 @@ class _UpdateTransactionMoovState extends State<UpdateTransactionMoov> {
                       ),
                     ),
                     padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
-                    side: MaterialStateProperty.all(
-                      BorderSide(
-                        color: Colors.grey,
-                      ),
-                    ),
-                    backgroundColor: MaterialStateProperty.all(Colors.blueGrey.shade400),
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.orangeAccent),
                   ),
                 ),
-                const SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
+                const SizedBox(height: 20),
+              ElevatedButton(
+                  onPressed: () async {
                     if (controller.formKey.currentState!.validate()) {
-                      setState(() {
-                        widget.depos.montant = controller.montantController.text;
-                        widget.depos.numeroTelephone = controller.numeroTelephoneController.text;
-                        widget.depos.infoClient = controller.infoClientController.text;
-                        widget.depos.optionCreance = controller.depos.optionCreance;
-                        widget.depos.scanMessage = controller.scanMessageController.text;
-                        widget.depos.numeroIndependant = controller.numeroIndependantController.text;
-                      });
-                      controller.updateDeposData(
-                        depos: widget.depos,
-                        montant: controller.montantController.text,
-                        numeroTelephone: controller.numeroTelephoneController.text,
-                        infoClient: controller.infoClientController.text,
-                        scanMessage: controller.scanMessageController.text,
-                        numeroIndependant: controller.numeroIndependantController.text,
-                        optionCreance: controller.depos.optionCreance,
-                      );
+                      await _updateDepos();
                       widget.refreshData();
-                      Navigator.of(context).pop();
-                      widget.onRowClicked(widget.depos);
+                      Navigator.pop(context);
+                    } else {
+                      print("Form validation failed.");
                     }
                   },
-                  style: ButtonStyle(
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                    ),
-                    side: MaterialStateProperty.all(
-                      BorderSide(
-                        color: Colors.grey,
-                      ),
-                    ),
-                    backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
-                  ),
                   child: const Text(
-                    'Valider',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    'Modifier',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
+
               ],
             ),
           ),

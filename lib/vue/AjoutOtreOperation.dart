@@ -188,6 +188,24 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
 
                 SizedBox(height: 15),
 
+              
+                TextFormField(
+                  controller: controller.infoClientController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Informations Client',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Erreur';
+                    }
+                    controller.updateDepos(infoClient: value);
+                    return null;
+                  },
+                ),
+                SizedBox(height: 15),
+
                 Offstage(
                     offstage: true, // Rendre le champ invisible
                     child: TextFormField(
@@ -208,24 +226,79 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                 SizedBox(height: 15),
 
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [               
-                    Text(
-                      'Crédit?',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 0),
-                    Checkbox(
-                      value: isChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          isChecked = value ?? false;
-                          controller.updateOptionCreance(isChecked);
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Bouton avec le texte CNIB et l'icône
+                      SizedBox(
+                        width: 200, // Largeur calculée pour le bouton
+                        height: 50, // Hauteur fixe pour le bouton
+                        child: ElevatedButton(
+                          onPressed: () {
+                            controller.setScan(2);
+                            controller.pickImageCamera(context);
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'CNIB',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(
+                                Icons.scanner,
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
+                          style: ButtonStyle(
+                            shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            padding: MaterialStateProperty.all(
+                              EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                            ),
+                            side: MaterialStateProperty.all(
+                              const BorderSide(
+                                color: Colors.grey,
+                              ),
+                            ),
+                            backgroundColor: MaterialStateProperty.all(Colors.deepOrangeAccent),
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(width: 16), // Espacement entre le bouton et le texte Crédit?
+
+                      // Texte Crédit? et Checkbox
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Crédit?',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 8),
+                          Checkbox(
+                            value: isChecked,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                isChecked = value ?? false;
+                                controller.updateOptionCreance(isChecked);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
 
                 Offstage(
                   offstage: true, // Mettez à true ou false selon votre logique pour afficher ou cacher le widget

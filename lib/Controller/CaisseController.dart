@@ -130,7 +130,7 @@ class CaisseController {
   }
 
   Future<void> initializeBox() async {
-    print('Initializing Hive and opening boxes...');
+    //print('Initializing Hive and opening boxes...');
     if (!Hive.isAdapterRegistered(JournalCaisseModelAdapter().typeId)) {
       Hive.registerAdapter(JournalCaisseModelAdapter());
     }

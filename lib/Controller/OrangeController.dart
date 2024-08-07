@@ -188,7 +188,7 @@ Future<void> DateControleRecupere() async {
   var EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
   
   if (EntrepriseBox.isEmpty) {
-    print("Boîte Hive des entreprises non initialisée ou vide");
+   // print("Boîte Hive des entreprises non initialisée ou vide");
     // Initialisez avec une date par défaut ou gérez cette condition comme nécessaire
     dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   } else {
@@ -385,11 +385,11 @@ Future<void> DateControleRecupere() async {
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
   try {
-    print("Début de la détection de texte..."); // Log de début
+   // print("Début de la détection de texte..."); // Log de début
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
     if (recognizedText.blocks.isEmpty) {
-      print("Aucun texte détecté."); // Log si aucun texte n'est détecté
+     // print("Aucun texte détecté."); // Log si aucun texte n'est détecté
       scanMessageController.text = ''; // Réinitialiser le champ de texte
       return 0;
     }
@@ -441,8 +441,8 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       return 0; // Arrêter la fonction ici
     }
 
-    print("Montant extrait : $montant"); // Log du montant extrait
-    print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
+    // print("Montant extrait : $montant"); // Log du montant extrait
+    // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
 
     // Mettre à jour les contrôleurs
     montantController.text = montant;
@@ -474,9 +474,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       typeOperationController.text = '2'; // Mettre à jour le champ de texte      
     } else {     
       typeOperationController.text = '1'; // Réinitialiser le champ de texte     
-    }
-
-   
+    }  
 
   } catch (e) {
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
@@ -597,20 +595,20 @@ bool isValidDate(String dateStr) {
 
 
    // Marquer comme supprimé
-Future<void> markAsDeleted(OrangeModel depos) async {
-  await _initializeBox(); // Assurez-vous que la boîte est ouverte
-  if (todobos != null) {
-    // Marque l'élément comme supprimé en mettant à jour un champ spécifique
-    depos.scanMessage = 'Message supprimé'; // Met à jour le champ pour indiquer que l'élément est supprimé
-    await todobos!.put(depos.idoperation, depos).then((value) {
-      print("Dépôt marqué comme supprimé : ${depos.idoperation}");
-    }).catchError((error) {
-      print("Erreur lors de la mise à jour : $error");
-    });
-  } else {
-    print("Boîte Hive non initialisée");
-  }
-}
+// Future<void> markAsDeleted(OrangeModel depos) async {
+//   await _initializeBox(); // Assurez-vous que la boîte est ouverte
+//   if (todobos != null) {
+//     // Marque l'élément comme supprimé en mettant à jour un champ spécifique
+//     depos.scanMessage = 'Message supprimé'; // Met à jour le champ pour indiquer que l'élément est supprimé
+//     await todobos!.put(depos.idoperation, depos).then((value) {
+//      // print("Dépôt marqué comme supprimé : ${depos.idoperation}");
+//     }).catchError((error) {
+//      // print("Erreur lors de la mise à jour : $error");
+//     });
+//   } else {
+//    // print("Boîte Hive non initialisée");
+//   }
+// }
 
 
 
@@ -626,16 +624,16 @@ Future<void> deleteNonScannedDeposInHive(int idoperation) async {
     final OrangeModel? value = box.get(key);
     if (value != null && value.idoperation == idoperation && value.scanMessage == '') {
       keyToDelete = key;
-      print('Trouvé pour suppression - Clé: $key, Valeur: ${value.idoperation}');
+    //  print('Trouvé pour suppression - Clé: $key, Valeur: ${value.idoperation}');
       break; // Une fois trouvé, vous pouvez sortir de la boucle
     }
   }
 
   if (keyToDelete != null) {
-    print('Suppression de la clé: $keyToDelete');
+   // print('Suppression de la clé: $keyToDelete');
     await box.delete(keyToDelete);
   } else {
-    print('Aucun élément trouvé avec idoperation: $idoperation');
+ //   print('Aucun élément trouvé avec idoperation: $idoperation');
   }
 }
 
@@ -752,7 +750,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
 
   // Vérifiez si _deposList est vide après filtrage
   if (_deposList.isEmpty) {
-    print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
+    //print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
     return {
       'augmentation': {},
       'diminution': {},
@@ -845,50 +843,6 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     operateurController.text = '0';
   }
 }
-
-
-Future<Map<int, String>> getOperatorLabels() async {
-  final simBox = await Hive.openBox<AddSimModel>('todobox5');
-  final labels = <int, String>{};
-
-  for (var sim in simBox.values) {
-    labels[sim.idOperateur] = sim.LibOperateur;
-  }
-
-  return labels;
-}
-
-Future<List<Map<String, dynamic>>> getOperationsWithOperatorLabels() async {
-  final orangeBox = await Hive.openBox<OrangeModel>('todobox');
-  final labelsMap = await getOperatorLabels();
-  
-  final operationsWithLabels = <Map<String, dynamic>>[];
-
-  for (var operation in orangeBox.values) {
-    operationsWithLabels.add({
-      'idoperation': operation.idoperation,
-      'dateoperation': operation.dateoperation,
-      'montant': operation.montant,
-      'numeroTelephone': operation.numeroTelephone,
-      'infoClient': operation.infoClient,
-      'typeOperation': operation.typeOperation,
-      'operateur': labelsMap[operation.idoperation] ?? 'Unknown',
-      'supprimer': operation.supprimer,
-      'iddette': operation.iddette,
-      'optionCreance': operation.optionCreance,
-      'scanMessage': operation.scanMessage,
-      'numeroIndependant': operation.numeroIndependant,
-    });
-  }
-
-  return operationsWithLabels;
-}
-
-
-
-
-
-
 
 
 
