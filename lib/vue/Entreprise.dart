@@ -28,15 +28,44 @@ class _EntreprisePageState extends State<EntreprisePage> {
   }
 
   // Méthode pour incrémenter la date
-  void incrementDate() {
-    if (entrepriseController.DateControleController.text.isEmpty) {
-      entrepriseController.DateControleController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    } else {
-      DateTime currentDate = DateFormat('dd/MM/yyyy').parse(entrepriseController.DateControleController.text);
-      DateTime nextDate = currentDate.add(Duration(days: 1));
-      entrepriseController.DateControleController.text = DateFormat('dd/MM/yyyy').format(nextDate);
+  void incrementDate(BuildContext context) async {
+    bool confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmation'),
+          content: const Text('Voulez-vous clôturer la journée d\'hier?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Annuler
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Confirmer
+              },
+              child: const Text('Confirmer'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm) {
+      if (entrepriseController.DateControleController.text.isEmpty) {
+        entrepriseController.DateControleController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+      } else {
+        DateTime currentDate = DateFormat('dd/MM/yyyy').parse(entrepriseController.DateControleController.text);
+        DateTime nextDate = currentDate.add(Duration(days: 1));
+        entrepriseController.DateControleController.text = DateFormat('dd/MM/yyyy').format(nextDate);
+      }
+      entrepriseController.updateEntreprise(DateControle: entrepriseController.DateControleController.text);
+
+     // Appel à la fonction Renitialisation
+      await entrepriseController.RenitialisationOperateur();
     }
-    entrepriseController.updateEntreprise(DateControle: entrepriseController.DateControleController.text);
   }
 
   @override
@@ -127,16 +156,16 @@ class _EntreprisePageState extends State<EntreprisePage> {
               
               // Ajout du bouton pour incrémenter la date
               ElevatedButton(
-                onPressed: incrementDate,
+                onPressed: () => incrementDate(context),
                 child: const Text('Date du jour'),
               ),
-
+              
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (entrepriseController.formKey.currentState!.validate()) {
                     entrepriseController.formKey.currentState!.save();
-                    entrepriseController.saveEntrepriseData(context,entrepriseController.Entreprise).then((_) {
+                    entrepriseController.saveEntrepriseData(context, entrepriseController.Entreprise).then((_) {
                       setState(() {
                         entrepriseController.resetFormFields();
                       });
@@ -149,20 +178,20 @@ class _EntreprisePageState extends State<EntreprisePage> {
                   }
                 },
                 child: const Text('Enregistrer'),
-                 style: ButtonStyle(
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                    ),
-                    side: MaterialStateProperty.all(const BorderSide(
-                      color: Colors.grey,
-                    )),
-                    backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
                   ),
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                  ),
+                  side: MaterialStateProperty.all(const BorderSide(
+                    color: Colors.grey,
+                  )),
+                  backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
+                ),
               ),
             ],
           ),

@@ -26,23 +26,6 @@ class _HomePageState extends State<HomePage> {
     Parametrage(),
   ];
 
-  //  @override
-  // void initState() {
-  //   super.initState();
-  //   // Appeler la fonction de sauvegarde automatiquement lors du chargement de la page
-  //  exportDataToLocalStorage();
-
-  //   //exportDataToLocalStorage('/storage/emulated/0/Download/data_export.json');
-
-  //    ///storage/emulated/0/Android/data/com.example.kadoustransfert/files/data_export.json
-
-
-
-  //  // exportDataToLocalStorage('/chemin/vers/mon_fichier/data_export.json');
-
-
-  // }
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -83,18 +66,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  // SizedBox(height: 5.0),
-                  // Padding(
-                  //   padding: EdgeInsets.only(bottom: 20.0),
-                  //   child: Text(
-                  //     'Choisissez votre opérateur',
-                  //     style: TextStyle(
-                  //       fontSize: 25.0,
-                  //       fontWeight: FontWeight.bold,
-                  //       color: Colors.blueAccent,
-                  //     ),
-                  //   ),
-                  // ),
+
                   SizedBox(height: 13.0),
                   
                   Align(

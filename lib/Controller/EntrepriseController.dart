@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
+import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 
 class EntrepriseController {
   final formKey = GlobalKey<FormState>();
@@ -108,7 +110,7 @@ class EntrepriseController {
     try {
       await todobos2.put(entreprise.idEntreprise, entreprise);
       print("Enregistrement réussi : $entreprise");
-      _showDialog(context, "Succès", "Enregistrement réussi ");
+      _showDialog(context, "Succès", "Journée clôturée!");
     } catch (e) {
       print("Erreur lors de l'enregistrement : $e");
       _showDialog(context, "Erreur", "Erreur lors de l'enregistrement ");
@@ -169,5 +171,44 @@ class EntrepriseController {
       },
     );
   }
+//---------------------------------------------------------------
+
+  Future<void> RenitialisationOperateur() async {
+  // Ouvrir les boîtes Hive
+  var boxOperateurs = await Hive.openBox<AddSimModel>('todobos5');
+  var boxJournal = await Hive.openBox<JournalCaisseModel>('todobos6');
+
+  // Récupérer les opérateurs depuis Hive
+  List<AddSimModel> operateursList = boxOperateurs.values.toList();
+
+  // Parcourir les opérateurs
+  for (AddSimModel operateur in operateursList) {
+    String operateurKey = operateur.idOperateur.toString();
+
+    // Parcourir les entrées de JournalCaisseModel
+    for (int i = 0; i < boxJournal.length; i++) {
+      JournalCaisseModel? journal = boxJournal.getAt(i);
+
+      // Comparer idOperateur à operateur
+      if (journal != null && journal.operateur == operateurKey) {
+        // Affecter 0 à montantJ
+        journal.montantJ = '0';
+       // await boxJournal.putAt(i, journal); // Mettre à jour l'entrée dans Hive
+      }
+    }
+  }
+
+  // // Parcourir toutes les entrées de JournalCaisseModel pour mettre à jour la caisse
+  // for (int i = 0; i < boxJournal.length; i++) {
+  //   JournalCaisseModel? journal = boxJournal.getAt(i);
+
+  //   if (journal != null && journal.typeCompte == 'caisse') {
+  //     // Affecter 0 à montantJ pour les entrées de type caisse
+  //     journal.montantJ = '0';
+  //    // await boxJournal.putAt(i, journal); // Mettre à jour l'entrée dans Hive
+  //   }
+  // }
+}
+
 
 }

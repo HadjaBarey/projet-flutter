@@ -49,6 +49,7 @@ class CaisseController {
     {'value': '3', 'label': 'unité'},
   ];
   String selectedTypeCpt = '1';
+  
 
   Future<void> initializeData() async {
     await Hive.initFlutter();

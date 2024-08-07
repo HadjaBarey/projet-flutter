@@ -53,6 +53,7 @@ dependencies:
   telephony: ^0.2.0
   path_provider: ^2.0.1
   file_picker: ^5.0.1
+  flutter_launcher_icons: ^0.13.1
 
   # sms_advanced: ^1.1.0
   # sms: ^0.2.0

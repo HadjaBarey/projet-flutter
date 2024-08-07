@@ -594,24 +594,6 @@ bool isValidDate(String dateStr) {
   }
 
 
-   // Marquer comme supprimé
-// Future<void> markAsDeleted(OrangeModel depos) async {
-//   await _initializeBox(); // Assurez-vous que la boîte est ouverte
-//   if (todobos != null) {
-//     // Marque l'élément comme supprimé en mettant à jour un champ spécifique
-//     depos.scanMessage = 'Message supprimé'; // Met à jour le champ pour indiquer que l'élément est supprimé
-//     await todobos!.put(depos.idoperation, depos).then((value) {
-//      // print("Dépôt marqué comme supprimé : ${depos.idoperation}");
-//     }).catchError((error) {
-//      // print("Erreur lors de la mise à jour : $error");
-//     });
-//   } else {
-//    // print("Boîte Hive non initialisée");
-//   }
-// }
-
-
-
 Future<void> deleteNonScannedDeposInHive(int idoperation) async {
   var box = await Hive.openBox<OrangeModel>('todobos');
 
@@ -738,7 +720,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
 
 
   // Récupérer les opérateurs depuis Hive
-  var box = await Hive.openBox<AddSimModel>('addSimBox');
+  var box = await Hive.openBox<AddSimModel>('todobos5');
   List<AddSimModel> operateursList = box.values.toList();
 
   // Initialiser les clés pour les opérateurs récupérés depuis Hive

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+//import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
-import 'package:kadoustransfert/Model/AddSimModel.dart';
+//import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 import 'package:kadoustransfert/vue/AddCaisse.dart';
 import 'package:kadoustransfert/Controller/OrangeController.dart';
@@ -32,11 +32,13 @@ class _CaissePageState extends State<CaissePage> {
     }
     return sum;
   }
+  
 
   Future<void> DateControleRecupere() async {
     await _controller.DateControleRecupere().then((v){
        setState(() {
         dateControle = _controller.dateJournalController.text;
+       // print('Date de contrôle récupérée : $dateControle');
         filterListByDate();
       });  
     }); 
@@ -49,8 +51,10 @@ class _CaissePageState extends State<CaissePage> {
     // print("ma date ");
     if (dateControle != null) {
       _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == dateControle).toList();
+      //print('Liste filtrée par date : ${_filteredListNotifier.value}');
     } else {
       _filteredListNotifier.value = listCaiss;
+      // print('Aucune date de contrôle, utilisation de la liste complète');
     }
   }
 
@@ -222,14 +226,14 @@ class _CaissePageState extends State<CaissePage> {
       });
     } catch (e) {
       // Handle error
-      print(e);
+      //print(e);
     }
   }
 
   @override
   void initState() {
     super.initState();
-    // DateControleRecupere(); // Appel de la fonction pour récupérer la date
+    DateControleRecupere(); // Appel de la fonction pour récupérer la date
     iniData();
   }
 
@@ -239,6 +243,8 @@ class _CaissePageState extends State<CaissePage> {
      _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == _controller.dateJournalController.text).toList();
     final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR').format(totalMontantJ).replaceAll(',', ' ');
 
+
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('TABLEAUX DES TRANSACTIONS'),
@@ -247,17 +253,6 @@ class _CaissePageState extends State<CaissePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Date de contrôle',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  dateControle = value;
-                });
-                filterListByDate();
-              },
-            ),
             Expanded(
               child: ValueListenableBuilder<List<JournalCaisseModel>>(
                 valueListenable: _filteredListNotifier,
