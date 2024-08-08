@@ -166,9 +166,10 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                   keyboardType: TextInputType.phone,
                   onChanged: (value) {
                     // Ajouter un listener onChanged pour vérifier la longueur du numéro de téléphone
-                    if (value.length == 8) {
+                    if (value.length == 11 || value.length == 7) {
                       controller.updateInfoClientController();
                     }
+
                   },
                 ),
 

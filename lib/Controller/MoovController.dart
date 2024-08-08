@@ -380,14 +380,13 @@ Future<void> DateControleRecupere() async {
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
   try {
-    print("Début de la détection de texte..."); // Log de début
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
     if (recognizedText.blocks.isEmpty) {
-      print("Aucun texte détecté."); // Log si aucun texte n'est détecté
-      scanMessageController.text = ''; // Réinitialiser le champ de texte
+      scanMessageController.text = '';
       return 0;
     }
+    
     String extractedMessage = '';
     for (TextBlock block in recognizedText.blocks) {
       for (TextLine line in block.lines) {
@@ -395,35 +394,47 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
     }
 
-    // Expressions régulières pour rechercher "transfere" et "numero"
-    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
-    RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*(\d{8})');
+    //print("Texte extrait : $extractedMessage");
 
-    // Recherche des mots clés dans le texte
-    Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
+    // Expression régulière pour extraire le montant
+    RegExp montantRegExp = RegExp(r'(?:montant:?\s*|\bMontant\b\s*)([\d\s]+(?:[\.,]\d{2})?)', caseSensitive: false);
+    RegExp numeroRegExp = RegExp(r"(?:numero:\s*|réussi\s+pour|code\s+d'agent:|code\s+agent:?)\s*(\d+)", caseSensitive: false);
+
+    Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage);
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
 
     // Variables pour stocker les valeurs extraites
     String montant = '';
     String numero = '';
 
-    final montantMatch = matchesTransfere.isNotEmpty ? matchesTransfere.first : null;
-    if (montantMatch != null) {
+    if (matchesTransfere.isNotEmpty) {
+      final montantMatch = matchesTransfere.first;
       montant = montantMatch.group(1) ?? '';
 
-      // Supprimer les virgules du montant pour la conversion
-      String montantSansVirgules = montant.replaceAll(',', '');
+      // Nettoyer le montant et convertir en entier
+      String montantSansEspaces = montant.replaceAll(' ', '');
+      String montantSansVirgules = montantSansEspaces.replaceAll(',', '.'); // Remplace les virgules par des points
+      String montantFinal = montantSansVirgules.split('.')[0]; // Prend la partie entière uniquement
+      int montantInt = int.parse(montantFinal);
 
-      // Convertir le montant en entier
-      int montantInt = int.parse(montantSansVirgules.split('.')[0]);
-
-      // Remplacer le montant dans le texte extrait
+      montantController.text = montantInt.toString();
       extractedMessage = extractedMessage.replaceFirst(montant, montantInt.toString());
     }
 
-    // Récupérer le numéro de téléphone
     if (matchesNumero.isNotEmpty) {
       numero = matchesNumero.first.group(1) ?? '';
+
+
+      // Enlever le préfixe "226" si présent et conserver les 8 chiffres suivants
+      if (numero.length > 8 && numero.startsWith('226')) {
+        numero = numero.substring(3); // Enlever "226" pour garder les 8 chiffres suivants
+      }
+
+      // Assurez-vous que le numéro a bien 8 chiffres
+      if (numero.length > 8) {
+        numero = numero.substring(0, 8);
+      }
+
     }
 
     // Si les champs montant ou numéro sont vides après le scan
@@ -436,44 +447,35 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       return 0; // Arrêter la fonction ici
     }
 
-    // print("Montant extrait : $montant"); // Log du montant extrait
-    // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
-
-    // Mettre à jour les contrôleurs
-    montantController.text = montant;
     numeroTelephoneController.text = numero;
     scanMessageController.text = 'Message Scanné';
     updateInfoClientController();
 
     // Déterminer le type d'opération en fonction des mots-clés
-    List<String> keywordsDepos = ['recu'];
+    List<String> keywordsDepos = ['Retrait'];
     bool isRetrait = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
-    List<String> keywordsRetrait = ['transfere'];
+    List<String> keywordsRetrait = ['Depot', 'Dépot'];
     bool isDepos = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
     List<String> keywordsSansCompte = ['vous avez recu'];
     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
-     if (isDepos) {
-      selectedOption= 1;
+    if (isDepos) {
+      selectedOption = 1;
     } else if (isRetrait) {
-      selectedOption= 2;
+      selectedOption = 2;
     } else if (isSansCompte) {
-      selectedOption= 3;
+      selectedOption = 3;
     }
 
-
-    // Mettre à jour le champ ScanMessage en fonction du résultat
     if (isRetrait && isSansCompte) {     
-      typeOperationController.text = '2'; // Mettre à jour le champ de texte      
+      typeOperationController.text = '2';      
     } else {     
-      typeOperationController.text = '1'; // Réinitialiser le champ de texte     
+      typeOperationController.text = '1';     
     }
 
-   
-
-  } catch (e) {
+ } catch (e) {
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
     return 0;
   } finally {
@@ -481,6 +483,9 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   }
   return 0;
 }
+
+
+
 
 
   // Reconnaître le texte à partir de l'image
@@ -589,23 +594,6 @@ bool isValidDate(String dateStr) {
       await box.delete(keyToDelete);
     }
   }
-
-
-   // Marquer comme supprimé
-// Future<void> markAsDeleted(OrangeModel depos) async {
-//   await _initializeBox(); // Assurez-vous que la boîte est ouverte
-//   if (todobos != null) {
-//     // Marque l'élément comme supprimé en mettant à jour un champ spécifique
-//     depos.scanMessage = 'Message supprimé'; // Met à jour le champ pour indiquer que l'élément est supprimé
-//     await todobos!.put(depos.idoperation, depos).then((value) {
-//       print("Dépôt marqué comme supprimé : ${depos.idoperation}");
-//     }).catchError((error) {
-//       print("Erreur lors de la mise à jour : $error");
-//     });
-//   } else {
-//     print("Boîte Hive non initialisée");
-//   }
-// }
 
 
 
