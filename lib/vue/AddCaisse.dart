@@ -19,6 +19,7 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
     widget.caisseController.CaisseOperateursController();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,41 +148,34 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                     ],
                   ),
                   SizedBox(height: 35),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        width: 379,
-                        child: DropdownButtonFormField<String>(
-                          value: widget.caisseController.operateurController.text.isNotEmpty 
-                              ? widget.caisseController.operateurController.text 
-                              : null,
-                          onChanged: (newValue) {
-                            setState(() {
-                              widget.caisseController.operateurController.text = newValue!;
-                            });
-                          },
-                          items: widget.caisseController.operateurOptions.map((option) {
-                            return DropdownMenuItem<String>(
-                              value: option['value'],
-                              child: Text(option['label']!),
-                            );
-                          }).toList(),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Opérateur',
-                            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez sélectionner une option';
-                            }
-                            return null;
-                          },
+                  ValueListenableBuilder<List<Map<String, String>>>(
+                    valueListenable: widget.caisseController.operateurOptionsNotifier,
+                    builder: (context, operateurOptions, _) {                    
+                      return DropdownButtonFormField<String>(
+                        value: widget.caisseController.operateurController.text.isEmpty
+                            ? null
+                            : widget.caisseController.operateurController.text,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Opérateur',
+                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    ],
+                        items: operateurOptions.map((operateur) {
+                          return DropdownMenuItem<String>(
+                            value: operateur['value'],
+                            child: Text(operateur['label']!),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            widget.caisseController.operateurController.text = newValue!;
+                          });
+                        },
+                      );
+                    },
                   ),
+
+
                 ],
               ),
               SizedBox(height: 35),

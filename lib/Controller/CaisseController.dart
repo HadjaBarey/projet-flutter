@@ -20,10 +20,13 @@ class CaisseController {
   TextEditingController montantJController = TextEditingController();
   TextEditingController typeCompteController = TextEditingController();
   TextEditingController operateurController = TextEditingController();
-
+  ValueNotifier<List<Map<String, String>>> operateurOptionsNotifier = ValueNotifier([]);
+ 
   // Liste des opérateurs
   List<AddSimModel> operateurList = [];
   List<Map<String, String>> operateurOptions = [];
+
+
 
   // Méthode pour charger les données depuis la boîte Hive
   Future<List<JournalCaisseModel>> loadData() async {
@@ -63,12 +66,22 @@ class CaisseController {
   Future<void> loadOperateurs() async {
     try {
       operateurList = await fetchOperateursFromDatabase();
-    //  print('Operateur List chargée: $operateurList');
+     // print('Operateur List chargée: $operateurList');
+      _updateOperateurOptions();
       CaisseOperateursController(); // Assurez-vous de mettre à jour les options après le chargement
     } catch (e) {
-     // print('Erreur lors du chargement des opérateurs: $e');
+   // print('Erreur lors du chargement des opérateurs: $e');
     }
   }
+
+
+   void _updateOperateurOptions() {
+    final options = operateurList
+        .map((item) => {'value': item.idOperateur.toString(), 'label': item.LibOperateur})
+        .toList();
+    operateurOptionsNotifier.value = options;
+  }
+
 
   Future<List<AddSimModel>> fetchOperateursFromDatabase() async {
     await initializeBox(); // Assurez-vous que la boîte est initialisée
@@ -87,14 +100,18 @@ class CaisseController {
     return operateurs;
   }
 
+
   String getTypeOperationLabel(String value) {
     final option = TypeComptes.firstWhere((element) => element['value'] == value, orElse: () => {'label': 'Inconnu'});
     return option['label']!;
   }
 
+
   void updateSelectedTypeOpe(String value) {
     selectedTypeCpt = value; 
   }
+
+
 
   JournalCaisseModel Caisse = JournalCaisseModel(
     idjournal: 0,
@@ -142,10 +159,16 @@ class CaisseController {
       Hive.registerAdapter(AddSimModelAdapter());
     }
     todobos6 = await Hive.openBox<JournalCaisseModel>("todobos6");
-    todobos5 = await Hive.openBox<AddSimModel>("todobos5");
-    await _initializeEntreprisesBox(); // Assurez-vous d'initialiser entrepriseBox
+     todobos5 = await Hive.openBox<AddSimModel>("todobos5");
+    await _initializeEntreprisesBox();
+    // Écouteur pour surveiller les changements sur la boîte todobos5
+    todobos5.listenable().addListener(() {
+      loadOperateurs();  // Recharge les opérateurs automatiquement en cas de modification
+    });
+    //await _initializeEntreprisesBox(); // Assurez-vous d'initialiser entrepriseBox
    // print('Hive and boxes initialized.');
   }
+
 
   Future<void> saveAddCaisseData() async {
     try {

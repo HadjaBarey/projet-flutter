@@ -16,7 +16,7 @@ class EntrepriseController {
   TextEditingController DateControleController = TextEditingController();
 
   EntrepriseModel Entreprise = EntrepriseModel(
-    idEntreprise: 0,
+    idEntreprise: 1,
     NomEntreprise: '',
     DirecteurEntreprise: '',
     DateControle: '',
@@ -28,10 +28,10 @@ class EntrepriseController {
 
   void resetFormFields() {
     Entreprise = EntrepriseModel(
-      idEntreprise: Entreprise.idEntreprise + 1,
-      NomEntreprise: '',
-      DirecteurEntreprise: '',
-      DateControle: '',
+      idEntreprise: 1,
+      NomEntreprise:  Entreprise.NomEntreprise,
+      DirecteurEntreprise: Entreprise.DirecteurEntreprise,
+      DateControle: Entreprise.DateControle,
     );
     // idEntrepriseController.text = Entreprise.idEntreprise.toString();
   }
@@ -54,17 +54,17 @@ class EntrepriseController {
 }
 
 
-  void _initializeEntrepriseId() {
-    if (todobos2.isNotEmpty) {
-      final sortedEntreprise = todobos2.values.toList()
-        ..sort((a, b) => a.idEntreprise.compareTo(b.idEntreprise));
-      final lastEntreprise = sortedEntreprise.last;
-      Entreprise.idEntreprise = lastEntreprise.idEntreprise + 1;
-    } else {
-      Entreprise.idEntreprise = 1;
-    }
-    // idEntrepriseController.text = Entreprise.idEntreprise.toString();
-  }
+  // void _initializeEntrepriseId() {
+  //   if (todobos2.isNotEmpty) {
+  //     final sortedEntreprise = todobos2.values.toList()
+  //       ..sort((a, b) => a.idEntreprise.compareTo(b.idEntreprise));
+  //     final lastEntreprise = sortedEntreprise.last;
+  //     Entreprise.idEntreprise = lastEntreprise.idEntreprise + 1;
+  //   } else {
+  //     Entreprise.idEntreprise = 1;
+  //   }
+  //   // idEntrepriseController.text = Entreprise.idEntreprise.toString();
+  // }
 
   Future<void> initializeBox() async {
     await Hive.initFlutter();
@@ -73,18 +73,30 @@ class EntrepriseController {
     }
     todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
 
-    if (todobos2.isEmpty) {
-     // print("La boîte Hive des entreprises est vide");
-    } else {
-     // print("La boîte Hive des entreprises contient des données");
-    }
-
-    _initializeEntrepriseId();
-    // Set default date if DateControleController.text is empty
   if (DateControleController.text.isEmpty) {
     DateControleController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     updateEntreprise(DateControle: DateControleController.text);
   }
+  // Charger l'entreprise existante ou en créer une nouvelle
+    await loadOrCreateEntreprise();
+  }
+
+  Future<void> loadOrCreateEntreprise() async {
+    if (todobos2.isEmpty) {
+      Entreprise = EntrepriseModel(
+        idEntreprise: 1,
+        NomEntreprise: '',
+        DirecteurEntreprise: '',
+        DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+      );
+      await saveEntrepriseData(null);
+    } else {
+      Entreprise = todobos2.get(1) ?? Entreprise;
+      idEntrepriseController.text = Entreprise.idEntreprise.toString();
+      NomEntrepriseController.text = Entreprise.NomEntreprise;
+      DirecteurEntrepriseController.text = Entreprise.DirecteurEntreprise;
+      DateControleController.text = Entreprise.DateControle;
+    }
   }
 
   Future<List<EntrepriseModel>> loadData() async {
@@ -106,14 +118,18 @@ class EntrepriseController {
     if (DateControle != null) Entreprise.DateControle = DateControle;
   }
 
-   Future<void> saveEntrepriseData(BuildContext context, EntrepriseModel entreprise) async {
+  Future<void> saveEntrepriseData(BuildContext? context) async {
     try {
-      await todobos2.put(entreprise.idEntreprise, entreprise);
-      print("Enregistrement réussi : $entreprise");
-      _showDialog(context, "Succès", "Journée clôturée!");
+      await todobos2.put(Entreprise.idEntreprise, Entreprise);
+      print("Enregistrement réussi : $Entreprise");
+      if (context != null) {
+        _showDialog(context, "Succès", "Journée clôturée!");
+      }
     } catch (e) {
       print("Erreur lors de l'enregistrement : $e");
-      _showDialog(context, "Erreur", "Erreur lors de l'enregistrement ");
+      if (context != null) {
+        _showDialog(context, "Erreur", "Erreur lors de l'enregistrement ");
+      }
     }
   }
 
@@ -128,24 +144,24 @@ class EntrepriseController {
     }
   }
 
-  Future<void> loadEntrepriseData(int idEntreprise) async {
-    final entreprise = todobos2.get(idEntreprise);
-    if (entreprise != null) {
-      Entreprise = entreprise;
-      idEntrepriseController.text = entreprise.idEntreprise.toString();
-      NomEntrepriseController.text = entreprise.NomEntreprise;
-      DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
-      DateControleController.text = entreprise.DateControle;
-      dateControleText = DateControleController.text;
-    }
-  }
+  // Future<void> loadEntrepriseData(int idEntreprise) async {
+  //   final entreprise = todobos2.get(idEntreprise);
+  //   if (entreprise != null) {
+  //     Entreprise = entreprise;
+  //     idEntrepriseController.text = entreprise.idEntreprise.toString();
+  //     NomEntrepriseController.text = entreprise.NomEntreprise;
+  //     DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
+  //     DateControleController.text = entreprise.DateControle;
+  //     dateControleText = DateControleController.text;
+  //   }
+  // }
 
-  Future<void> loadMostRecentEntrepriseData() async {
-    if (todobos2.isNotEmpty) {
-      final lastEntreprise = todobos2.values.last;
-      await loadEntrepriseData(lastEntreprise.idEntreprise);
-    }
-  }
+  // Future<void> loadMostRecentEntrepriseData() async {
+  //   if (todobos2.isNotEmpty) {
+  //     final lastEntreprise = todobos2.values.last;
+  //     await loadEntrepriseData(lastEntreprise.idEntreprise);
+  //   }
+  // }
 
   String getDateControle() {
     return dateControleText;
@@ -198,16 +214,6 @@ class EntrepriseController {
     }
   }
 
-  // // Parcourir toutes les entrées de JournalCaisseModel pour mettre à jour la caisse
-  // for (int i = 0; i < boxJournal.length; i++) {
-  //   JournalCaisseModel? journal = boxJournal.getAt(i);
-
-  //   if (journal != null && journal.typeCompte == 'caisse') {
-  //     // Affecter 0 à montantJ pour les entrées de type caisse
-  //     journal.montantJ = '0';
-  //    // await boxJournal.putAt(i, journal); // Mettre à jour l'entrée dans Hive
-  //   }
-  // }
 }
 
 

@@ -22,8 +22,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
   }
 
   void loadEntreprise() async {
-    await entrepriseController.initializeBox();
-    await entrepriseController.loadMostRecentEntrepriseData();
+   await entrepriseController.initializeBox();
     setState(() {});
   }
 
@@ -165,7 +164,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                 onPressed: () {
                   if (entrepriseController.formKey.currentState!.validate()) {
                     entrepriseController.formKey.currentState!.save();
-                    entrepriseController.saveEntrepriseData(context, entrepriseController.Entreprise).then((_) {
+                    entrepriseController.saveEntrepriseData(context).then((_) {
                       setState(() {
                         entrepriseController.resetFormFields();
                       });

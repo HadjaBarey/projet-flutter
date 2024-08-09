@@ -138,7 +138,7 @@ class _ParametrageState extends State<Parametrage> {
                            await exportDataToLocalStorage();                      
 
                            // Appel de la fonction pour copier le fichier exporté vers un autre dossier
-                         await copyFileToDownloadDirectory();
+                           await copyFileToDownloadDirectory();
                           
                           // Afficher une confirmation à l'utilisateur
                           showDialog(

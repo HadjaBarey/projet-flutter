@@ -63,18 +63,24 @@ Future<void> exportDataToLocalStorage() async {
 
     print('Nombre de données dans todobos5: ${todobos5.length}');
     if (todobos5.isNotEmpty) print('Premier élément de todobos5: ${todobos5.first.toJson()}');
+    else print('Aucune donnée dans todobos5.');
 
     print('Nombre de données dans todobos6: ${todobos6.length}');
     if (todobos6.isNotEmpty) print('Premier élément de todobos6: ${todobos6.first.toJson()}');
 
     // Ajouter les données à la map
-    allData['todobos'] = todobos.map((e) => e.toJson()).toList();
-    allData['todobos1'] = todobos1.map((e) => e.toJson()).toList();
-    allData['todobos2'] = todobos2.map((e) => e.toJson()).toList();
-    allData['todobos3'] = todobos3.map((e) => e.toJson()).toList();
-    allData['todobos4'] = todobos4.map((e) => e.toJson()).toList();
-    allData['todobos5'] = todobos5.map((e) => e.toJson()).toList();
-    allData['todobos6'] = todobos6.map((e) => e.toJson()).toList();
+    try {
+      allData['todobos'] = todobos.map((e) => e.toJson()).toList();
+      allData['todobos1'] = todobos1.map((e) => e.toJson()).toList();
+      allData['todobos2'] = todobos2.map((e) => e.toJson()).toList();
+      allData['todobos3'] = todobos3.map((e) => e.toJson()).toList();
+      allData['todobos4'] = todobos4.map((e) => e.toJson()).toList();
+      allData['todobos5'] = todobos5.map((e) => e.toJson()).toList();
+      allData['todobos6'] = todobos6.map((e) => e.toJson()).toList();
+    } catch (e) {
+      print('Erreur lors de la conversion des données en JSON: $e');
+      return;
+    }
 
     // Convertir les données en JSON
     String jsonData = jsonEncode(allData);
