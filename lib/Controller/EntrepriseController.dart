@@ -73,31 +73,47 @@ class EntrepriseController {
     }
     todobos2 = await Hive.openBox<EntrepriseModel>("todobos2");
 
+    // Charger ou créer l'entreprise
+ // await loadOrCreateEntreprise();
+
   if (DateControleController.text.isEmpty) {
     DateControleController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     updateEntreprise(DateControle: DateControleController.text);
   }
   // Charger l'entreprise existante ou en créer une nouvelle
-    await loadOrCreateEntreprise();
+  //  await loadOrCreateEntreprise();
   }
 
+
+
   Future<void> loadOrCreateEntreprise() async {
-    if (todobos2.isEmpty) {
-      Entreprise = EntrepriseModel(
-        idEntreprise: 1,
-        NomEntreprise: '',
-        DirecteurEntreprise: '',
-        DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
-      );
-      await saveEntrepriseData(null);
-    } else {
-      Entreprise = todobos2.get(1) ?? Entreprise;
-      idEntrepriseController.text = Entreprise.idEntreprise.toString();
-      NomEntrepriseController.text = Entreprise.NomEntreprise;
-      DirecteurEntrepriseController.text = Entreprise.DirecteurEntreprise;
-      DateControleController.text = Entreprise.DateControle;
-    }
+  if (todobos2.isEmpty) {
+    // Ajouter une nouvelle entrée si la boîte est vide
+    Entreprise = EntrepriseModel(
+      idEntreprise: 1,
+      NomEntreprise: '',
+      DirecteurEntreprise: '',
+      DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+    );
+    await saveEntrepriseData(null);
+  } else {
+    // Si la boîte n'est pas vide, supprimer les anciennes données et ajouter la nouvelle entrée
+    await deleteAllEntreprises();
+    Entreprise = EntrepriseModel(
+      idEntreprise: 1,
+      NomEntreprise: '',
+      DirecteurEntreprise: '',
+      DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+    );
+    await saveEntrepriseData(null);
   }
+}
+
+Future<void> deleteAllEntreprises() async {
+  // Supprimer toutes les anciennes entrées de la boîte
+  await todobos2.clear();
+}
+
 
   Future<List<EntrepriseModel>> loadData() async {
     if (todobos2.isEmpty) {
@@ -118,20 +134,30 @@ class EntrepriseController {
     if (DateControle != null) Entreprise.DateControle = DateControle;
   }
 
-  Future<void> saveEntrepriseData(BuildContext? context) async {
-    try {
-      await todobos2.put(Entreprise.idEntreprise, Entreprise);
-      print("Enregistrement réussi : $Entreprise");
-      if (context != null) {
-        _showDialog(context, "Succès", "Journée clôturée!");
-      }
-    } catch (e) {
-      print("Erreur lors de l'enregistrement : $e");
-      if (context != null) {
-        _showDialog(context, "Erreur", "Erreur lors de l'enregistrement ");
-      }
+Future<void> saveEntrepriseData(BuildContext? context) async {
+  try {
+    // Supprimer les données existantes si elles existent
+    if (todobos2.containsKey(Entreprise.idEntreprise)) {
+      await todobos2.delete(Entreprise.idEntreprise);
+    }
+    
+    // Ajouter la nouvelle donnée
+    await todobos2.put(Entreprise.idEntreprise, Entreprise);
+    
+    print("Enregistrement réussi : $Entreprise");
+    
+    if (context != null) {
+      _showDialog(context, "Succès", "Enregistrement réussi !");
+    }
+  } catch (e) {
+    print("Erreur lors de l'enregistrement : $e");
+    
+    if (context != null) {
+      _showDialog(context, "Erreur", "Erreur lors de l'enregistrement");
     }
   }
+}
+
 
 
   Future<void> markAsDeleted(EntrepriseModel entreprise) async {
@@ -215,6 +241,34 @@ class EntrepriseController {
   }
 
 }
+
+
+Future<void> loadEntrepriseData() async {
+  var box = await Hive.openBox<EntrepriseModel>('todobos2');
+
+  // Imprimer le contenu de la boîte pour débogage
+  print('Contenu de la boîte:');
+  for (int i = 0; i < box.length; i++) {
+    print('Index $i: ${box.getAt(i)?.toJson()}');
+  }
+
+  if (box.isNotEmpty) {
+    EntrepriseModel entreprise = box.getAt(0)!;
+    idEntrepriseController.text = entreprise.idEntreprise.toString();
+    NomEntrepriseController.text = entreprise.NomEntreprise;
+    DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
+    DateControleController.text = entreprise.DateControle;
+    print("ID Entreprise11111: ${idEntrepriseController.text}");
+    print("Nom Entreprise11111: ${NomEntrepriseController.text}");
+    print("Directeur Entreprise11111: ${DirecteurEntrepriseController.text}");
+    print("Date Controle111111: ${DateControleController.text}");
+  } else {
+    print("No data found in the box.");
+  }
+}
+
+
+
 
 
 }

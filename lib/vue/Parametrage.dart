@@ -8,6 +8,8 @@ import 'package:kadoustransfert/vue/ListAddSim.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
 import 'package:kadoustransfert/vue/ListOpTransaction.dart';
 import 'package:kadoustransfert/vue/ListUtilisateur.dart';
+import 'package:kadoustransfert/vue/SynchroniseAddSim.dart';
+import 'package:kadoustransfert/vue/SynchroniseEntreprise.dart';
 import 'package:kadoustransfert/vue/ViderBD.dart';
 
 class Parametrage extends StatefulWidget {
@@ -41,44 +43,103 @@ class _ParametrageState extends State<Parametrage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                  Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EntreprisePage(
-                            entrepriseController: EntrepriseController(),
+              Container(
+                      width: 150,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        border: Border.all(
+                          color: Colors.black87,
+                          width: 0.0,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15.0),
+                        onTap: () async {
+                          saveMultipleDefaultAddSimModels();
+                          saveDefaultEntrepriseModel();
+
+                          // Afficher une confirmation à l'utilisateur
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Données Sychonisées'),
+                              content: Text('Les données ont été Sychonisées avec succès.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Center(
+                          child: Text(
+                            'Synchronisation',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Entreprise',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
+                      ),
+                    ), 
+
+                  Container(
+                    width: 150,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      border: Border.all(
+                        color: Colors.black87,
+                        width: 0.0,
+                      ),
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(15.0),
+                      onTap: () async {
+                        EntrepriseController entrepriseController = EntrepriseController();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EntreprisePage(
+                              entrepriseController: entrepriseController,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Center(
+                        child: Text(
+                          'Entreprise',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
-                ),
 
-                Container(
+              ],
+            ),
+
+            SizedBox(height: 60),
+          
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+
+
+                 Container(
                   width: 150,
                   height: 100,
                   decoration: BoxDecoration(
@@ -109,12 +170,46 @@ class _ParametrageState extends State<Parametrage> {
                     ),
                   ),
                 ),
+
+                   Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
+                    ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PageListAddSim(),
+                        ),
+                      );
+                    },
+                    child: Center(
+                      child: Text(
+                        'Add Sim',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+
               ],
             ),
-            SizedBox(height: 60),
 
-
-
+          SizedBox(height: 60),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -135,7 +230,7 @@ class _ParametrageState extends State<Parametrage> {
                         borderRadius: BorderRadius.circular(15.0),
                         onTap: () async {
                           // Appel de la fonction d'exportation
-                           await exportDataToLocalStorage();                      
+                           await exportDataToLocalStorage();                  
 
                            // Appel de la fonction pour copier le fichier exporté vers un autre dossier
                            await copyFileToDownloadDirectory();
@@ -224,82 +319,6 @@ class _ParametrageState extends State<Parametrage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-
-                   Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PageListAddSim(),
-                        ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Add Sim',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-
-               Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const PageListeUtilisateur()),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Utilisateur',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                               
-              ],
-            ),
-
-            SizedBox(height: 60),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
                   Container(
                       width: 150,
                       height: 100,
@@ -348,43 +367,119 @@ class _ParametrageState extends State<Parametrage> {
 
                 // Remplacez votre widget d'exportation de données dans la liste de widgets ci-dessous.
 
-                Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PageListOpTransaction(),
-                        ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Opération Transaction',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
+                // Container(
+                //   width: 150,
+                //   height: 100,
+                //   decoration: BoxDecoration(
+                //     color: Colors.grey[300],
+                //     border: Border.all(
+                //       color: Colors.black87,
+                //       width: 0.0,
+                //     ),
+                //     borderRadius: BorderRadius.circular(15.0),
+                //   ),
+                //   child: InkWell(
+                //     borderRadius: BorderRadius.circular(15.0),
+                //     onTap: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder: (context) => const PageListOpTransaction(),
+                //         ),
+                //       );
+                //     },
+                //     child: Center(
+                //       child: Text(
+                //         'Opération Transaction',
+                //         style: TextStyle(
+                //           color: Colors.black,
+                //           fontSize: 18.0,
+                //           fontWeight: FontWeight.bold,
+                //         ),
+                //         textAlign: TextAlign.center,
+                //       ),
+                //     ),
+                //   ),
+                // ),
                     
               ],
             ),
+          // SizedBox(height: 60),
+
+          //   Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //     children: [
+          //      Container(
+          //         width: 150,
+          //         height: 100,
+          //         decoration: BoxDecoration(
+          //           color: Colors.grey[300],
+          //           border: Border.all(
+          //             color: Colors.black87,
+          //             width: 0.0,
+          //           ),
+          //           borderRadius: BorderRadius.circular(15.0),
+          //         ),
+          //         child: InkWell(
+          //           borderRadius: BorderRadius.circular(15.0),
+          //           onTap: () {
+          //             Navigator.push(
+          //               context,
+          //               MaterialPageRoute(builder: (context) => const PageListeUtilisateur()),
+          //             );
+          //           },
+          //           child: Center(
+          //             child: Text(
+          //               'Utilisateur',
+          //               style: TextStyle(
+          //                 color: Colors.black,
+          //                 fontSize: 18.0,
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ),                               
+
+          //   //     // Remplacez votre widget d'exportation de données dans la liste de widgets ci-dessous.
+
+          //       Container(
+          //         width: 150,
+          //         height: 100,
+          //         decoration: BoxDecoration(
+          //           color: Colors.grey[300],
+          //           border: Border.all(
+          //             color: Colors.black87,
+          //             width: 0.0,
+          //           ),
+          //           borderRadius: BorderRadius.circular(15.0),
+          //         ),
+          //         child: InkWell(
+          //           borderRadius: BorderRadius.circular(15.0),
+          //           onTap: () {
+          //             Navigator.push(
+          //               context,
+          //               MaterialPageRoute(
+          //                 builder: (context) => const PageListOpTransaction(),
+          //               ),
+          //             );
+          //           },
+          //           child: Center(
+          //             child: Text(
+          //               'Opération Transaction',
+          //               style: TextStyle(
+          //                 color: Colors.black,
+          //                 fontSize: 18.0,
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //               textAlign: TextAlign.center,
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+                    
+          //     ],
+          //   ),
 
           ],
         ),
