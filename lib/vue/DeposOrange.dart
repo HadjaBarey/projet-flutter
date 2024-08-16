@@ -56,7 +56,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   width: 150,
                   child: Image.asset('images/Depos.jpg'),
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 // Section pour choisir l'option
 
@@ -112,7 +112,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     enabled: false,
                   ),
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 0),
                 Offstage(
                   offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
@@ -131,7 +131,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     },
                   ),
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 0),
                 TextFormField(
                   controller: controller.montantController,
                   decoration: InputDecoration(
@@ -148,7 +148,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   },
                   keyboardType: TextInputType.number,
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 TextFormField(
                   controller: controller.numeroTelephoneController,
@@ -174,7 +174,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                   },
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 TextFormField(
                   controller: controller.infoClientController,
@@ -191,9 +191,10 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 15),
 
-               TextFormField(
+                SizedBox(height: 10),
+
+                 TextFormField(
                   controller: controller.numeroIndependantController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -207,9 +208,21 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     // Mettre à jour numeroIndependant
                     controller.updateDepos(numeroIndependant: value);
                   },
-                ),
+                ),     
 
-                SizedBox(height: 15),
+                 SizedBox(height: 10),
+
+                TextFormField(
+                  controller: controller.idTransController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'ID Trans',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  enabled: false, // Le champ est désactivé
+                ),           
+
+                SizedBox(height: 10),              
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -220,7 +233,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
 
-                    SizedBox(width: 0),
+                  SizedBox(width: 0),
 
                    Expanded(
                       child: Container(
@@ -230,7 +243,6 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                           builder: (context, value, __) {
                             // Mettre à jour scanMessage
                           controller.updateDepos(scanMessage: value.text);
-
                             return TextFormField(
                                 controller: controller.scanMessageController,
                                 decoration: InputDecoration(
@@ -297,7 +309,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     ),
                   ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -407,7 +419,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
 
 
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 ElevatedButton(
                   onPressed: () {

@@ -18,10 +18,10 @@ class OpTransactionModelAdapter extends TypeAdapter<OpTransactionModel> {
     };
     return OpTransactionModel(
       idOpTransaction: fields[0] as int,
-      CodeTransaction: fields[1] != null ? fields[1] as String : '',
-      TypeOperation: fields[2] != null ? fields[1] as String : '',
-      Operateur: fields[3] != null ? fields[3] as String : '',
-      supprimer: fields[4] != null ? fields[4] as int : 0,
+      CodeTransaction: fields[1] as String,
+      TypeOperation: fields[2] as String,
+      Operateur: fields[3] as String,
+      supprimer: fields[4] as int,
     );
   }
 

@@ -60,6 +60,7 @@ Future<void> _updateDepos() async {
     typeOperation: widget.depos.typeOperation,
     iddette: widget.depos.iddette,
     supprimer: widget.depos.supprimer,
+    idTrans: widget.depos.idTrans,
   );
 
   var existingDeposKey = updatedDepos.idoperation;

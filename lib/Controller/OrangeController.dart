@@ -64,6 +64,7 @@ class OrangeController {
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController numeroIndependantController = TextEditingController(); 
+  TextEditingController idTransController = TextEditingController(); 
   // Assurez-vous que optionCreanceController est un ValueNotifier<bool>
   ValueNotifier<bool> optionCreanceController = ValueNotifier<bool>(false); // Utiliser ValueNotifier<bool>
 
@@ -95,6 +96,7 @@ class OrangeController {
     optionCreance : false,
     scanMessage: '',
     numeroIndependant: '',
+    idTrans: '',
   );
 
   
@@ -161,6 +163,7 @@ void updateSelectedOption(int value) {
     infoClientController.text = '';
     montantController.text = '';
     numeroTelephoneController.text = '';
+    idTransController.text = '';
     optionCreanceController.value = false; // Mettez à jour la valeur directement
   } else if (selectedOption == 2) {
     typeOperationController.text = '2';
@@ -169,6 +172,7 @@ void updateSelectedOption(int value) {
     infoClientController.text = '';
     montantController.text = '';
     numeroTelephoneController.text = '';
+    idTransController.text = '';
     optionCreanceController.value = false; // Mettez à jour la valeur directement
   } else if (selectedOption == 3) {
     typeOperationController.text = '2';
@@ -177,6 +181,7 @@ void updateSelectedOption(int value) {
     infoClientController.text = '';
     montantController.text = '';
     numeroTelephoneController.text = '';
+    idTransController.text = '';
     optionCreanceController.value = false; // Mettez à jour la valeur directement
   }
 }
@@ -233,6 +238,7 @@ Future<void> DateControleRecupere() async {
     bool? optionCreance, // Définissez 'optionCreance' comme un paramètre nommé
     String? scanMessage,
     String? numeroIndependant,
+    String? idTrans,
   }) {
     if (idoperation != null) depos.idoperation = idoperation;
     if (dateoperation != null) depos.dateoperation = dateoperation;
@@ -246,6 +252,7 @@ Future<void> DateControleRecupere() async {
     if (optionCreance != null) {depos.optionCreance = optionCreance;}
     if (scanMessage != null) depos.scanMessage = scanMessage;
     if (numeroIndependant != null) depos.numeroIndependant = numeroIndependant;
+    if (idTrans != null) depos.idTrans = idTrans;
   }
 
 
@@ -280,6 +287,7 @@ Future<void> DateControleRecupere() async {
     required String infoClient,
     required String scanMessage,
     required String numeroIndependant,
+    required String idTrans,
     required bool optionCreance,
     //required int typeOperation,
 
@@ -300,6 +308,7 @@ Future<void> DateControleRecupere() async {
         //optionCreance :depos.optionCreance,
         scanMessage :scanMessage,
         numeroIndependant :numeroIndependant,
+        idTrans : idTrans,
       );
       updateDeposInHive(_deposList[index]);
     }
@@ -345,6 +354,7 @@ Future<void> DateControleRecupere() async {
       optionCreance: false,
       scanMessage: '',
       numeroIndependant: '',
+      idTrans: '',
       
     );
     idOperationController.text = depos.idoperation.toString();
@@ -815,7 +825,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     }).toList();
     
     // Débogage : Imprimez les options pour vérifier leur contenu
-    print('Operateur Options: $operateurOptions');
+   // print('Operateur Options: $operateurOptions');
 
     // Définir la première option comme sélectionnée
     operateurController.text = operateurOptions.isNotEmpty ? operateurOptions.first['value']! : '0';

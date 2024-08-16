@@ -18,10 +18,10 @@ class JournalCaisseModelAdapter extends TypeAdapter<JournalCaisseModel> {
     };
     return JournalCaisseModel(
       idjournal: fields[0] as int,
-      dateJournal: fields[1] != null ? fields[1] as String : '',
-      montantJ: fields[2] != null ? fields[2] as String : '',
-      typeCompte: fields[3] != null ? fields[3] as String : '',
-      operateur: fields[4] != null ? fields[4] as String : '',
+      dateJournal: fields[1] as String,
+      montantJ: fields[2] as String,
+      typeCompte: fields[3] as String,
+      operateur: fields[4] as String,
     );
   }
 

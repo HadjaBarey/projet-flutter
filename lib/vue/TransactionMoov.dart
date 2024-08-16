@@ -110,7 +110,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     enabled: false,
                   ),
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 0),
                 Offstage(
                   offstage: true, // Mettre à false si nécessaire
                   child: TextFormField(
@@ -129,7 +129,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     },
                   ),
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 0),
                 TextFormField(
                   controller: controller.montantController,
                   decoration: InputDecoration(
@@ -146,7 +146,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                   },
                   keyboardType: TextInputType.number,
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 TextFormField(
                   controller: controller.numeroTelephoneController,
@@ -173,7 +173,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                   },
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 TextFormField(
                   controller: controller.infoClientController,
@@ -190,7 +190,8 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 15),
+
+                 SizedBox(height: 10),
 
                TextFormField(
                   controller: controller.numeroIndependantController,
@@ -200,15 +201,25 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     suffixIcon: Icon(Icons.contact_page),
                   ),
-                  keyboardType: TextInputType.phone,
                   enabled: true, // Le champ est activé
                   onChanged: (value) {
-                    // Mettre à jour numeroIndependant
                     controller.updateDepos(numeroIndependant: value);
                   },
-                ),
+                ),  
+                
+                SizedBox(height: 10), 
 
-                SizedBox(height: 15),
+                  TextFormField(
+                  controller: controller.idTransController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'ID Trans',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  enabled: false, // Le champ est désactivé
+                ),           
+
+                SizedBox(height: 10),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -291,7 +302,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     ),
                   ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -349,7 +360,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 15),
+                        SizedBox(width: 10),
                         SizedBox(
                           width: buttonWidth, // Largeur calculée pour le bouton
                           height: 50, // Hauteur fixe pour le bouton
@@ -401,7 +412,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
 
 
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 ElevatedButton(
                   onPressed: () {

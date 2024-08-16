@@ -40,6 +40,9 @@ class OrangeModel extends HiveObject {
   @HiveField(11)
   String numeroIndependant;
 
+  @HiveField(12)
+  String idTrans;
+
   OrangeModel({
     required this.idoperation,
     required this.dateoperation,
@@ -53,6 +56,7 @@ class OrangeModel extends HiveObject {
     this.optionCreance = false,
     required this.scanMessage,
     required this.numeroIndependant,
+    required this.idTrans,
   });
 
   factory OrangeModel.fromJSON(Map<String, dynamic> json) {
@@ -69,6 +73,7 @@ class OrangeModel extends HiveObject {
       optionCreance: json['optionCreance'] ?? false,
       scanMessage: json['scanMessage'] ?? '',
       numeroIndependant: json['numeroIndependant'] ?? '',
+      idTrans: json['idTrans'] ?? '',
     );
   }
 
@@ -84,7 +89,8 @@ class OrangeModel extends HiveObject {
         iddette = 0,
         optionCreance = false,
         scanMessage = '',
-        numeroIndependant = '';
+        numeroIndependant = '',
+        idTrans = '';
 
   Map<String, dynamic> toJson() {
     return {
@@ -100,6 +106,7 @@ class OrangeModel extends HiveObject {
       'optionCreance': optionCreance,
       'scanMessage': scanMessage,
       'numeroIndependant': numeroIndependant,
+      'idTrans': idTrans,
     };
   }
 }

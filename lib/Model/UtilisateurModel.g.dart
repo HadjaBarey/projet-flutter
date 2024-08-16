@@ -18,10 +18,10 @@ class UtilisateurModelAdapter extends TypeAdapter<UtilisateurModel> {
     };
     return UtilisateurModel(
       idUtilisateur: fields[0] as int,
-      IdentiteUtilisateur: fields[1] != null ? fields[1] as String : '',
-      RefCNIBUtilisateur:  fields[2] != null ? fields[2] as String : '',
-      NumPhoneUtilisateur: fields[3] != null ? fields[3] as String : '',
-      supprimer: fields[4] != null ? fields[4] as int : 0,
+      IdentiteUtilisateur: fields[1] as String,
+      RefCNIBUtilisateur: fields[2] as String,
+      NumPhoneUtilisateur: fields[3] as String,
+      supprimer: fields[4] as int,
     );
   }
 
