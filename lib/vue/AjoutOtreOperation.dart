@@ -46,7 +46,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   width: 150,
                   child: Image.asset('images/AO.png'),
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 5),
 
                 // Section pour choisir l'option
                 Row(
@@ -88,7 +88,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   ),
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 0),
 
                 Offstage(
                   offstage: true, // Mettre à false si nécessaire
@@ -109,7 +109,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   ),
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 5),
 
             DropdownButtonFormField<String>(
                 value: controller.operateurController.text.isNotEmpty ? controller.operateurController.text : null,
@@ -141,7 +141,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
               ),
 
 
-              SizedBox(height: 15),
+              SizedBox(height: 10),
 
                 TextFormField(
                   controller: controller.montantController,
@@ -160,7 +160,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   keyboardType: TextInputType.number,
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 TextFormField(
                   controller: controller.numeroTelephoneController,
@@ -186,7 +186,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   },
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
               
                 TextFormField(
@@ -204,7 +204,23 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 15),
+                SizedBox(height: 10),
+
+                  TextFormField(
+                  controller: controller.idTransController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'ID Transaction',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  validator: (value) {
+                    controller.updateDepos(idTrans: value);
+                    return null;
+                  },
+                ),   
+
+                 SizedBox(height: 10),
+
 
                 Offstage(
                     offstage: true, // Rendre le champ invisible
@@ -223,7 +239,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   ),
 
                
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -324,7 +340,7 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                   ),
                 ),
 
-                SizedBox(height: 15),
+                SizedBox(height: 10),
 
                 Offstage(
                   offstage: true, // Mettez à true ou false selon votre logique pour afficher ou cacher le widget

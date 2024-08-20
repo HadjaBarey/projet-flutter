@@ -409,13 +409,16 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     // Expression régulière pour extraire le montant
     RegExp montantRegExp = RegExp(r'(?:montant:?\s*|\bMontant\b\s*)([\d\s]+(?:[\.,]\d{2})?)', caseSensitive: false);
     RegExp numeroRegExp = RegExp(r"(?:numero:\s*|réussi\s+pour|code\s+d'agent:|code\s+agent:?)\s*(\d+)", caseSensitive: false);
+    RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
 
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage);
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
+     Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
 
     // Variables pour stocker les valeurs extraites
     String montant = '';
     String numero = '';
+    String trans = '';
 
     if (matchesTransfere.isNotEmpty) {
       final montantMatch = matchesTransfere.first;
@@ -447,11 +450,18 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 
     }
 
+         // Récupérer le numéro de téléphone
+    if (matchesiDTrans.isNotEmpty) {
+      trans = matchesiDTrans.first.group(1) ?? '';
+    }
+
+
     // Si les champs montant ou numéro sont vides après le scan
     if (montant.isEmpty || numero.isEmpty) {
       montantController.text = ''; // Réinitialiser le champ montant
       numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
       scanMessageController.text = ''; // Réinitialiser le champ message
+      idTransController.text = '';
       // Afficher une boîte de dialogue sur l'appareil Android
       showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
       return 0; // Arrêter la fonction ici
@@ -459,6 +469,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 
     numeroTelephoneController.text = numero;
     scanMessageController.text = 'Message Scanné';
+    idTransController.text = trans;
     updateInfoClientController();
 
     // Déterminer le type d'opération en fonction des mots-clés
@@ -835,6 +846,52 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
   }
 }
 
+
+Future<bool> VerificationIdTrans(BuildContext context) async {
+  if (todobos == null || !todobos!.isOpen) {
+     todobos = await Hive.openBox<OrangeModel>('todobos');
+  }
+
+   _deposList = todobos!.values.toList();
+  
+  // Afficher la taille de la liste pour s'assurer qu'elle contient des éléments
+ // print('Taille de _deposList : ${_deposList.length}');
+
+  // Utiliser le format correct pour analyser la date
+  DateTime dateFiltrer = DateFormat('dd/MM/yyyy').parse(dateOperationController.text);
+ // print('Date filtrée : $dateFiltrer');
+
+  // Filtrer _deposList par date
+  List<OrangeModel> filteredList = _deposList.where((item) {
+    DateTime itemDate = DateFormat('dd/MM/yyyy').parse(item.dateoperation);
+    //print('Comparaison avec item.dateoperation: $itemDate');
+    bool dateMatches = itemDate.year == dateFiltrer.year &&
+                       itemDate.month == dateFiltrer.month &&
+                       itemDate.day == dateFiltrer.day;
+    return dateMatches;
+  }).toList();
+
+ // print('Liste filtrée par date: $filteredList');
+
+  // Récupérer la valeur de idTransController
+  String idTransToCheck = idTransController.text;
+//  print('ID Trans à vérifier: $idTransToCheck');
+
+  // Filtrer les éléments dans la liste filtrée en fonction de l'idTrans
+  for (var item in filteredList) {
+  //  print('Comparaison avec item.idTrans: ${item.idTrans}');
+    if (item.idTrans == idTransToCheck) {
+      // Si une correspondance est trouvée, affichez le dialogue d'erreur et retourner false
+      showErrorDialog(context, "Une transaction avec cet ID Trans existe déjà.");
+     // print('ID Trans trouvé, retour false');
+      return false;
+    }
+  }
+
+  // Si aucune correspondance n'est trouvée, retourner true
+ // print('Aucune correspondance trouvée, retour true');
+  return true;
+}
 
 
 

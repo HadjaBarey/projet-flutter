@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,7 +8,6 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:velocity_x/velocity_x.dart';
 import 'call_service.dart'; // Importez le service d'appel
 import 'package:kadoustransfert/Controller/OpTransactionController.dart';
 import 'package:kadoustransfert/Controller/AddSimController.dart';
@@ -27,6 +24,7 @@ class OrangeController {
   final TextEditingController montantController = TextEditingController();
   final TextEditingController numeroTelephoneController = TextEditingController();
   final TextEditingController scanMessageController = TextEditingController();
+  final TextEditingController idTransController = TextEditingController();
 
   // Instance du service d'appel
   final CallService callService = CallService();
@@ -64,7 +62,7 @@ class OrangeController {
   TextEditingController supprimerController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController numeroIndependantController = TextEditingController(); 
-  TextEditingController idTransController = TextEditingController(); 
+
   // Assurez-vous que optionCreanceController est un ValueNotifier<bool>
   ValueNotifier<bool> optionCreanceController = ValueNotifier<bool>(false); // Utiliser ValueNotifier<bool>
 
@@ -225,35 +223,37 @@ Future<void> DateControleRecupere() async {
 
 
   // Mettre à jour les données de dépôt
-  void updateDepos({
-    int? idoperation,
-    String? dateoperation,
-    String? montant,
-    String? numeroTelephone,
-    String? infoClient,
-    int? typeOperation,
-    String? operateur,
-    int? supprimer,
-    int? iddette,
-    bool? optionCreance, // Définissez 'optionCreance' comme un paramètre nommé
-    String? scanMessage,
-    String? numeroIndependant,
-    String? idTrans,
-  }) {
-    if (idoperation != null) depos.idoperation = idoperation;
-    if (dateoperation != null) depos.dateoperation = dateoperation;
-    if (montant != null) depos.montant = montant;
-    if (numeroTelephone != null) depos.numeroTelephone = numeroTelephone;
-    if (infoClient != null) depos.infoClient = infoClient;
-    if (typeOperation != null) depos.typeOperation = typeOperation;
-    if (operateur != null) depos.operateur = operateur;
-    if (supprimer != null) depos.supprimer = supprimer;
-    if (iddette != null) depos.iddette = iddette;
-    if (optionCreance != null) {depos.optionCreance = optionCreance;}
-    if (scanMessage != null) depos.scanMessage = scanMessage;
-    if (numeroIndependant != null) depos.numeroIndependant = numeroIndependant;
-    if (idTrans != null) depos.idTrans = idTrans;
-  }
+ void updateDepos({
+  int? idoperation,
+  String? dateoperation,
+  String? montant,
+  String? numeroTelephone,
+  String? infoClient,
+  int? typeOperation,
+  String? operateur,
+  int? supprimer,
+  int? iddette,
+  bool? optionCreance,
+  String? scanMessage,
+  String? numeroIndependant,
+  String? idTrans,
+}) {
+  
+  if (idoperation != null) depos.idoperation = idoperation;
+  if (dateoperation != null) depos.dateoperation = dateoperation;
+  if (montant != null) depos.montant = montant;
+  if (numeroTelephone != null) depos.numeroTelephone = numeroTelephone;
+  if (infoClient != null) depos.infoClient = infoClient;
+  if (typeOperation != null) depos.typeOperation = typeOperation;
+  if (operateur != null) depos.operateur = operateur;
+  if (supprimer != null) depos.supprimer = supprimer;
+  if (iddette != null) depos.iddette = iddette;
+  if (optionCreance != null) depos.optionCreance = optionCreance;
+  if (scanMessage != null) depos.scanMessage = scanMessage;
+  if (numeroIndependant != null) depos.numeroIndependant = numeroIndependant;
+  if (idTrans != null) depos.idTrans = idTrans;
+
+}
 
 
 
@@ -304,8 +304,7 @@ Future<void> DateControleRecupere() async {
         operateur: depos.operateur,
         supprimer: depos.supprimer,
         iddette: depos.iddette,
-        optionCreance: optionCreance,  // Correction ici
-        //optionCreance :depos.optionCreance,
+        optionCreance: optionCreance,  
         scanMessage :scanMessage,
         numeroIndependant :numeroIndependant,
         idTrans : idTrans,
@@ -410,17 +409,22 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
     }
 
+    print("Texte extrait : $extractedMessage");
+
     // Expressions régulières pour rechercher "transfere" et "numero"
     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*(\d{8})');
+    RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
 
     // Recherche des mots clés dans le texte
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
+    Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
 
     // Variables pour stocker les valeurs extraites
     String montant = '';
     String numero = '';
+    String trans = '';
 
     final montantMatch = matchesTransfere.isNotEmpty ? matchesTransfere.first : null;
     if (montantMatch != null) {
@@ -438,7 +442,13 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 
     // Récupérer le numéro de téléphone
     if (matchesNumero.isNotEmpty) {
-      numero = matchesNumero.first.group(1) ?? '';
+      numero =  matchesNumero.first.group(1) ?? '';
+    }
+
+
+      // Récupérer le numéro de téléphone
+    if (matchesiDTrans.isNotEmpty) {
+      trans = matchesiDTrans.first.group(1) ?? '';
     }
 
     // Si les champs montant ou numéro sont vides après le scan
@@ -446,6 +456,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       montantController.text = ''; // Réinitialiser le champ montant
       numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
       scanMessageController.text = ''; // Réinitialiser le champ message
+      idTransController.text = '';
       // Afficher une boîte de dialogue sur l'appareil Android
       showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
       return 0; // Arrêter la fonction ici
@@ -453,11 +464,13 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 
     // print("Montant extrait : $montant"); // Log du montant extrait
     // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
+    // print("Numéro ID Trans : $trans"); // Log du numéro extrait
 
     // Mettre à jour les contrôleurs
     montantController.text = montant;
     numeroTelephoneController.text = numero;
     scanMessageController.text = 'Message Scanné';
+    idTransController.text = trans;
     updateInfoClientController();
 
     // Déterminer le type d'opération en fonction des mots-clés
@@ -809,9 +822,10 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     );
     operateurController.text = operateur.idOperateur.toString();
   }
-  
 
-  void AutresOperationsController() {
+
+  
+void AutresOperationsController() {
 
   final filteredList = operateurList.where((operateur) => 
     operateur.idOperateur != 1 && operateur.idOperateur != 2).toList();
@@ -823,9 +837,6 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
         'label': operateur.LibOperateur,
       };
     }).toList();
-    
-    // Débogage : Imprimez les options pour vérifier leur contenu
-   // print('Operateur Options: $operateurOptions');
 
     // Définir la première option comme sélectionnée
     operateurController.text = operateurOptions.isNotEmpty ? operateurOptions.first['value']! : '0';
@@ -835,6 +846,59 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     operateurController.text = '0';
   }
 }
+
+
+
+Future<bool> VerificationIdTrans(BuildContext context) async {
+  if (todobos == null || !todobos!.isOpen) {
+     todobos = await Hive.openBox<OrangeModel>('todobos');
+  }
+
+   _deposList = todobos!.values.toList();
+  
+  // Afficher la taille de la liste pour s'assurer qu'elle contient des éléments
+ // print('Taille de _deposList : ${_deposList.length}');
+
+  // Utiliser le format correct pour analyser la date
+  DateTime dateFiltrer = DateFormat('dd/MM/yyyy').parse(dateOperationController.text);
+ // print('Date filtrée : $dateFiltrer');
+
+  // Filtrer _deposList par date
+  List<OrangeModel> filteredList = _deposList.where((item) {
+    DateTime itemDate = DateFormat('dd/MM/yyyy').parse(item.dateoperation);
+    //print('Comparaison avec item.dateoperation: $itemDate');
+    bool dateMatches = itemDate.year == dateFiltrer.year &&
+                       itemDate.month == dateFiltrer.month &&
+                       itemDate.day == dateFiltrer.day;
+    return dateMatches;
+  }).toList();
+
+ // print('Liste filtrée par date: $filteredList');
+
+  // Récupérer la valeur de idTransController
+  String idTransToCheck = idTransController.text;
+//  print('ID Trans à vérifier: $idTransToCheck');
+
+  // Filtrer les éléments dans la liste filtrée en fonction de l'idTrans
+  for (var item in filteredList) {
+  //  print('Comparaison avec item.idTrans: ${item.idTrans}');
+    if (item.idTrans == idTransToCheck) {
+      // Si une correspondance est trouvée, affichez le dialogue d'erreur et retourner false
+      showErrorDialog(context, "Une transaction avec cet ID Trans existe déjà.");
+     // print('ID Trans trouvé, retour false');
+      return false;
+    }
+  }
+
+  // Si aucune correspondance n'est trouvée, retourner true
+ // print('Aucune correspondance trouvée, retour true');
+  return true;
+}
+
+
+
+
+
 
 
 
