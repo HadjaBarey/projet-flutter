@@ -426,6 +426,25 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                         if (!isUnique) {
                           return; // Ajoutez ce return pour arrêter l'exécution si l'idTrans existe déjà
                         }
+
+                         // Date de référence au format français
+                      String dateReference = "23/09/2024";
+
+                      // Récupération de la date saisie dans dateOperationController.text
+                      String dateOperation = controller.dateOperationController.text;
+
+                      // Comparaison directe des chaînes de caractères (jj/MM/yyyy)
+                      if (dateOperation.compareTo(dateReference) > 0) {
+                        // Affichez un message d'erreur ou prenez une autre action si la date est invalide
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('veuillez contacter votre fournisseur SVP!'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return; // Arrêtez l'exécution du code ici si la condition n'est pas respectée
+                      }
+                      
                         // Si la vérification passe, enregistrez les données
                         controller.saveData(context);
                         Navigator.pop(context, true); // Indiquer que l'opération a réussi

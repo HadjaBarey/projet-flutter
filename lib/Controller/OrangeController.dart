@@ -414,9 +414,12 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     // Expressions régulières pour rechercher "transfere" et "numero"
     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*(\d{8})');
-    RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO):\s*([A-Z0-9.]+)', caseSensitive: false);
+    RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
+  //  RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO):\s*([A-Z0-9.]+)', caseSensitive: false);
+ // RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO)\s*:\s*([A-Z0-9.]+)', caseSensitive: false);
 
-    //RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
+
+    
 
     // Recherche des mots clés dans le texte
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
