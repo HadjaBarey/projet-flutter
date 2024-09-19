@@ -213,7 +213,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
 
                  SizedBox(height: 10),
 
-                TextFormField(
+                 TextFormField(
                   controller: controller.idTransController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -221,10 +221,29 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vueillez renseignez ce champs SVP!'; // Si le champ est vide
+                    } else if (value.length != 22) {
+                      return 'L\'ID Transaction doit contenir 22 caractères'; // Vérifie si la longueur est différente de 22
+                    }
                     controller.updateDepos(idTrans: value);
-                    return null;
+                    return null; // Validation réussie
                   },
-                ),   
+                ),
+
+
+                // TextFormField(
+                //   controller: controller.idTransController,
+                //   decoration: InputDecoration(
+                //     border: OutlineInputBorder(),
+                //     labelText: 'ID Transaction',
+                //     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                //   ),
+                //   validator: (value) {
+                //     controller.updateDepos(idTrans: value);
+                //     return null;
+                //   },
+                // ),   
 
                 SizedBox(height: 10),              
 

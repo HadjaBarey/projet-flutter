@@ -103,9 +103,9 @@ class AddSimController {
   Future<void> markAsDeleted(AddSimModel OpeSim) async {
     if (todobos5 != null) {
       await todobos5.put(OpeSim.idOperateur, OpeSim).then((value) {
-        print("Client marqué comme supprimé : $OpeSim");
+     //   print("Client marqué comme supprimé : $OpeSim");
       }).catchError((error) {
-        print("Erreur lors de la mise à jour : $error");
+      //  print("Erreur lors de la mise à jour : $error");
       });
     }
   }
@@ -121,7 +121,7 @@ class AddSimController {
       }
       return simOpe?.CodeAgent;
     } catch (e) {
-      print("Erreur lors de la récupération du CodeAgent : $e");
+    //  print("Erreur lors de la récupération du CodeAgent : $e");
       return null;
     }
   }

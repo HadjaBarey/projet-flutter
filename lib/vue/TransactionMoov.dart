@@ -426,7 +426,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                         if (!isUnique) {
                           return; // Ajoutez ce return pour arrêter l'exécution si l'idTrans existe déjà
                         }
-
+                         
                          // Date de référence au format français
                       String dateReference = "23/09/2024";
 
@@ -444,7 +444,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                         );
                         return; // Arrêtez l'exécution du code ici si la condition n'est pas respectée
                       }
-                      
+                    
                         // Si la vérification passe, enregistrez les données
                         controller.saveData(context);
                         Navigator.pop(context, true); // Indiquer que l'opération a réussi

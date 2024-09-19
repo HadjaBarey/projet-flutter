@@ -42,7 +42,15 @@ Future<void> saveMultipleDefaultAddSimModels() async {
       CodeAgent: 'A005',
       supprimer: 0,
     ),
+     AddSimModel(
+      idOperateur:100,
+      LibOperateur: 'Caisse',
+      NumPhone: '',
+      CodeAgent: '',
+      supprimer: 0,
+    ),
   ];
+
 
   // Enregistrer chaque instance dans la boîte Hive
   for (var sim in defaultSims) {

@@ -360,6 +360,8 @@ Future<void> DateControleRecupere() async {
     dateOperationController.text = depos.dateoperation;
   }
 
+
+
     // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
   Future<List<OrangeModel>> _loadDeposFromHive() async {
     List<OrangeModel> deposits = [];
@@ -409,12 +411,14 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
     }
 
-    print("Texte extrait : $extractedMessage");
+  //  print("Texte extrait : $extractedMessage");
 
     // Expressions régulières pour rechercher "transfere" et "numero"
     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*(\d{8})');
-    RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
+    RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([A-Z0-9.]{1,22})');
+
+    ///RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
   //  RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO):\s*([A-Z0-9.]+)', caseSensitive: false);
  // RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO)\s*:\s*([A-Z0-9.]+)', caseSensitive: false);
 
@@ -597,6 +601,7 @@ bool isValidDate(String dateStr) {
 }
 
 
+
  Future<List<OrangeModel>> loadNonScannedData() async {
    List<OrangeModel> deposits = [];
     if (todobos != null) {
@@ -606,6 +611,7 @@ bool isValidDate(String dateStr) {
     // var box = await Hive.openBox<OrangeModel>('todobos');
     // return box.values.where((depos) => depos.scanMessage == '').toList();
   }
+
 
  Future<void> deleteDeposInHive(int idoperation) async {
     var box = await Hive.openBox<OrangeModel>('todobos');
@@ -718,8 +724,8 @@ Future<void> _initializeAndLoadData() async {
   }
 
 
-// Votre méthode calculateSum avec chargement de données
 
+// Votre méthode calculateSum avec chargement de données
 
 Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) async {
   // Assurez-vous que la date de contrôle est récupérée avant de continuer
@@ -758,6 +764,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     augmentation[operateurKey] = 0.0;
   }
 
+
   // Vérifiez si _deposList est vide après filtrage
   if (_deposList.isEmpty) {
     //print('La liste _deposList est vide pour la date de contrôle et scanMessage.');
@@ -786,6 +793,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
       }
     }
 
+
     // Assurez-vous que les clés existent avant d'effectuer l'addition
     double diminutionTotal = diminution.values.fold(0.0, (sum, value) => sum + value);
     double augmentationTotal = augmentation.values.fold(0.0, (sum, value) => sum + value);
@@ -803,8 +811,6 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
 }
 
 
-
-
  Future<void> _initializeOperateursBox() async {
     if (!Hive.isBoxOpen("todobos5")) {
       await Hive.openBox<AddSimModel>("todobos5");
@@ -812,6 +818,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     OperateurBox = Hive.box<AddSimModel>("todobos5");
     operateurList = OperateurBox.values.toList();
   }
+
 
  // Méthode pour définir la valeur par défaut
    void initializeOperateurController(String libOperateur) {
@@ -833,7 +840,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
 void AutresOperationsController() {
 
   final filteredList = operateurList.where((operateur) => 
-    operateur.idOperateur != 1 && operateur.idOperateur != 2).toList();
+    operateur.idOperateur != 1 && operateur.idOperateur != 2 && operateur.idOperateur != 100).toList();
 
   if (filteredList.isNotEmpty) {
     operateurOptions = filteredList.map((operateur) {

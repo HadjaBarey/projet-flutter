@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
+import 'package:kadoustransfert/vue/DetailCaisse.dart';
 //import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class AddCaisssePage extends StatefulWidget {
@@ -211,10 +212,51 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                   backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
                 ),
               ),
+
+               SizedBox(height: 250),
+
+               ElevatedButton(
+                  onPressed: () {
+                  // Navigation vers la nouvelle page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PageDetailCaisse(caisseController:CaisseController()),
+                    ),
+                  );
+                },
+
+                  child: Text(
+                    'Détail des transactions',
+                    style: TextStyle(
+                      color: Colors.black,        // Couleur du texte
+                      fontWeight: FontWeight.bold, // Texte en gras
+                    ),
+                  ),
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                    ),
+                    side: MaterialStateProperty.all(const BorderSide(
+                      color: Colors.black12,
+                    )),
+                    backgroundColor: MaterialStateProperty.all(Colors.brown),
+                  ),
+                )
+
+
             ],
           ),
         ),
+        
       ),
+
+    
     );
   }
 }

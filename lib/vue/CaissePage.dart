@@ -237,12 +237,112 @@ class _CaissePageState extends State<CaissePage> {
     iniData();
   }
 
+///////////////////////////GESTION DE LA TABLE DETAILS /////////////////////////////////////////////////////
+
+// Future<List<TableRow>> buildDetailRows(List<JournalCaisseModel> filteredList) async {
+//   final formatter = NumberFormat('###,###', 'fr_FR');
+//    final CaisseController caisseController = CaisseController(); // Créer une instance du contrôleur
+//   List<TableRow> rows = [];
+
+//   for (var item in filteredList) {
+//     // Récupérer le libellé de l'opérateur
+//     String libelleOperateur = await caisseController.getLibOperateur(item.operateur);
+
+//     // Formater le montant
+//     String formattedMontantJ = formatter.format(double.tryParse(item.montantJ) ?? 0.0).replaceAll(',', ' ');
+
+//     // Ajouter la ligne avec les informations
+//     rows.add(
+//       TableRow(
+//         children: [
+//           TableCell(
+//             child: Align(
+//               alignment: Alignment.topLeft,
+//               child: Text(libelleOperateur), // Affiche la date
+//             ),
+//           ),
+//           TableCell(
+//             child: Align(
+//               alignment: Alignment.centerRight,
+//               child: Text(formattedMontantJ), // Montant formaté
+//             ),
+//           ),
+//           TableCell(
+//             child: Align(
+//               alignment: Alignment.centerRight,
+//               child: Text('0'), // Affiche le libellé de l'opérateur
+//             ),
+//           ),
+//           TableCell(
+//             child: Align(
+//               alignment: Alignment.centerRight,
+//               child: Text('0'), // Si vous avez d'autres valeurs à afficher
+//             ),
+//           ),
+//           TableCell(
+//             child: Align(
+//               alignment: Alignment.centerRight,
+//               child: Text('0'), // Si vous avez d'autres valeurs à afficher
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   rows.add(
+//     TableRow(
+//       children: [
+//         TableCell(
+//           child: Align(
+//             alignment: Alignment.topLeft,
+//             child: Text('Totaux'),
+//           ),
+//         ),
+//         TableCell(
+//           child: Align(
+//             alignment: Alignment.centerRight,
+//             child: Text('0'), // Mettre le total si calculé
+//           ),
+//         ),
+//         TableCell(
+//           child: Align(
+//             alignment: Alignment.centerRight,
+//             child: Text('0'), // Mettre le total si calculé
+//           ),
+//         ),
+//         TableCell(
+//           child: Align(
+//             alignment: Alignment.centerRight,
+//             child: Text('0'), // Mettre le total si calculé
+//           ),
+//         ),
+//         TableCell(
+//           child: Align(
+//             alignment: Alignment.centerRight,
+//             child: Text('0'), // Mettre le total si calculé
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+
+//   return rows;
+// }
+
+/////////////////////////////////////////FIN////////////////////////////////////////////////////////
+
   @override
   Widget build(BuildContext context) {
     double totalMontantJ = getSumMontantJ();
      _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == _controller.dateJournalController.text).toList();
     final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR').format(totalMontantJ).replaceAll(',', ' ');
 
+
+
+// Calculer la hauteur dynamique en fonction de la taille de l'écran
+  double screenHeight = MediaQuery.of(context).size.height;
+  double dynamicSpacing = screenHeight * 0.05; // Par exemple, 5% de la hauteur de l'écran
 
     
     return Scaffold(
@@ -287,9 +387,55 @@ class _CaissePageState extends State<CaissePage> {
                 },
               ),
             ),
-          ],
-        ),
+
+
+
+         // Nouveau tableau pour le détail des jours
+    //       SizedBox(height: 20), // Espacement entre les deux tableaux
+    //       Text(
+    //         'DETAILS DE LA JOURNEE',
+    //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    //       ),
+    //       Expanded(
+    //         child: ValueListenableBuilder<List<JournalCaisseModel>>(
+    //           valueListenable: _filteredListNotifier,
+    //           builder: (context, filteredList, child) {
+    //             return FutureBuilder<List<TableRow>>(
+    //               future: buildDetailRows(filteredList), // Utilisation de la fonction buildDetailRows
+    //               builder: (context, snapshot) {
+    //                 if (snapshot.connectionState == ConnectionState.waiting) {
+    //                   return Center(child: CircularProgressIndicator());
+    //                 } else if (snapshot.hasError) {
+    //                   return Center(child: Text('Erreur: ${snapshot.error}'));
+    //                 } else {
+    //                   return Table(
+    //                     border: TableBorder.all(width: 1.0),
+    //                     children: [
+    //                       TableRow(
+    //                         decoration: BoxDecoration(color: Colors.grey[200]),
+    //                         children: [
+    //                           TableCell(child: Center(child: Text('Compte'))),
+    //                           TableCell(child: Center(child: Text('Solde Initial'))),
+    //                           TableCell(child: Center(child: Text('Augmentation'))),
+    //                           TableCell(child: Center(child: Text('Dimission'))),
+    //                           TableCell(child: Center(child: Text('Solde Final'))),
+    //                         ],
+    //                       ),
+    //                       ...snapshot.data!,
+    //                     ],
+    //                   );
+    //                 }
+    //               },
+    //             );
+    //           },
+    //         ),
+    //       ),
+        ],
       ),
+    ),     
+
+
+
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(

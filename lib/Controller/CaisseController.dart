@@ -257,6 +257,7 @@ class CaisseController {
   }
 
 
+
 Future<String> getLibOperateur(String operateur) async {
   // Ouvrir la boîte Hive
   var addSimBox = await Hive.openBox<AddSimModel>('todobos5');
@@ -288,6 +289,39 @@ Future<String> getLibOperateur(String operateur) async {
       ? correspondingAddSimModel.LibOperateur
       : 'Caisse';
 }
+
+
+
+
+Future<List<JournalCaisseModel>> getAllCaisseData(DateTime dateFilter) async {
+  List<JournalCaisseModel> allCaisseData = [];
+  
+  try {
+    // Assurez-vous que la boîte est initialisée
+    await initializeBox();
+
+    // Vérifiez si la boîte contient des éléments
+    if (todobos6.isNotEmpty) {
+      // Itérez à travers toutes les valeurs de la boîte
+      allCaisseData = todobos6.values.toList();
+
+      // Filtrer les données en fonction de la date
+      allCaisseData = allCaisseData.where((data) {
+        // Convertir la date stockée en DateTime pour la comparaison
+        DateTime dataDate = DateTime.parse(data.dateJournal); // Assurez-vous que dateJournal est au format ISO 8601
+        return dataDate.year == dateFilter.year &&
+               dataDate.month == dateFilter.month &&
+               dataDate.day == dateFilter.day;
+      }).toList();
+    } 
+  } catch (e) {
+    // Gérer les erreurs
+   // print('Erreur lors de la récupération des données : $e');
+  }
+
+  return allCaisseData;
+}
+
 
 
 }
