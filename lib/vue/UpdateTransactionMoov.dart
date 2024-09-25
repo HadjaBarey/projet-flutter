@@ -36,6 +36,7 @@ class _UpdateMoovState extends State<UpdateMoov> {
     controller.numeroIndependantController.text = widget.depos.numeroIndependant;
     controller.scanMessageController.text = widget.depos.scanMessage;
     controller.optionCreanceController.value = widget.depos.optionCreance;
+    controller.idTransController.text = widget.depos.idTrans;
 
     // Imprimez les valeurs pour le débogage
     print("Initial idoperation: ${widget.depos.idoperation}");
@@ -60,7 +61,7 @@ Future<void> _updateDepos() async {
     typeOperation: widget.depos.typeOperation,
     iddette: widget.depos.iddette,
     supprimer: widget.depos.supprimer,
-    idTrans: widget.depos.idTrans,
+    idTrans: controller.idTransController.text,
   );
 
   var existingDeposKey = updatedDepos.idoperation;
@@ -95,7 +96,7 @@ Future<void> _updateDepos() async {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Modifier transfert Orange',
+          'Modifier transfert Moov',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
@@ -109,7 +110,7 @@ Future<void> _updateDepos() async {
                 Container(
                   height: 100,
                   width: 150,
-                  child: Image.asset('images/Depos.jpg'),
+                  child: Image.asset('images/FondMoov.png'),
                 ),
                 const SizedBox(height: 25),
                 TextFormField(
@@ -172,6 +173,22 @@ Future<void> _updateDepos() async {
                     suffixIcon: Icon(Icons.contact_page),
                   ),
                   keyboardType: TextInputType.phone,
+                  enabled: false,
+                ),
+                const SizedBox(height: 15),
+                  TextFormField(
+                  controller: controller.idTransController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'ID Trans',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Erreur';
+                    }
+                    return null;
+                  },
                   enabled: false,
                 ),
                 const SizedBox(height: 15),
@@ -250,7 +267,7 @@ Future<void> _updateDepos() async {
                     padding: MaterialStateProperty.all(
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.orangeAccent),
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.blueGrey),
                   ),
                 ),
                 const SizedBox(height: 20),

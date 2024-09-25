@@ -166,7 +166,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                   keyboardType: TextInputType.phone,
                   onChanged: (value) {
                     // Ajouter un listener onChanged pour vérifier la longueur du numéro de téléphone
-                    if (value.length == 11 || value.length == 7) {
+                    if (value.length == 11 || value.length == 7 || value.length == 8) {
                       controller.updateInfoClientController();
                     }
 
@@ -209,7 +209,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                 
                 SizedBox(height: 10), 
 
-                 TextFormField(
+                TextFormField(
                   controller: controller.idTransController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -217,10 +217,15 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez renseigner ce champ SVP!'; // Si le champ est vide
+                    } else if (value.length != 20 && value.length != 22) {
+                      return 'L\'ID Transaction doit contenir 20 ou 22 caractères'; // Vérifie si la longueur est différente de 20 ou 22
+                    }
                     controller.updateDepos(idTrans: value);
-                    return null;
+                    return null; // Validation réussie
                   },
-                ),   
+                ),
 
 
                 SizedBox(height: 10),
@@ -428,7 +433,7 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                         }
                          
                          // Date de référence au format français
-                      String dateReference = "23/09/2024";
+                      String dateReference = "01/11/2024";;
 
                       // Récupération de la date saisie dans dateOperationController.text
                       String dateOperation = controller.dateOperationController.text;

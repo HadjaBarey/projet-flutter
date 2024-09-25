@@ -229,21 +229,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                     controller.updateDepos(idTrans: value);
                     return null; // Validation réussie
                   },
-                ),
-
-
-                // TextFormField(
-                //   controller: controller.idTransController,
-                //   decoration: InputDecoration(
-                //     border: OutlineInputBorder(),
-                //     labelText: 'ID Transaction',
-                //     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                //   ),
-                //   validator: (value) {
-                //     controller.updateDepos(idTrans: value);
-                //     return null;
-                //   },
-                // ),   
+                ),  
 
                 SizedBox(height: 10),              
 
@@ -457,7 +443,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                       }
 
                       // Date de référence au format français
-                      String dateReference = "23/09/2024";
+                      String dateReference = "01/11/2024";
 
                       // Récupération de la date saisie dans dateOperationController.text
                       String dateOperation = controller.dateOperationController.text;

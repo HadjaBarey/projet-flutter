@@ -25,21 +25,22 @@ class _UpdateDeposOrangeState extends State<UpdateDeposOrange> {
   late OrangeController controller;
 
   @override
-  void initState() {
-    super.initState();
-    controller = OrangeController(widget.deposList);
+void initState() {
+  super.initState();
+  controller = OrangeController(widget.deposList);
 
-    // Initialisez les contrôleurs avec les valeurs de depos
-    controller.montantController.text = widget.depos.montant;
-    controller.numeroTelephoneController.text = widget.depos.numeroTelephone;
-    controller.infoClientController.text = widget.depos.infoClient;
-    controller.numeroIndependantController.text = widget.depos.numeroIndependant;
-    controller.scanMessageController.text = widget.depos.scanMessage;
-    controller.optionCreanceController.value = widget.depos.optionCreance;
+  // Initialize the controllers with the values of depos
+  controller.montantController.text = widget.depos.montant;
+  controller.numeroTelephoneController.text = widget.depos.numeroTelephone;
+  controller.infoClientController.text = widget.depos.infoClient;
+  controller.numeroIndependantController.text = widget.depos.numeroIndependant;
+  controller.scanMessageController.text = widget.depos.scanMessage;
+  controller.optionCreanceController.value = widget.depos.optionCreance;
+  controller.idTransController.text = widget.depos.idTrans;
 
-    // Imprimez les valeurs pour le débogage
-    print("Initial idoperation: ${widget.depos.idoperation}");
-  }
+  // For debugging
+  // print("Initial idoperation: ${widget.depos.idoperation}");
+}
 
 
 
@@ -60,7 +61,7 @@ Future<void> _updateDepos() async {
     typeOperation: widget.depos.typeOperation,
     iddette: widget.depos.iddette,
     supprimer: widget.depos.supprimer,
-    idTrans: widget.depos.idTrans,
+    idTrans: controller.idTransController.text,
   );
 
   var existingDeposKey = updatedDepos.idoperation;
@@ -175,6 +176,22 @@ Future<void> _updateDepos() async {
                   enabled: false,
                 ),
                 const SizedBox(height: 15),
+                TextFormField(
+                  controller: controller.idTransController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'ID Trans',
+                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Erreur';
+                    }
+                    return null;
+                  },
+                  enabled: false,
+                ),
+                const SizedBox(height: 15),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -261,7 +278,7 @@ Future<void> _updateDepos() async {
                       widget.refreshData();
                       Navigator.pop(context);
                     } else {
-                      print("Form validation failed.");
+                  //    print("Form validation failed.");
                     }
                   },
                   child: const Text(

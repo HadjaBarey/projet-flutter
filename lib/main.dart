@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kadoustransfert/vue/Connexion.dart';
 import 'Model/JournalCaisseModel.dart';
 import 'Model/AddSimModel.dart';
 import 'Model/OpTransactionModel.dart';
@@ -57,7 +58,7 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate, // Ajouter ce délégué
       ],
-      home: const HomePage(),
+      home: LoginPage(),
     );
   }
 }

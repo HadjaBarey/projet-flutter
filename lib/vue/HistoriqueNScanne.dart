@@ -45,42 +45,45 @@ class _HistoriqueNScannePageState extends State<HistoriqueNScannePage> {
 
       await loadData();
     } catch (e) {
-     // print('Erreur pendant l\'initialisation : $e');
+      print('Erreur pendant l\'initialisation : $e');
     }
   }
 
   Future<void> loadData() async {
-    try {
-      List<OrangeModel> deposits = await _controller.loadNonScannedData();
-
-      DateTime? startDate = _startDateController.text.isNotEmpty
+  try {
+    List<OrangeModel> deposits = await _controller.loadNonScannedData();
+    print('Nombre de données récupérées : ${deposits.length}');
+    
+    DateTime? startDate = _startDateController.text.isNotEmpty
         ? DateFormat('dd/MM/yyyy').parse(_startDateController.text)
         : null;
     DateTime? endDate = _endDateController.text.isNotEmpty
         ? DateFormat('dd/MM/yyyy').parse(_endDateController.text)
         : null;
 
-          setState(() {
-    _deposList = deposits.where((depos) {
-      try {
-        DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
-        if (startDate != null && dateOperation.isBefore(startDate)) {
+    setState(() {
+      _deposList = deposits.where((depos) {
+        try {
+          DateTime dateOperation = DateFormat('dd/MM/yyyy').parse(depos.dateoperation);
+          if (startDate != null && dateOperation.isBefore(startDate)) {
+            return false;
+          }
+          if (endDate != null && dateOperation.isAfter(endDate)) {
+            return false;
+          }
+          return true;
+        } catch (e) {
+          print('Erreur lors du parsing de la date : $e');
           return false;
         }
-        if (endDate != null && dateOperation.isAfter(endDate)) {
-          return false;
-        }
-        return true;
-      } catch (e) {
-     //  print('Error parsing dateoperation: ${depos.dateoperation}, Error: $e');
-        return false;
-      }
-    }).toList();
-  });
-    } catch (e) {
-     // print('Erreur lors du chargement des données : $e');
-     }
+      }).toList();
+    });
+
+    print('Nombre de données après filtrage : ${_deposList.length}');
+  } catch (e) {
+    print('Erreur lors du chargement des données : $e');
   }
+}
 
 
  void deleteItem(OrangeModel depos) async {
@@ -187,7 +190,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
  List<OrangeModel> filteredList = _deposList
-    .where((depos) => (depos.operateur == '2' && depos.scanMessage == '') || depos.optionCreance == true)
+    .where((depos) => (depos.operateur == '1' && depos.scanMessage == '') || depos.optionCreance == true)
     .toList(); 
 
 

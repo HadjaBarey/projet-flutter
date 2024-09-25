@@ -33,7 +33,7 @@ class OrangeController {
 
   EntrepriseController entrepriseController = EntrepriseController();
 
-  static const platform = MethodChannel('com.example.kadoustransfert/call');
+  static const platform = MethodChannel('apps.kadous.kadoustransfert/call');
 
   // Boîte Hive pour stocker les dépôts
   Box<OrangeModel>? todobos;
@@ -76,7 +76,7 @@ class OrangeController {
 
   OrangeController(this._deposList, {bool isDepos = false}) {
     _initializeBox();
-    initializeData();
+     initializeData();
     _initializeClientsBox();
   }
 
@@ -107,6 +107,7 @@ class OrangeController {
       todobos = Hive.box<OrangeModel>("todobos");
     }
   }
+
 
   // Méthode pour charger les données depuis la boîte Hive
   Future<List<OrangeModel>> loadData() async {
@@ -151,7 +152,7 @@ Future<void> _initializeEntreprisesBox() async {
   EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
 }
 
-
+//gestion des option a cocher//////////
 void updateSelectedOption(int value) {
   selectedOption = value;
   if (selectedOption == 1) {
@@ -186,7 +187,7 @@ void updateSelectedOption(int value) {
 
 
 
-
+//////controle de la date /////////////
 Future<void> DateControleRecupere() async {
   var EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
   
@@ -411,12 +412,14 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
     }
 
-  //  print("Texte extrait : $extractedMessage");
+   print("Texte extrait : $extractedMessage");
 
     // Expressions régulières pour rechercher "transfere" et "numero"
-    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*(\d+(?:[\.,]\d{-1})?)');
-    RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*(\d{8})');
-    RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([A-Z0-9.]{1,22})');
+    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
+    RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',multiLine: true);
+    RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
+
+    //RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([A-Z0-9.]{1,22})');
 
     ///RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
   //  RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO):\s*([A-Z0-9.]+)', caseSensitive: false);
@@ -475,21 +478,31 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
     // print("Numéro ID Trans : $trans"); // Log du numéro extrait
 
-    // Mettre à jour les contrôleurs
-    montantController.text = montant;
-    numeroTelephoneController.text = numero;
-    scanMessageController.text = 'Message Scanné';
-    idTransController.text = trans;
-    updateInfoClientController();
+    //controle du message scan dans l'option enregistrer et update
+
+     if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
+      montantController.text = montant;
+      numeroTelephoneController.text = numero;
+      idTransController.text = trans;
+      updateInfoClientController();
+      scanMessageController.text = 'Message Scanné';
+     
+    } else {
+      
+    }if (montantController.text == montant && numeroTelephoneController.text == numero &&  idTransController.text == trans){     
+         recognizedText2  = 'Message Scanné';        
+      } else {
+        recognizedText2= '';
+      }
 
     // Déterminer le type d'opération en fonction des mots-clés
-    List<String> keywordsDepos = ['recu'];
-    bool isRetrait = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+    List<String> keywordsDepos = ['Transfere de','transfere'];
+    bool isDepos = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
-    List<String> keywordsRetrait = ['transfere'];
-    bool isDepos = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+    List<String> keywordsRetrait = ['recu'];
+    bool isRetrait  = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
-    List<String> keywordsSansCompte = ['vous avez recu'];
+    List<String> keywordsSansCompte = [''];
     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
      if (isDepos) {
@@ -516,6 +529,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   }
   return 0;
 }
+
 
 
   // Reconnaître le texte à partir de l'image
@@ -599,7 +613,6 @@ bool isValidDate(String dateStr) {
     return false;
   }
 }
-
 
 
  Future<List<OrangeModel>> loadNonScannedData() async {

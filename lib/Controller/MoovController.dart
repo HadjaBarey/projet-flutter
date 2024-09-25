@@ -35,7 +35,7 @@ class MoovController {
 
   EntrepriseController entrepriseController = EntrepriseController();
 
-  static const platform = MethodChannel('com.example.kadoustransfert/call');
+  static const platform = MethodChannel('apps.kadous.kadoustransfert/call');
 
   // Boîte Hive pour stocker les dépôts
   Box<OrangeModel>? todobos;
@@ -404,40 +404,51 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
     }
 
-    print("Texte extrait : $extractedMessage");
+   // print("Texte extrait : $extractedMessage");
 
     // Expression régulière pour extraire le montant
-    RegExp montantRegExp = RegExp(r'(?:montant:?\s*|\bMontant\b\s*)([\d\s]+(?:[\.,]\d{2})?)', caseSensitive: false);
-    RegExp numeroRegExp = RegExp(r"(?:numero:\s*|réussi\s+pour|code\s+d'agent:|code\s+agent:?)\s*(\d+)", caseSensitive: false);
-    RegExp idTransRegExp = RegExp(r'(?:ID Trans|Txn ID|TID|ID):\s*([A-Z0-9. ]+)(?=\s|$)', caseSensitive: false);
-
+    RegExp montantRegExp = RegExp(r'(?:montant:?\s*|Montant\s*)[\n\r]*\s*([\d\s]+(?:[\.,]\d{2})?)',caseSensitive: false);
+    RegExp numeroRegExp = RegExp(r"(?:numero:\s*|réussi\s+pour|code\s+d'agent:|code\s+agent:?)\s*[\n\r]*\s*(\d+)",caseSensitive: false);
+    RegExp idTransRegExp = RegExp( r'(?:ID Trans|Txn ID|TID|ID):\s*([\w.]{20,22}) ', caseSensitive : false, multiLine : true, );
 
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage);
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
-     Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
+    Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
 
     // Variables pour stocker les valeurs extraites
     String montant = '';
     String numero = '';
     String trans = '';
+    String montantFinal = ''; 
 
-    if (matchesTransfere.isNotEmpty) {
-      final montantMatch = matchesTransfere.first;
-      montant = montantMatch.group(1) ?? '';
+if (matchesTransfere.isNotEmpty) {
+  final montantMatch = matchesTransfere.first;
+  montant = montantMatch.group(1) ?? '';
 
-      // Nettoyer le montant et convertir en entier
-      String montantSansEspaces = montant.replaceAll(' ', '');
-      String montantSansVirgules = montantSansEspaces.replaceAll(',', '.'); // Remplace les virgules par des points
-      String montantFinal = montantSansVirgules.split('.')[0]; // Prend la partie entière uniquement
-      int montantInt = int.parse(montantFinal);
+  // Nettoyer le montant en supprimant les espaces et les virgules, et en prenant en compte les parties décimales
+  String montantNettoye = montant.replaceAll(RegExp(r'[^\d,]'), ''); // Garde les chiffres et la virgule
+  montantNettoye = montantNettoye.replaceAll(',', '.'); // Remplacer les virgules par des points pour gestion correcte
 
-      montantController.text = montantInt.toString();
-      extractedMessage = extractedMessage.replaceFirst(montant, montantInt.toString());
-    }
+  // Séparer la partie entière de la partie décimale
+  List<String> partiesMontant = montantNettoye.split('.');
+  montantFinal = partiesMontant[0]; // On ne garde que la partie entière
+  
+  // Convertir en entier
+  int montantInt = int.parse(montantFinal);
+  
+  // Assigner le montant nettoyé au contrôleur
+  montantController.text = montantInt.toString(); // Version nettoyée sans espace et virgule
+  
+  // Remplacer l'ancien montant dans le message par le nouveau formaté
+  extractedMessage = extractedMessage.replaceFirst(montant, montantInt.toString());
+  
+  // print("Montant extrait111 : ${montantInt.toString()}"); // Montant nettoyé sans zéro supplémentaire
 
-    if (matchesNumero.isNotEmpty) {
+}
+
+
+   if (matchesNumero.isNotEmpty) {
       numero = matchesNumero.first.group(1) ?? '';
-
 
       // Enlever le préfixe "226" si présent et conserver les 8 chiffres suivants
       if (numero.length > 8 && numero.startsWith('226')) {
@@ -448,10 +459,10 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       if (numero.length > 8) {
         numero = numero.substring(0, 8);
       }
-
     }
 
-         // Récupérer le numéro de téléphone
+
+   // Récupérer le numéro de téléphone
     if (matchesiDTrans.isNotEmpty) {
       trans = matchesiDTrans.first.group(1) ?? '';
     }
@@ -468,17 +479,39 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       return 0; // Arrêter la fonction ici
     }
 
+    // print("Montant extrait : $montantFinal"); // Log du montant extrait
+    // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
+    // print("Numéro ID Trans : $trans"); // Log du numéro extrait
+
+
+//controle du message scan dans l'option enregistrer et update
+if (montantController.text.isEmpty || numeroTelephoneController.text.isEmpty || idTransController.text.isEmpty) {
+  if (montantController.text.isEmpty) {
+    montantController.text = montantFinal;  // Utilise montantFinal ici pour être sûr d'avoir la version nettoyée
+  }
+  if (numeroTelephoneController.text.isEmpty) {
     numeroTelephoneController.text = numero;
-    scanMessageController.text = 'Message Scanné';
+  }
+  if (idTransController.text.isEmpty) {
     idTransController.text = trans;
-    updateInfoClientController();
+  }
+  updateInfoClientController();
+  scanMessageController.text = 'Message Scanné';
+} else {
+  if (montantController.text == montantFinal && numeroTelephoneController.text == numero && idTransController.text == trans) {
+    recognizedText2 = 'Message Scanné';        
+  } else {
+    recognizedText2 = '';
+  }
+}
+
 
     // Déterminer le type d'opération en fonction des mots-clés
-    List<String> keywordsDepos = ['Retrait'];
-    bool isRetrait = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+    List<String> keywordsDepos = ['Dépot','Depot'];
+    bool isDepos = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
-    List<String> keywordsRetrait = ['Depot', 'Dépot'];
-    bool isDepos = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+    List<String> keywordsRetrait = ['Retrait initie','Retrait'];
+    bool isRetrait = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
     List<String> keywordsSansCompte = ['vous avez recu'];
     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
