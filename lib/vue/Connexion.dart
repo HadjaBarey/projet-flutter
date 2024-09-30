@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:kadoustransfert/auth/auth.dart';
+import 'dart:convert';  // Pour convertir la réponse JSON
 import 'package:kadoustransfert/homePage.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -10,36 +12,125 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
-  final String correctPassword = '000';  // Définir le mot de passe ici ou le récupérer d'une base de données Hive
-
+  bool auth =false;
   @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _login() async {
+  _maconnexion() async{
+    try{
+      await AuthKTransfert.authBypass({
+        "password":_passwordController.text
+      }).then((value){
+        print("le resultat ${value}");
+      });
+    }catch(e){
+      print("erreur sue les post du data $e");
+    }
+  }
+  // Fonction pour envoyer la requête de connexion
+  Future<void> _login() async {
     final enteredPassword = _passwordController.text;
 
-    if (enteredPassword == correctPassword) {
-      // Si le mot de passe est correct, naviguer vers la HomePage
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+    // URL de ton serveur Hostinger où le mot de passe est vérifié
+    final url = Uri.parse('https://hpanel.hostinger.com/websites/kadoussconnect.com/databases/my-sql-databases');  // Remplace par ton URL réelle
+
+    try {
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'password': enteredPassword,
+        }),
       );
-    } else {
-      // Afficher un message d'erreur si le mot de passe est incorrect
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+
+        if (jsonResponse['success']) {
+          // Si le mot de passe est correct, naviguer vers la HomePage
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        } else {
+          // Afficher un message d'erreur si le mot de passe est incorrect
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Mot de passe incorrect')),
+          );
+        }
+      } else {
+        // Afficher une erreur si le serveur n'a pas répondu correctement
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur de serveur : ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      // Gérer les erreurs de connexion réseau
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mot de passe incorrect')),
+        SnackBar(content: Text('Erreur de connexion : $e')),
       );
     }
+  }
+_verification()async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  try{
+  setState(() {
+    auth = prefs.getBool("auth")!;
+  });
+  if(auth==true) {
+    Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+  }
+  }catch(e){
+    print("nothing $e");
+  }
+}
+  connectmyUser()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try{
+      await AuthKTransfert.authBypass({
+        "password":_passwordController.text
+      }).then((value){
+         print(value);
+        if(value['response']=="true"){
+          prefs.setBool('auth', true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('ENREGISTREMENT EFFECTUE'))
+             );
+             Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        }else{
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('MOT DE PASSE ERRONE')),
+      );
+        }
+      });
+     
+    }catch(e){
+      print("une erreru sur la vue $e");
+    }
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _verification();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connexion'),
+        title: Text('LICENCE KADOUS TRANSFERT'),
         centerTitle: true,
         backgroundColor: Colors.orange,
       ),
@@ -49,13 +140,13 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Veuillez entrer votre mot de passe',
+              'Veuillez entrer votre licence',
               style: TextStyle(fontSize: 24.0),
             ),
             SizedBox(height: 20.0),
             TextField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: false,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Mot de passe',
@@ -63,7 +154,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
             SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: _login,
+              onPressed: (){
+                connectmyUser();
+              },
               child: Text('Se connecter'),
             ),
           ],
