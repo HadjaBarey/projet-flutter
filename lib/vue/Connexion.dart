@@ -13,6 +13,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool auth =false;
+  bool logi =false;
   @override
   void dispose() {
     _passwordController.dispose();
@@ -20,7 +21,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   _maconnexion() async{
+   
     try{
+      
       await AuthKTransfert.authBypass({
         "password":_passwordController.text
       }).then((value){
@@ -31,51 +34,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
   // Fonction pour envoyer la requête de connexion
-  Future<void> _login() async {
-    final enteredPassword = _passwordController.text;
-
-    // URL de ton serveur Hostinger où le mot de passe est vérifié
-    final url = Uri.parse('https://hpanel.hostinger.com/websites/kadoussconnect.com/databases/my-sql-databases');  // Remplace par ton URL réelle
-
-    try {
-      final response = await http.post(
-        url,
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, String>{
-          'password': enteredPassword,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-
-        if (jsonResponse['success']) {
-          // Si le mot de passe est correct, naviguer vers la HomePage
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        } else {
-          // Afficher un message d'erreur si le mot de passe est incorrect
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Mot de passe incorrect')),
-          );
-        }
-      } else {
-        // Afficher une erreur si le serveur n'a pas répondu correctement
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de serveur : ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
-      // Gérer les erreurs de connexion réseau
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur de connexion : $e')),
-      );
-    }
-  }
+ 
 _verification()async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   try{
@@ -94,6 +53,9 @@ _verification()async{
 }
   connectmyUser()async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
+     setState(() {
+        logi=true;
+      });
     try{
       await AuthKTransfert.authBypass({
         "password":_passwordController.text
@@ -117,6 +79,10 @@ _verification()async{
      
     }catch(e){
       print("une erreru sur la vue $e");
+    }finally{
+       setState(() {
+        logi=false;
+      });
     }
   }
   @override
@@ -134,32 +100,57 @@ _verification()async{
         centerTitle: true,
         backgroundColor: Colors.orange,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Veuillez entrer votre licence',
-              style: TextStyle(fontSize: 24.0),
-            ),
-            SizedBox(height: 20.0),
-            TextField(
-              controller: _passwordController,
-              obscureText: false,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Mot de passe',
+      body: logi==true?
+      Center(
+        child: CircularProgressIndicator(),
+      )
+       :SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Veuillez entrer votre licence',
+                style: TextStyle(fontSize: 24.0),
               ),
-            ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: (){
-                connectmyUser();
-              },
-              child: Text('Se connecter'),
-            ),
-          ],
+              SizedBox(height: 20.0),
+              TextField(
+                controller: _passwordController,
+                obscureText: false,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Mot de passe',
+                ),
+              ),
+              SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: (){
+                  connectmyUser();
+                },
+                child: Text('Se connecter'),
+              ),
+              SizedBox(height: 20.0),
+              Container(
+                  padding: EdgeInsets.all(16.0), // Ajoute un peu d'espace autour du texte
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // Change la couleur de fond si nécessaire
+                    borderRadius: BorderRadius.circular(10.0), // Ajoute des bords arrondis
+                  ),
+                  child: Text(
+                    'Veuillez contacter le +226 70808881/77917802 pour acquerir une licence! ', // Remplace par le texte que tu veux afficher
+                    style: TextStyle(
+                      fontSize: 16.0, // Taille du texte
+                      color: Colors.black, // Couleur du texte
+                      fontWeight: FontWeight.bold, // Style du texte en gras (optionnel)
+                    ),
+                    textAlign: TextAlign.center, // Centre le texte à l'intérieur du container
+                  ),
+                )
+
+
+            ],
+          ),
         ),
       ),
     );
