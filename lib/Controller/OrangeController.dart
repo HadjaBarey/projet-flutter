@@ -496,7 +496,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
 
     // Déterminer le type d'opération en fonction des mots-clés
-    List<String> keywordsDepos = ['Transfere de','transfere'];
+    List<String> keywordsDepos = ['Transfert de','transfert'];
     bool isDepos = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
 
     List<String> keywordsRetrait = ['recu'];
