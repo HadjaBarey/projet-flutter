@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:kadoustransfert/auth/auth.dart';
-import 'dart:convert';  // Pour convertir la réponse JSON
-import 'package:kadoustransfert/homePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kadoustransfert/auth/auth.dart';
+import 'package:kadoustransfert/homePage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,84 +10,152 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
-  bool auth =false;
-  bool logi =false;
+  bool auth = false;
+  DateTime? madate;
+  bool logi = false;
+  DateTime today = DateTime.now();
   @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
   }
 
-  _maconnexion() async{
-   
-    try{
-      
-      await AuthKTransfert.authBypass({
-        "password":_passwordController.text
-      }).then((value){
-        print("le resultat ${value}");
-      });
-    }catch(e){
-      print("erreur sue les post du data $e");
-    }
-  }
-  // Fonction pour envoyer la requête de connexion
- 
-_verification()async{
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  try{
-  setState(() {
-    auth = prefs.getBool("auth")!;
-  });
-  if(auth==true) {
-    Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-  }
-  }catch(e){
-    print("nothing $e");
-  }
-}
-  connectmyUser()async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-     setState(() {
-        logi=true;
-      });
-    try{
-      await AuthKTransfert.authBypass({
-        "password":_passwordController.text
-      }).then((value){
-         print(value);
-        if(value['response']=="true"){
-          prefs.setBool('auth', true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('ENREGISTREMENT EFFECTUE'))
-             );
-             Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        }else{
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('MOT DE PASSE ERRONE')),
-      );
-        }
-      });
-     
-    }catch(e){
-      print("une erreru sur la vue $e");
-    }finally{
-       setState(() {
-        logi=false;
-      });
-    }
-  }
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _verification();
+    _verif();
+    _verification(); 
+    
+    // Vérifie la licence au démarrage
+  }
+
+  // Vérification initiale de la licence
+  Future<void> _verification() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+
+    try {
+      // Récupération des données locales
+
+      String savedDate = prefs.getString('date_fin')!;
+      madate = DateTime.tryParse(savedDate);
+
+      setState(() {
+        auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
+      });
+
+      // Si la licence a expiré
+      if (madate!.isBefore(today)) {
+        print("Licence expirée ou inexistante. Tentative de mise à jour...");
+        
+      } else {
+        // Licence encore valide
+        if (auth) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        }
+      }
+    } catch (e) {
+      print("Erreur dans la vérification de la licence : $e");
+    }
+  }
+
+  // Revalidation de la licence auprès du serveur
+  _verif()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try{
+      String madatasave= prefs.getString("password")!;
+     verifAndprolonge(madatasave);
+    }catch (e) {
+      print("pas de save $e");
+    }
+  }  
+
+  Future<void> verifAndprolonge(password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      setState(() {
+        logi = true; // Affiche un chargement
+      });
+
+      var response = await AuthKTransfert.authBypass({
+        "password": password,
+      });
+
+      print("Réponse du serveur : $response");
+      DateTime today1 = DateTime.now();
+      // Si la licence est valide
+      print(response['date_fin']);
+      DateTime newExpiryDate = DateTime.parse(response['date_fin']);
+      if (newExpiryDate.isAfter(today1)) {
+        prefs.setBool('auth', true);
+         prefs.setString('password', password);
+        prefs.setString('date_fin', newExpiryDate.toString());
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connexion réussie.')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
+    } catch (e) {
+      print("Erreur dans la connexion : $e");
+    } finally {
+      setState(() {
+        logi = false; // Masque le chargement
+      });
+    }
+  }
+
+  // Connexion manuelle avec validation du mot de passe
+  Future<void> connectmyUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      setState(() {
+        logi = true; // Affiche un chargement
+      });
+
+      var response = await AuthKTransfert.authBypass({
+        "password": _passwordController.text,
+      });
+
+      print("Réponse du serveur : $response");
+
+      // Si la licence est valide
+      if (response['response'] == "true") {
+        DateTime newExpiryDate = DateTime.parse(response['date_fin']);
+        prefs.setBool('auth', true);
+        prefs.setString('password', _passwordController.text);
+        prefs.setString('date_fin', newExpiryDate.toString());
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connexion réussie.')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        verifAndprolonge(_passwordController.text);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Mot de-passe incorrect ou licence expirée.')),
+        );
+      }
+    } catch (e) {
+      print("Erreur dans la connexion : $e");
+    } finally {
+      setState(() {
+        logi = false; // Masque le chargement
+      });
+    }
   }
 
   @override
@@ -100,59 +166,53 @@ _verification()async{
         centerTitle: true,
         backgroundColor: Colors.orange,
       ),
-      body: logi==true?
-      Center(
-        child: CircularProgressIndicator(),
-      )
-       :SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Veuillez entrer votre licence',
-                style: TextStyle(fontSize: 24.0),
-              ),
-              SizedBox(height: 20.0),
-              TextField(
-                controller: _passwordController,
-                obscureText: false,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Mot de passe',
+      body: logi
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Veuillez entrer votre licence',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    SizedBox(height: 20.0),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Mot de passe',
+                      ),
+                    ),
+                    SizedBox(height: 20.0),
+                    ElevatedButton(
+                      onPressed: connectmyUser,
+                      child: Text('Se connecter'),
+                    ),
+                    SizedBox(height: 20.0),
+                    Container(
+                      padding: EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Text(
+                        'Veuillez contacter le +226 70808881/77917802 pour acquérir une licence !',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20.0),
-              ElevatedButton(
-                onPressed: (){
-                  connectmyUser();
-                },
-                child: Text('Se connecter'),
-              ),
-              SizedBox(height: 20.0),
-              Container(
-                  padding: EdgeInsets.all(16.0), // Ajoute un peu d'espace autour du texte
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200], // Change la couleur de fond si nécessaire
-                    borderRadius: BorderRadius.circular(10.0), // Ajoute des bords arrondis
-                  ),
-                  child: Text(
-                    'Veuillez contacter le +226 70808881/77917802 pour acquerir une licence! ', // Remplace par le texte que tu veux afficher
-                    style: TextStyle(
-                      fontSize: 16.0, // Taille du texte
-                      color: Colors.black, // Couleur du texte
-                      fontWeight: FontWeight.bold, // Style du texte en gras (optionnel)
-                    ),
-                    textAlign: TextAlign.center, // Centre le texte à l'intérieur du container
-                  ),
-                )
-
-
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

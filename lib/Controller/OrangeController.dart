@@ -362,8 +362,7 @@ Future<void> DateControleRecupere() async {
   }
 
 
-
-    // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
+  // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
   Future<List<OrangeModel>> _loadDeposFromHive() async {
     List<OrangeModel> deposits = [];
     for (var value in todobos!.values) {

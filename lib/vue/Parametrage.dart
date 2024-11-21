@@ -313,57 +313,57 @@ class _ParametrageState extends State<Parametrage> {
               ],
             ),
 
-            SizedBox(height: 60),
+            // SizedBox(height: 60),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () async {
-                      ViderBDPage();
-                      // Afficher une confirmation à l'utilisateur
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text('Base vider'),
-                          content:
-                              Text('Les données ont été vidées avec succès.'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Vider ma base',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
+            //     Container(
+            //       width: 150,
+            //       height: 100,
+            //       decoration: BoxDecoration(
+            //         color: Colors.grey[300],
+            //         border: Border.all(
+            //           color: Colors.black87,
+            //           width: 0.0,
+            //         ),
+            //         borderRadius: BorderRadius.circular(15.0),
+            //       ),
+            //       child: InkWell(
+            //         borderRadius: BorderRadius.circular(15.0),
+            //         onTap: () async {
+            //           ViderBDPage();
+            //           // Afficher une confirmation à l'utilisateur
+            //           showDialog(
+            //             context: context,
+            //             builder: (_) => AlertDialog(
+            //               title: Text('Base vider'),
+            //               content:
+            //                   Text('Les données ont été vidées avec succès.'),
+            //               actions: <Widget>[
+            //                 TextButton(
+            //                   child: Text('OK'),
+            //                   onPressed: () {
+            //                     Navigator.of(context).pop();
+            //                   },
+            //                 ),
+            //               ],
+            //             ),
+            //           );
+            //         },
+            //         child: Center(
+            //           child: Text(
+            //             'Vider ma base',
+            //             style: TextStyle(
+            //               color: Colors.black,
+            //               fontSize: 18.0,
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //             textAlign: TextAlign.center,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
 
                 // Container(
                 //   width: 150,
@@ -438,8 +438,13 @@ class _ParametrageState extends State<Parametrage> {
                 //     ),
                 //   ),
                 // ),
-              ],
-            ),
+
+
+
+            //   ],
+            // ),
+
+
             // SizedBox(height: 60),
 
             //   Row(
