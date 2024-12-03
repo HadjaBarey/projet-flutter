@@ -367,23 +367,63 @@ Future<void> DateControleRecupere() async {
 
 
   // Sélectionner une image à partir de la caméra
-  Future<void> pickImageCamera(BuildContext context) async {
+//   Future<void> pickImageCamera(BuildContext context) async {
+//   try {
+//     var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+//     if (returnedImage == null) return;
+//     selectedImage = XFile(returnedImage.path);
+//     final inputImage = InputImage.fromFilePath(returnedImage.path);
+//     if (scan == 2) {
+//       await recognizeText(context, inputImage);
+//     } else {
+//       await detecterText(context, inputImage);
+//     }
+
+//   } catch (e) {
+//     // Gestion des erreurs
+//     print("Error picking image: $e");
+//   }
+// }
+
+Future<void> pickImageCamera(BuildContext context) async {
   try {
-    var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+    final ImageSource? source = await showDialog<ImageSource>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Sélectionnez la source de l\'image'),
+          actions: [
+            TextButton(
+              child: Text('Caméra'),
+              onPressed: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            TextButton(
+              child: Text('Galerie'),
+              onPressed: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    final XFile? returnedImage = await ImagePicker().pickImage(source: source);
     if (returnedImage == null) return;
-    selectedImage = XFile(returnedImage.path);
+
     final inputImage = InputImage.fromFilePath(returnedImage.path);
+
     if (scan == 2) {
       await recognizeText(context, inputImage);
     } else {
       await detecterText(context, inputImage);
     }
-
   } catch (e) {
-    // Gestion des erreurs
-    print("Error picking image: $e");
+    print("Erreur lors de la sélection de l'image : $e");
+    showErrorDialog(context, 'Une erreur est survenue lors de la sélection de l\'image.');
   }
 }
+
 
 
 

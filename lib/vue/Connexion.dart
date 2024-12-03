@@ -26,14 +26,12 @@ class _LoginPageState extends State<LoginPage> {
     _verif();
     _verification(); 
     
-    // Vérifie la licence au démarrage
   }
 
   // Vérification initiale de la licence
   Future<void> _verification() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     
-
     try {
       // Récupération des données locales
 
@@ -73,9 +71,9 @@ class _LoginPageState extends State<LoginPage> {
     }
   }  
 
+
   Future<void> verifAndprolonge(password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     try {
       setState(() {
         logi = true; // Affiche un chargement
@@ -92,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
       DateTime newExpiryDate = DateTime.parse(response['date_fin']);
       if (newExpiryDate.isAfter(today1)) {
         prefs.setBool('auth', true);
-         prefs.setString('password', password);
+        prefs.setString('password', password);
         prefs.setString('date_fin', newExpiryDate.toString());
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +111,9 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Connexion manuelle avec validation du mot de passe
+
+
+  // Connexion avec validation du mot de passe
   Future<void> connectmyUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -157,6 +157,8 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
