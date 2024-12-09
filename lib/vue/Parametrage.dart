@@ -3,6 +3,7 @@ import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/vue/Connexion.dart';
 import 'package:kadoustransfert/vue/CopyData.dart';
 import 'package:kadoustransfert/vue/Entreprise.dart';
+import 'package:kadoustransfert/vue/ExportWhatSapp.dart';
 import 'package:kadoustransfert/vue/ExporterData.dart';
 import 'package:kadoustransfert/vue/ImporterData.dart';
 import 'package:kadoustransfert/vue/ListAddSim.dart';
@@ -228,11 +229,9 @@ class _ParametrageState extends State<Parametrage> {
                     borderRadius: BorderRadius.circular(15.0),
                     onTap: () async {
                       // Appel de la fonction d'exportation
-                      await exportDataToLocalStorage();
-
+                     // await exportDataToLocalStorage();
                       // Appel de la fonction pour copier le fichier exporté vers un autre dossier
                       await copyFileToDownloadDirectory();
-
                       // Afficher une confirmation à l'utilisateur
                       showDialog(
                         context: context,
@@ -313,57 +312,105 @@ class _ParametrageState extends State<Parametrage> {
               ],
             ),
 
-            // SizedBox(height: 60),
+            SizedBox(height: 60),
 
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //   children: [
-            //     Container(
-            //       width: 150,
-            //       height: 100,
-            //       decoration: BoxDecoration(
-            //         color: Colors.grey[300],
-            //         border: Border.all(
-            //           color: Colors.black87,
-            //           width: 0.0,
-            //         ),
-            //         borderRadius: BorderRadius.circular(15.0),
-            //       ),
-            //       child: InkWell(
-            //         borderRadius: BorderRadius.circular(15.0),
-            //         onTap: () async {
-            //           ViderBDPage();
-            //           // Afficher une confirmation à l'utilisateur
-            //           showDialog(
-            //             context: context,
-            //             builder: (_) => AlertDialog(
-            //               title: Text('Base vider'),
-            //               content:
-            //                   Text('Les données ont été vidées avec succès.'),
-            //               actions: <Widget>[
-            //                 TextButton(
-            //                   child: Text('OK'),
-            //                   onPressed: () {
-            //                     Navigator.of(context).pop();
-            //                   },
-            //                 ),
-            //               ],
-            //             ),
-            //           );
-            //         },
-            //         child: Center(
-            //           child: Text(
-            //             'Vider ma base',
-            //             style: TextStyle(
-            //               color: Colors.black,
-            //               fontSize: 18.0,
-            //               fontWeight: FontWeight.bold,
-            //             ),
-            //             textAlign: TextAlign.center,
-            //           ),
-            //         ),
-            //       ),
-            //     ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+
+              // Container(
+              //     width: 150,
+              //     height: 100,
+              //     decoration: BoxDecoration(
+              //       color: Colors.grey[300],
+              //       border: Border.all(
+              //         color: Colors.black87,
+              //         width: 0.0,
+              //       ),
+              //       borderRadius: BorderRadius.circular(15.0),
+              //     ),
+              //     child: InkWell(
+              //       borderRadius: BorderRadius.circular(15.0),
+              //       onTap: () async {
+              //         exportDataToWhatsapp();
+              //         // Afficher une confirmation à l'utilisateur
+              //         showDialog(
+              //           context: context,
+              //           builder: (_) => AlertDialog(
+              //             title: Text('Base vider'),
+              //             content:
+              //                 Text('Les données ont été vidées avec succès.'),
+              //             actions: <Widget>[
+              //               TextButton(
+              //                 child: Text('OK'),
+              //                 onPressed: () {
+              //                   Navigator.of(context).pop();
+              //                 },
+              //               ),
+              //             ],
+              //           ),
+              //         );
+              //       },
+              //       child: Center(
+              //         child: Text(
+              //           'Export whatSapp',
+              //           style: TextStyle(
+              //             color: Colors.black,
+              //             fontSize: 18.0,
+              //             fontWeight: FontWeight.bold,
+              //           ),
+              //           textAlign: TextAlign.center,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
+                    ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () async {
+                      ViderBDPage();
+                      // Afficher une confirmation à l'utilisateur
+                      showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: Text('Base vider'),
+                          content:
+                              Text('Les données ont été vidées avec succès.'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('OK'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Center(
+                      child: Text(
+                        'Vider ma base',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
 
                 // Container(
                 //   width: 150,
@@ -402,7 +449,7 @@ class _ParametrageState extends State<Parametrage> {
                 //   ),
                 // ),
 
-                // Remplacez votre widget d'exportation de données dans la liste de widgets ci-dessous.
+               // Remplacez votre widget d'exportation de données dans la liste de widgets ci-dessous.
 
                 // Container(
                 //   width: 150,
@@ -441,8 +488,8 @@ class _ParametrageState extends State<Parametrage> {
 
 
 
-            //   ],
-            // ),
+              ],
+            ),
 
 
             // SizedBox(height: 60),

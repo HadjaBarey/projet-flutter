@@ -46,6 +46,7 @@ dependencies:
   path_provider: ^2.1.4
   file_picker: ^8.0.7
   flutter_launcher_icons: ^0.13.1
+  #share_plus: ^4.0.4
 
   # rename_app: ^1.6.1
   # ussd_service: ^0.1.1

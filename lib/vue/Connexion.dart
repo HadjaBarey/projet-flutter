@@ -105,9 +105,9 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       print("Erreur dans la connexion : $e");
     } finally {
-      setState(() {
-        logi = false; // Masque le chargement
-      });
+      // setState(() {
+      //   logi = false; // Masque le chargement
+      // });
     }
   }
 
