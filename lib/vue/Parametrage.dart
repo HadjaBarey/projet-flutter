@@ -412,42 +412,42 @@ class _ParametrageState extends State<Parametrage> {
                 //   ),
                 // ),
 
-                Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () async {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      prefs.clear().then((v) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                        );
-                      });
-                    },
-                    child: Center(
-                      child: Text(
-                        'Deconnexion',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
+                // Container(
+                //   width: 150,
+                //   height: 100,
+                //   decoration: BoxDecoration(
+                //     color: Colors.grey[300],
+                //     border: Border.all(
+                //       color: Colors.black87,
+                //       width: 0.0,
+                //     ),
+                //     borderRadius: BorderRadius.circular(15.0),
+                //   ),
+                //   child: InkWell(
+                //     borderRadius: BorderRadius.circular(15.0),
+                //     onTap: () async {
+                //       SharedPreferences prefs =
+                //           await SharedPreferences.getInstance();
+                //       prefs.clear().then((v) {
+                //         Navigator.pushReplacement(
+                //           context,
+                //           MaterialPageRoute(builder: (context) => LoginPage()),
+                //         );
+                //       });
+                //     },
+                //     child: Center(
+                //       child: Text(
+                //         'Deconnexion',
+                //         style: TextStyle(
+                //           color: Colors.black,
+                //           fontSize: 18.0,
+                //           fontWeight: FontWeight.bold,
+                //         ),
+                //         textAlign: TextAlign.center,
+                //       ),
+                //     ),
+                //   ),
+                // ),
 
                // Remplacez votre widget d'exportation de données dans la liste de widgets ci-dessous.
 
