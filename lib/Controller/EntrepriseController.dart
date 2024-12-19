@@ -247,9 +247,9 @@ Future<void> loadEntrepriseData() async {
   var box = await Hive.openBox<EntrepriseModel>('todobos2');
 
   // Imprimer le contenu de la boîte pour débogage
-  print('Contenu de la boîte:');
+ // print('Contenu de la boîte:');
   for (int i = 0; i < box.length; i++) {
-    print('Index $i: ${box.getAt(i)?.toJson()}');
+   // print('Index $i: ${box.getAt(i)?.toJson()}');
   }
 
   if (box.isNotEmpty) {
@@ -258,12 +258,12 @@ Future<void> loadEntrepriseData() async {
     NomEntrepriseController.text = entreprise.NomEntreprise;
     DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
     DateControleController.text = entreprise.DateControle;
-    print("ID Entreprise11111: ${idEntrepriseController.text}");
-    print("Nom Entreprise11111: ${NomEntrepriseController.text}");
-    print("Directeur Entreprise11111: ${DirecteurEntrepriseController.text}");
-    print("Date Controle111111: ${DateControleController.text}");
+    // print("ID Entreprise11111: ${idEntrepriseController.text}");
+    // print("Nom Entreprise11111: ${NomEntrepriseController.text}");
+    // print("Directeur Entreprise11111: ${DirecteurEntrepriseController.text}");
+    // print("Date Controle111111: ${DateControleController.text}");
   } else {
-    print("No data found in the box.");
+   // print("No data found in the box.");
   }
 }
 

@@ -312,11 +312,11 @@ class _ParametrageState extends State<Parametrage> {
               ],
             ),
 
-            SizedBox(height: 60),
+            // SizedBox(height: 60),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
 
               // Container(
               //     width: 150,
@@ -365,53 +365,6 @@ class _ParametrageState extends State<Parametrage> {
               //     ),
               //   ),
 
-                Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () async {
-                      ViderBDPage();
-                      // Afficher une confirmation à l'utilisateur
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text('Base vider'),
-                          content:
-                              Text('Les données ont été vidées avec succès.'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Vider ma base',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-
                 // Container(
                 //   width: 150,
                 //   height: 100,
@@ -426,18 +379,28 @@ class _ParametrageState extends State<Parametrage> {
                 //   child: InkWell(
                 //     borderRadius: BorderRadius.circular(15.0),
                 //     onTap: () async {
-                //       SharedPreferences prefs =
-                //           await SharedPreferences.getInstance();
-                //       prefs.remove("auth").then((v) {
-                //         Navigator.pushReplacement(
-                //           context,
-                //           MaterialPageRoute(builder: (context) => LoginPage()),
-                //         );
-                //       });
+                //       ViderBDPage();
+                //       // Afficher une confirmation à l'utilisateur
+                //       showDialog(
+                //         context: context,
+                //         builder: (_) => AlertDialog(
+                //           title: Text('Base vider'),
+                //           content:
+                //               Text('Les données ont été vidées avec succès.'),
+                //           actions: <Widget>[
+                //             TextButton(
+                //               child: Text('OK'),
+                //               onPressed: () {
+                //                 Navigator.of(context).pop();
+                //               },
+                //             ),
+                //           ],
+                //         ),
+                //       );
                 //     },
                 //     child: Center(
                 //       child: Text(
-                //         'Deconnexion',
+                //         'Vider ma base',
                 //         style: TextStyle(
                 //           color: Colors.black,
                 //           fontSize: 18.0,
@@ -448,6 +411,43 @@ class _ParametrageState extends State<Parametrage> {
                 //     ),
                 //   ),
                 // ),
+
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(
+                      color: Colors.black87,
+                      width: 0.0,
+                    ),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () async {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      prefs.clear().then((v) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      });
+                    },
+                    child: Center(
+                      child: Text(
+                        'Deconnexion',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
 
                // Remplacez votre widget d'exportation de données dans la liste de widgets ci-dessous.
 
@@ -488,8 +488,8 @@ class _ParametrageState extends State<Parametrage> {
 
 
 
-              ],
-            ),
+            //   ],
+            // ),
 
 
             // SizedBox(height: 60),

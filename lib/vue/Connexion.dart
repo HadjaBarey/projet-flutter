@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kadoustransfert/auth/auth.dart';
 import 'package:kadoustransfert/homePage.dart';
@@ -23,54 +24,98 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _verif();
-    _verification(); 
-    
+    try{
+      _verif().then((_){
+        _verification();
+      });
+    }catch(e){
+      print("pas de boot");
+    }
   }
 
   // Vérification initiale de la licence
+  // Future<void> _verification() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   try {
+  //     // Récupération des données locales
+  //     String? savedDate = prefs.getString('date_fin');
+  //     madate = DateTime.tryParse(savedDate!);
+  //     setState(() {
+  //       auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
+  //     });
+  //     // Si la licence a expiré
+  //     if (madate!.isBefore(today)) {
+  //       print("Licence expirée ou inexistante. Tentative de mise à jour...");
+  //     } else {
+  //       // Licence encore valide
+  //       if (auth) {
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => HomePage()),
+  //         );
+  //       }
+  //     }
+  //   } catch (e) {
+  //     // print("Erreur dans la vérification de la licence : $e");
+  //   }
+  // }
   Future<void> _verification() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
     try {
-      // Récupération des données locales
+        // Récupération des données locales
+        String? savedDate = prefs.getString('date_fin');
+        madate = savedDate != null ? DateTime.tryParse(savedDate) : null;
+        setState(() {
+            auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
+        });
 
-      String savedDate = prefs.getString('date_fin')!;
-      madate = DateTime.tryParse(savedDate);
-
-      setState(() {
-        auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
-      });
-
-      // Si la licence a expiré
-      if (madate!.isBefore(today)) {
-        print("Licence expirée ou inexistante. Tentative de mise à jour...");
-        
-      } else {
-        // Licence encore valide
-        if (auth) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
+        // Vérification de la date
+        if (madate == null || madate!.isBefore(DateTime.now())) {
+            print("Licence expirée ou inexistante. Tentative de mise à jour...");
+        } else {
+            // Licence encore valide
+            if (auth) {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                );
+            }
         }
-      }
-    } catch (e) {
-      print("Erreur dans la vérification de la licence : $e");
+    } catch (e, stacktrace) {
+        print("Erreur dans la vérification de la licence : $e");
+        print("Trace : $stacktrace");
     }
-  }
+}
+
 
   // Revalidation de la licence auprès du serveur
-  _verif()async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try{
-      String madatasave= prefs.getString("password")!;
-     verifAndprolonge(madatasave);
-    }catch (e) {
-      print("pas de save $e");
-    }
-  }  
+  // Future _verif() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   try {
+  //     String? madatasave = prefs.getString("password");
+  //     verifAndprolonge(madatasave!);
+  //   } catch (e) {
+  //     print("pas de save $e");
+  //   }
+  // }
+  Future<void> _verif() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  try {
+    // Récupération de la valeur sauvegardée
+    String? madatasave = prefs.getString("password");
 
+    if (madatasave != null && madatasave.isNotEmpty) {
+      // Appel de la méthode si la valeur est valide
+      verifAndprolonge(madatasave);
+    } else {
+      print("Aucune donnée sauvegardée pour 'password'.");
+    }
+  } catch (e, stacktrace) {
+    // Gestion des erreurs et log des détails
+    print("Erreur lors de la récupération des données : $e");
+    print("Trace : $stacktrace");
+  }
+}
 
   Future<void> verifAndprolonge(password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -79,39 +124,30 @@ class _LoginPageState extends State<LoginPage> {
         logi = true; // Affiche un chargement
       });
 
-      var response = await AuthKTransfert.authBypass({
-        "password": password,
+      await AuthKTransfert.authBypass({"password": password}).then((response){
+        DateTime today1 = DateTime.now();
+      // Si la licence est valide
+        print(response['date_fin']);
+        DateTime newExpiryDate = DateTime.parse(response['date_fin']);
+        if (newExpiryDate.isAfter(today1)) {
+          prefs.setBool('auth', true);
+          prefs.setString('password', password);
+          prefs.setString('date_fin', newExpiryDate.toString());
+
+         
+      }  
       });
 
-      print("Réponse du serveur : $response");
-      DateTime today1 = DateTime.now();
-      // Si la licence est valide
-      print(response['date_fin']);
-      DateTime newExpiryDate = DateTime.parse(response['date_fin']);
-      if (newExpiryDate.isAfter(today1)) {
-        prefs.setBool('auth', true);
-        prefs.setString('password', password);
-        prefs.setString('date_fin', newExpiryDate.toString());
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connexion réussie.')),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      }
+      // print("Réponse du serveur : $response");
+      
     } catch (e) {
-      print("Erreur dans la connexion : $e");
-    } finally {
-      // setState(() {
-      //   logi = false; // Masque le chargement
-      // });
+      //   print("Erreur dans la connexion : $e");
+       } finally {
+      //   // setState(() {
+       logi = false; // Masque le chargement
+      //   // });
     }
   }
-
-
 
   // Connexion avec validation du mot de passe
   Future<void> connectmyUser() async {
@@ -122,33 +158,35 @@ class _LoginPageState extends State<LoginPage> {
         logi = true; // Affiche un chargement
       });
 
-      var response = await AuthKTransfert.authBypass({
-        "password": _passwordController.text,
+      //var response =
+      await AuthKTransfert.authBypass({"password": _passwordController.text})
+          .then((response) {
+        if (response['response'] == "true") {
+          DateTime newExpiryDate = DateTime.parse(response['date_fin']);
+          prefs.setBool('auth', true);
+          prefs.setString('password', _passwordController.text);
+          prefs.setString('date_fin', newExpiryDate.toString());
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Connexion réussie.')),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        } else {
+          verifAndprolonge(_passwordController.text);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Mot de-passe incorrect ou licence expirée.')),
+          );
+        }
       });
 
-      print("Réponse du serveur : $response");
+      //print("Réponse du serveur : $response");
 
       // Si la licence est valide
-      if (response['response'] == "true") {
-        DateTime newExpiryDate = DateTime.parse(response['date_fin']);
-        prefs.setBool('auth', true);
-        prefs.setString('password', _passwordController.text);
-        prefs.setString('date_fin', newExpiryDate.toString());
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connexion réussie.')),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else {
-        verifAndprolonge(_passwordController.text);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Mot de-passe incorrect ou licence expirée.')),
-        );
-      }
     } catch (e) {
       print("Erreur dans la connexion : $e");
     } finally {
@@ -157,8 +195,6 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
