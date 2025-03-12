@@ -141,7 +141,45 @@ class _EntreprisePageState extends State<EntreprisePage> {
                         return null;
                       },
                     ),
+
                     SizedBox(height: 15),
+
+                     TextFormField(
+                      controller: entrepriseController.NumeroTelephoneController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Numero Téléphone',
+                        labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Ce champ est requis';
+                        }
+                        entrepriseController.updateEntreprise(NumeroTelephone: value);
+                        return null;
+                      },
+                    ),
+
+                    SizedBox(height: 15),
+
+                     TextFormField(
+                      controller: entrepriseController.emailEntrepriseController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'email',
+                        labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Ce champ est requis';
+                        }
+                        entrepriseController.updateEntreprise(emailEntreprise: value);
+                        return null;
+                      },
+                    ),
+
+                    SizedBox(height: 15),
+
                     TextFormField(
                       controller: entrepriseController.DateControleController,
                       decoration: InputDecoration(
@@ -157,6 +195,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                       },
                       readOnly: true, // Empêche la modification directe du champ de texte
                     ),
+
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () => incrementDate(context),

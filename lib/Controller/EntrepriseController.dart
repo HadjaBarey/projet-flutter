@@ -14,12 +14,16 @@ class EntrepriseController {
   TextEditingController NomEntrepriseController = TextEditingController();
   TextEditingController DirecteurEntrepriseController = TextEditingController();
   TextEditingController DateControleController = TextEditingController();
+  TextEditingController NumeroTelephoneController = TextEditingController();
+  TextEditingController emailEntrepriseController = TextEditingController();
 
   EntrepriseModel Entreprise = EntrepriseModel(
     idEntreprise: 1,
     NomEntreprise: '',
     DirecteurEntreprise: '',
     DateControle: '',
+    NumeroTelephone:'',
+    emailEntreprise:'',
   );
 
   EntrepriseController() {
@@ -32,6 +36,8 @@ class EntrepriseController {
       NomEntreprise:  Entreprise.NomEntreprise,
       DirecteurEntreprise: Entreprise.DirecteurEntreprise,
       DateControle: Entreprise.DateControle,
+      NumeroTelephone: Entreprise.NumeroTelephone,
+      emailEntreprise: Entreprise.emailEntreprise,
     );
     // idEntrepriseController.text = Entreprise.idEntreprise.toString();
   }
@@ -53,18 +59,6 @@ class EntrepriseController {
   updateEntreprise(DateControle: DateControleController.text);
 }
 
-
-  // void _initializeEntrepriseId() {
-  //   if (todobos2.isNotEmpty) {
-  //     final sortedEntreprise = todobos2.values.toList()
-  //       ..sort((a, b) => a.idEntreprise.compareTo(b.idEntreprise));
-  //     final lastEntreprise = sortedEntreprise.last;
-  //     Entreprise.idEntreprise = lastEntreprise.idEntreprise + 1;
-  //   } else {
-  //     Entreprise.idEntreprise = 1;
-  //   }
-  //   // idEntrepriseController.text = Entreprise.idEntreprise.toString();
-  // }
 
   Future<void> initializeBox() async {
     await Hive.initFlutter();
@@ -94,6 +88,8 @@ class EntrepriseController {
       NomEntreprise: '',
       DirecteurEntreprise: '',
       DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+      NumeroTelephone:'',
+      emailEntreprise:'',
     );
     await saveEntrepriseData(null);
   } else {
@@ -104,6 +100,8 @@ class EntrepriseController {
       NomEntreprise: '',
       DirecteurEntreprise: '',
       DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+      NumeroTelephone:'',
+      emailEntreprise:'',
     );
     await saveEntrepriseData(null);
   }
@@ -127,12 +125,17 @@ Future<void> deleteAllEntreprises() async {
     String? NomEntreprise,
     String? DirecteurEntreprise,
     String? DateControle,
+    String? NumeroTelephone,
+    String? emailEntreprise,
   }) {
     if (idEntreprise != null) Entreprise.idEntreprise = idEntreprise;
     if (NomEntreprise != null) Entreprise.NomEntreprise = NomEntreprise;
     if (DirecteurEntreprise != null) Entreprise.DirecteurEntreprise = DirecteurEntreprise;
     if (DateControle != null) Entreprise.DateControle = DateControle;
+    if (NumeroTelephone != null) Entreprise.NumeroTelephone = NumeroTelephone;
+    if (emailEntreprise != null) Entreprise.emailEntreprise = emailEntreprise;
   }
+
 
 Future<void> saveEntrepriseData(BuildContext? context) async {
   try {
@@ -258,6 +261,8 @@ Future<void> loadEntrepriseData() async {
     NomEntrepriseController.text = entreprise.NomEntreprise;
     DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
     DateControleController.text = entreprise.DateControle;
+    NumeroTelephoneController.text = entreprise.NumeroTelephone;
+    emailEntrepriseController.text = entreprise.emailEntreprise;
     // print("ID Entreprise11111: ${idEntrepriseController.text}");
     // print("Nom Entreprise11111: ${NomEntrepriseController.text}");
     // print("Directeur Entreprise11111: ${DirecteurEntrepriseController.text}");

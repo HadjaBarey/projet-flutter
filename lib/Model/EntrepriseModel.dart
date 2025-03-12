@@ -16,12 +16,20 @@ class EntrepriseModel extends HiveObject {
   @HiveField(3)
   String DateControle;
 
+  @HiveField(4)
+  String NumeroTelephone;
+
+  @HiveField(5)
+  String emailEntreprise;
+
 
   EntrepriseModel({
     required this.idEntreprise,
     required this.NomEntreprise,
     required this.DirecteurEntreprise,
     required this.DateControle,
+    required this.NumeroTelephone,
+    required this.emailEntreprise,
   });
 
   factory EntrepriseModel.fromJSON(Map<String, dynamic> json) {
@@ -30,6 +38,8 @@ class EntrepriseModel extends HiveObject {
       NomEntreprise: json['NomEntreprise'] ?? '',
       DateControle: json['DateControle'] ?? '',
       DirecteurEntreprise: json['DirecteurEntreprise'] ?? '',
+      NumeroTelephone: json['NumeroTelephone'] ?? '',
+      emailEntreprise: json['emailEntreprise'] ?? '',
     );
   }
 
@@ -39,6 +49,8 @@ class EntrepriseModel extends HiveObject {
       'NomEntreprise': NomEntreprise,
       'DirecteurEntreprise': DirecteurEntreprise,
       'DateControle': DateControle,
+      'NumeroTelephone': NumeroTelephone,
+      'emailEntreprise': emailEntreprise,
     };
   }
 }

@@ -21,6 +21,8 @@ class EntrepriseModelAdapter extends TypeAdapter<EntrepriseModel> {
       NomEntreprise: fields[1] as String,
       DirecteurEntreprise: fields[2] as String,
       DateControle: fields[3] as String,
+      NumeroTelephone: fields[4] as String,
+      emailEntreprise: fields[5] as String,
     );
   }
 
@@ -35,7 +37,11 @@ class EntrepriseModelAdapter extends TypeAdapter<EntrepriseModel> {
       ..writeByte(2)
       ..write(obj.DirecteurEntreprise)
       ..writeByte(3)
-      ..write(obj.DateControle);
+      ..write(obj.DateControle)
+      ..writeByte(4)
+      ..write(obj.NumeroTelephone)
+      ..writeByte(5)
+      ..write(obj.emailEntreprise);
   }
 
   @override
