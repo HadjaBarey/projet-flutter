@@ -33,58 +33,69 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Vérification initiale de la licence
-  // Future<void> _verification() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   try {
-  //     // Récupération des données locales
-  //     String? savedDate = prefs.getString('date_fin');
-  //     madate = DateTime.tryParse(savedDate!);
-  //     setState(() {
-  //       auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
-  //     });
-  //     // Si la licence a expiré
-  //     if (madate!.isBefore(today)) {
-  //       print("Licence expirée ou inexistante. Tentative de mise à jour...");
-  //     } else {
-  //       // Licence encore valide
-  //       if (auth) {
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => HomePage()),
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     // print("Erreur dans la vérification de la licence : $e");
-  //   }
-  // }
 
 
-  Future<void> _verification() async {
+//   Future<void> _verification() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+
+//   try {
+//     // Récupération des données locales
+//     String? savedDate = prefs.getString('date_fin');
+//     madate = savedDate != null ? DateTime.tryParse(savedDate) : null;
+
+//     setState(() {
+//       auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
+//     });
+
+//     // Vérification de la date de fin
+//     if (madate == null || madate!.isBefore(DateTime.now())) {
+//       // Si la date est invalide ou expirée
+//       print("Licence expirée ou inexistante. Tentative de mise à jour...");
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text('Votre licence a expiré ou est inexistante. Veuillez la renouveler.'),
+//         ),
+//       );
+//     } else {
+//       // Licence encore valide
+//       if (auth) {
+//         Navigator.pushReplacement(
+//           context,
+//           MaterialPageRoute(builder: (context) => HomePage()),
+//         );
+//       }
+//     }
+//   } catch (e, stacktrace) {
+//     print("Erreur dans la vérification de la licence : $e");
+//     print("Trace : $stacktrace");
+//   }
+// }
+
+Future<void> _verification() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
   try {
-    // Récupération des données locales
     String? savedDate = prefs.getString('date_fin');
     madate = savedDate != null ? DateTime.tryParse(savedDate) : null;
 
-    setState(() {
-      auth = prefs.getBool("auth") ?? false; // Défaut: false si non défini
-    });
+    if (mounted) {
+      setState(() {
+        auth = prefs.getBool("auth") ?? false;
+      });
+    }
 
-    // Vérification de la date de fin
     if (madate == null || madate!.isBefore(DateTime.now())) {
-      // Si la date est invalide ou expirée
-      print("Licence expirée ou inexistante. Tentative de mise à jour...");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Votre licence a expiré ou est inexistante. Veuillez la renouveler.'),
-        ),
-      );
+      print("Licence expirée ou inexistante.");
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Votre licence a expiré ou est inexistante. Veuillez la renouveler.'),
+          ),
+        );
+      }
     } else {
-      // Licence encore valide
-      if (auth) {
+      if (auth && mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
@@ -96,6 +107,8 @@ class _LoginPageState extends State<LoginPage> {
     print("Trace : $stacktrace");
   }
 }
+
+
 
 
 //   Future<void> _verification() async {

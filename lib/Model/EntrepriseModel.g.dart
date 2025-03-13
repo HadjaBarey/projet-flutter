@@ -10,26 +10,28 @@ class EntrepriseModelAdapter extends TypeAdapter<EntrepriseModel> {
   @override
   final int typeId = 2;
 
-  @override
-  EntrepriseModel read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    return EntrepriseModel(
-      idEntreprise: fields[0] as int,
-      NomEntreprise: fields[1] as String,
-      DirecteurEntreprise: fields[2] as String,
-      DateControle: fields[3] as String,
-      NumeroTelephone: fields[4] as String,
-      emailEntreprise: fields[5] as String,
-    );
-  }
+@override
+EntrepriseModel read(BinaryReader reader) {
+  final numOfFields = reader.readByte();
+  final fields = <int, dynamic>{
+    for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+  };
+
+  return EntrepriseModel(
+    idEntreprise: fields[0] as int? ?? 0, // Valeur par défaut : 0
+    NomEntreprise: fields[1] as String? ?? "", // Valeur par défaut : ""
+    DirecteurEntreprise: fields[2] as String? ?? "",
+    DateControle: fields[3] as String? ?? "",
+    NumeroTelephone: fields[4] as String? ?? "",
+    emailEntreprise: fields[5] as String? ?? "",
+  );
+}
+
 
   @override
   void write(BinaryWriter writer, EntrepriseModel obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6) // Adjust the number of fields to match the number of properties
       ..writeByte(0)
       ..write(obj.idEntreprise)
       ..writeByte(1)
