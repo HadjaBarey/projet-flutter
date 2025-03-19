@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/EntrepriseController.dart'; // Assurez-vous d'importer correctement EntrepriseController
 import 'package:kadoustransfert/Controller/OrangeController.dart';
+import 'package:kadoustransfert/apiSprintBoot/apiOpeartionTransaction.dart';
 
 class DeposOrangePage extends StatefulWidget {
   const DeposOrangePage({Key? key}) : super(key: key);
@@ -13,6 +14,8 @@ class DeposOrangePage extends StatefulWidget {
 class _DeposOrangePageState extends State<DeposOrangePage> {
   final OrangeController controller = OrangeController([]);
   final EntrepriseController entrepriseController = EntrepriseController(); // Création d'une instance de EntrepriseController
+  final OperationTransactionService operationTransactionService = OperationTransactionService();
+
   bool isChecked = false; // Variable pour suivre l'état de la case à cocher
    // Variable pour suivre l'option sélectionnée
   // int ?optionSelect;
@@ -441,6 +444,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                       if (!isUnique) {
                         return; // Ajoutez ce return pour arrêter l'exécution si l'idTrans existe déjà
                       }
+                      
 
                       // // Date de référence au format français
                       // String dateReference = "01/11/2024";
@@ -463,6 +467,9 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                       // Si la vérification passe, enregistrez les données
                       controller.saveData(context);
                       Navigator.pop(context, true); // Indiquer que l'opération a réussi
+                    // // Envoyer les données au backend
+                    //    await operationTransactionService.sendOperationTransactionData(operation);
+
                     }
                   },
                   child: Text(

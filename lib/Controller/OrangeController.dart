@@ -316,7 +316,7 @@ Future<void> DateControleRecupere() async {
   
 
 
-  // Enregistrer les données dans la boîte Hive
+  //Enregistrer les données dans la boîte Hive
   Future<void> saveData(BuildContext context) async {
   await _initializeBox(); // S'assurer que la boîte est ouverte
   if (todobos != null) {
@@ -329,6 +329,25 @@ Future<void> DateControleRecupere() async {
     });
   }
 }
+
+
+// Future<void> saveData(BuildContext context) async {
+//   await _initializeBox(); // S'assurer que la boîte est ouverte
+//   if (todobos != null) {
+//     try {
+//       // Enregistrer localement dans Hive
+//       await todobos!.put(depos.idoperation, depos);
+//       showErrorDialog(context, 'Opération enregistrée avec succès.');
+
+//       // Envoyer les données à Spring Boot après l'enregistrement local
+//       await OperationTransactionService.sendOperationTransactionData(depos);
+      
+//     } catch (error) {
+//       // Affichez le showDialog en cas d'erreur
+//       showErrorDialog(context, 'Erreur lors de l\'enregistrement. Veuillez reprendre l\'opération!');
+//     }
+//   }
+// }
 
 
   // Image sélectionnée et texte reconnu
