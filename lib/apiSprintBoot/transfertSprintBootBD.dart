@@ -161,21 +161,39 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
     // Conversion des opérations en JSON
     List<Map<String, dynamic>> operationsJson = operations.map((operation) {
       return {
-        "idoperation": operation.idoperation,
-        "dateoperation": operation.dateoperation,
-        "montant": operation.montant,
-        "numeroTelephone": operation.numeroTelephone?.trim(),
-        "infoClient": operation.infoClient,
-        "typeOperation": operation.typeOperation ?? 0,
-        "operateur": operation.operateur,
-        "supprimer": operation.supprimer ?? 0,
-        "iddette": operation.iddette ?? 0,
-        "optionCreance": operation.optionCreance ?? false,
-        "scanMessage": operation.scanMessage,
-        "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
-        "idTrans": operation.idTrans,
-        "created_at": DateTime.now().toIso8601String(),
-        "updated_at": DateTime.now().toIso8601String()
+
+        
+        "idoperation":1,
+        "dateoperation":"18/03/2026",
+        "montant":"1000000",
+        "numeroTelephone":"76365059",
+        "infoClient":"kadous",
+        "typeOperation":1,
+        "operateur":"1",
+        "supprimer":0,
+        "iddette":0,
+        "optionCreance":false,
+        "scanMessage":"Message Scanné",
+        "numeroIndependant":"",
+        "idTrans":"CI240603.1157.97376974",
+        "created_at":"2025-03-19T14:42:49.261297",
+        "updated_at":"2025-03-19T14:42:49.266591"
+
+        // "idoperation": operation.idoperation,
+        // "dateoperation": operation.dateoperation,
+        // "montant": operation.montant,
+        // "numeroTelephone": operation.numeroTelephone?.trim(),
+        // "infoClient": operation.infoClient,
+        // "typeOperation": operation.typeOperation ?? 0,
+        // "operateur": operation.operateur,
+        // "supprimer": operation.supprimer ?? 0,
+        // "iddette": operation.iddette ?? 0,
+        // "optionCreance": operation.optionCreance ?? false,
+        // "scanMessage": operation.scanMessage,
+        // "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
+        // "idTrans": operation.idTrans,
+        // "created_at": "",
+        // "updated_at": ""
       };
     }).toList();
     
