@@ -17,7 +17,7 @@ class EntrepriseModel extends HiveObject {
   String DateControle;
 
   @HiveField(4)
-  String NumeroTelEntreprise;
+  String numeroTelEntreprise;
 
   @HiveField(5)
   String emailEntreprise;
@@ -28,7 +28,7 @@ class EntrepriseModel extends HiveObject {
     required this.NomEntreprise,
     required this.DirecteurEntreprise,
     required this.DateControle,
-    required this.NumeroTelEntreprise,
+    required this.numeroTelEntreprise,
     required this.emailEntreprise,
   });
 
@@ -38,7 +38,7 @@ class EntrepriseModel extends HiveObject {
       NomEntreprise: json['NomEntreprise'] ?? '',
       DateControle: json['DateControle'] ?? '',
       DirecteurEntreprise: json['DirecteurEntreprise'] ?? '',
-      NumeroTelEntreprise: json['NumeroTelEntreprise'] ?? '',
+      numeroTelEntreprise: json['numeroTelEntreprise'] ?? '',
       emailEntreprise: json['emailEntreprise'] ?? '',
     );
   }
@@ -49,7 +49,7 @@ class EntrepriseModel extends HiveObject {
       'NomEntreprise': NomEntreprise,
       'DirecteurEntreprise': DirecteurEntreprise,
       'DateControle': DateControle,
-      'NumeroTelEntreprise': NumeroTelEntreprise,
+      'numeroTelEntreprise': numeroTelEntreprise,
       'emailEntreprise': emailEntreprise,
     };
   }

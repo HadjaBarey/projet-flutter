@@ -224,11 +224,13 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
         "updated_at": "",
 
         // Ajout des données de l'entreprise
-        "idEntreprise": entreprise.idEntreprise,
-        "nomEntreprise": entreprise.NomEntreprise,
-        "directeurEntreprise": entreprise.DirecteurEntreprise,
-        "NumeroTelEntreprise": entreprise.NumeroTelEntreprise,
-        "emailEntreprise": entreprise.emailEntreprise
+        "numeroTelEntreprise": entreprise.numeroTelEntreprise
+
+        // "idEntreprise": entreprise.idEntreprise,
+        // "nomEntreprise": entreprise.NomEntreprise,
+        // "directeurEntreprise": entreprise.DirecteurEntreprise,
+        // "NumeroTelEntreprise": entreprise.NumeroTelEntreprise,
+        // "emailEntreprise": entreprise.emailEntreprise
       };
       
       // Encoder directement l'objet JSON (sans l'envelopper dans "operations")
@@ -340,14 +342,20 @@ Future<void> transfertDataToSpringBootBatch(List<OrangeModel> operations) async 
         "created_at": "",
         "updated_at": "",
 
+        // Ajout des données de l'entreprise
+        "numeroTelEntreprise": entreprise.numeroTelEntreprise
+
+
          // Ajout des données de l'entreprise
-        "idEntreprise": entreprise.idEntreprise,
-        "nomEntreprise": entreprise.NomEntreprise,
-        "directeurEntreprise": entreprise.DirecteurEntreprise,
-        "NumeroTelEntreprise": entreprise.NumeroTelEntreprise,
-        "emailEntreprise": entreprise.emailEntreprise
+        // "idEntreprise": entreprise.idEntreprise,
+        // "nomEntreprise": entreprise.NomEntreprise,
+        // "directeurEntreprise": entreprise.DirecteurEntreprise,
+       // "NumeroTelEntreprise": entreprise.NumeroTelEntreprise
+        //"emailEntreprise": entreprise.emailEntreprise
       };
     }).toList();
+
+
     
     // Envoi direct de la liste (si le backend a un endpoint qui accepte une liste)
     final jsonPayload = json.encode(operationsJson);

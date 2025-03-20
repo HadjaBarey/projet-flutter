@@ -145,7 +145,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                     SizedBox(height: 15),
 
                      TextFormField(
-                      controller: entrepriseController.NumeroTelEntrepriseController,
+                      controller: entrepriseController.numeroTelEntrepriseController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Numero Téléphone',
@@ -155,7 +155,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                         if (value == null || value.isEmpty) {
                           return 'Ce champ est requis';
                         }
-                        entrepriseController.updateEntreprise(NumeroTelEntreprise: value);
+                        entrepriseController.updateEntreprise(numeroTelEntreprise: value);
                         return null;
                       },
                     ),
