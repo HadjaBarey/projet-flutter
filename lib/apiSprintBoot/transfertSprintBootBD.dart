@@ -3,7 +3,7 @@ import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:jwt_decoder/jwt_decoder.dart'; // Ajout pour vérifier l'expiration du JWT
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 final storage = FlutterSecureStorage();
 
@@ -93,7 +93,7 @@ Future<bool> refreshToken() async {
   }
 }
 
-// Fonction de connexion manuelle améliorée
+// Fonction de connexion manuelle
 Future<bool> connexionManuelle(String email, String password) async {
   try {
     final response = await http.post(
@@ -105,7 +105,7 @@ Future<bool> connexionManuelle(String email, String password) async {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       String? accessToken = data['access_token'];
-      String? refreshToken = data['refresh_token']; // Récupère aussi le refresh token
+      String? refreshToken = data['refresh_token'];
       
       if (accessToken != null) {
         await storage.write(key: 'token', value: accessToken);
@@ -129,17 +129,14 @@ Future<bool> connexionManuelle(String email, String password) async {
 Future<bool> handleAuthError(http.Response response) async {
   if (response.statusCode == 401 || response.statusCode == 403) {
     print('🔒 Erreur d\'authentification, tentative de renouvellement...');
-    // Forcer l'expiration du token actuel
     await storage.delete(key: 'token');
-    // Tenter un refresh puis une connexion si nécessaire
     String? newToken = await getToken();
     return newToken != null;
   }
   return false;
 }
 
-// Fonction pour transférer les données vers Spring Boot avec retry
-// Fonction modifiée pour corriger le format des données
+// FONCTION CORRIGÉE: envoie chaque opération individuellement au format attendu par l'API
 Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
   try {
     if (operations.isEmpty) {
@@ -154,56 +151,141 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
     }
 
     print('🔍 Vérification du token : $token');
-    print('🔑 Token utilisé : $token');
     
     String apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/create';
+    
+    // Compteurs pour les statistiques
+    int successCount = 0;
+    int failCount = 0;
+    
+    // Traiter chaque opération individuellement
+    for (OrangeModel operation in operations) {
+      // Créer un objet conforme au format attendu par l'API
+      final Map<String, dynamic> operationJson = {
+        "codeoperation": operation.idoperation.toString(), // Ajout de codeoperation si nécessaire
+        "idoperation": operation.idoperation,
+        "dateoperation": operation.dateoperation,
+        "montant": operation.montant,
+        "numeroTelephone": operation.numeroTelephone?.trim(),
+        "infoClient": operation.infoClient,
+        "typeOperation": operation.typeOperation ?? 0,
+        "operateur": operation.operateur,
+        "supprimer": operation.supprimer ?? 0,
+        "iddette": operation.iddette ?? 0,
+        "optionCreance": operation.optionCreance ?? false,
+        "scanMessage": operation.scanMessage,
+        "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
+        "idTrans": operation.idTrans,
+        "created_at": "",
+        "updated_at": ""
+      };
+      
+      // Encoder directement l'objet JSON (sans l'envelopper dans "operations")
+      final jsonPayload = json.encode(operationJson);
+      
+      print('📦 Envoi de l\'opération: $jsonPayload');
+
+      try {
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonPayload,
+        ).timeout(Duration(seconds: 15));
+        
+        if (response.statusCode == 200) {
+          print('✅ Opération envoyée avec succès: ${operation.idTrans}');
+          successCount++;
+        } else if (response.statusCode == 400) {
+          print('❌ Erreur de format de données (400): ${response.body}');
+          failCount++;
+        } else if (await handleAuthError(response)) {
+          // Récupérer un nouveau token et réessayer
+          String? newToken = await getToken();
+          if (newToken != null) {
+            final retryResponse = await http.post(
+              Uri.parse(apiUrl),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $newToken',
+              },
+              body: jsonPayload,
+            ).timeout(Duration(seconds: 15));
+            
+            if (retryResponse.statusCode == 200) {
+              print('✅ Opération envoyée avec succès après renouvellement: ${operation.idTrans}');
+              successCount++;
+            } else {
+              print('❌ Échec persistant: ${retryResponse.statusCode} - ${retryResponse.body}');
+              failCount++;
+            }
+          } else {
+            failCount++;
+          }
+        } else {
+          print('❌ Erreur HTTP ${response.statusCode} : ${response.body}');
+          failCount++;
+        }
+      } catch (e) {
+        print('🚨 Erreur lors de l\'envoi de l\'opération ${operation.idTrans}: $e');
+        failCount++;
+      }
+    }
+    
+    // Afficher le résumé
+    print('📊 Résumé du transfert: $successCount réussites, $failCount échecs sur ${operations.length} opérations');
+    
+  } catch (e) {
+    print('🚨 Erreur générale lors du transfert des données: $e');
+  }
+}
+
+// APPROCHE ALTERNATIVE: Essayer d'envoyer l'ensemble des opérations en adaptant le format
+Future<void> transfertDataToSpringBootBatch(List<OrangeModel> operations) async {
+  try {
+    if (operations.isEmpty) {
+      print('❌ Aucune donnée à envoyer.');
+      return;
+    }
+
+    String? token = await getToken();
+    if (token == null) {
+      print('❌ Impossible d\'obtenir un token valide.');
+      return;
+    }
+
+    print('🔍 Vérification du token : $token');
+    
+    String apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/batch-create'; // Endpoint modifié
     
     // Conversion des opérations en JSON
     List<Map<String, dynamic>> operationsJson = operations.map((operation) {
       return {
-
-        
-        "idoperation":1,
-        "dateoperation":"18/03/2026",
-        "montant":"1000000",
-        "numeroTelephone":"76365059",
-        "infoClient":"kadous",
-        "typeOperation":1,
-        "operateur":"1",
-        "supprimer":0,
-        "iddette":0,
-        "optionCreance":false,
-        "scanMessage":"Message Scanné",
-        "numeroIndependant":"",
-        "idTrans":"CI240603.1157.97376974",
-        "created_at":"2025-03-19T14:42:49.261297",
-        "updated_at":"2025-03-19T14:42:49.266591"
-
-        // "idoperation": operation.idoperation,
-        // "dateoperation": operation.dateoperation,
-        // "montant": operation.montant,
-        // "numeroTelephone": operation.numeroTelephone?.trim(),
-        // "infoClient": operation.infoClient,
-        // "typeOperation": operation.typeOperation ?? 0,
-        // "operateur": operation.operateur,
-        // "supprimer": operation.supprimer ?? 0,
-        // "iddette": operation.iddette ?? 0,
-        // "optionCreance": operation.optionCreance ?? false,
-        // "scanMessage": operation.scanMessage,
-        // "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
-        // "idTrans": operation.idTrans,
-        // "created_at": "",
-        // "updated_at": ""
+        "codeoperation": operation.idoperation.toString(), // Ajout de codeoperation si nécessaire
+        "idoperation": operation.idoperation,
+        "dateoperation": operation.dateoperation,
+        "montant": operation.montant,
+        "numeroTelephone": operation.numeroTelephone?.trim(),
+        "infoClient": operation.infoClient,
+        "typeOperation": operation.typeOperation ?? 0,
+        "operateur": operation.operateur,
+        "supprimer": operation.supprimer ?? 0,
+        "iddette": operation.iddette ?? 0,
+        "optionCreance": operation.optionCreance ?? false,
+        "scanMessage": operation.scanMessage,
+        "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
+        "idTrans": operation.idTrans,
+        "created_at": "",
+        "updated_at": ""
       };
     }).toList();
     
-    // CORRECTION: Envoyer un objet avec une propriété "operations" contenant la liste
-    // Le serveur attend un objet OperationTransactionDTO, pas un tableau
-    final jsonPayload = json.encode({
-      "operations": operationsJson
-    });
+    // Envoi direct de la liste (si le backend a un endpoint qui accepte une liste)
+    final jsonPayload = json.encode(operationsJson);
     
-    print('📦 Données envoyées : $jsonPayload');
+    print('📦 Données envoyées en lot: $jsonPayload');
 
     final response = await http.post(
       Uri.parse(apiUrl),
@@ -212,35 +294,14 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
         'Authorization': 'Bearer $token',
       },
       body: jsonPayload,
-    );
+    ).timeout(Duration(seconds: 30)); // Délai plus long pour les lots
 
     if (response.statusCode == 200) {
-      print('✅ Données envoyées avec succès.');
-    } else if (response.statusCode == 400) {
-      print('❌ Erreur de format de données (400): ${response.body}');
-    } else if (await handleAuthError(response)) {
-      print('🔄 Réessai après renouvellement du token...');
-      String? newToken = await getToken();
-      if (newToken != null) {
-        final retryResponse = await http.post(
-          Uri.parse(apiUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $newToken',
-          },
-          body: jsonPayload,
-        );
-        
-        if (retryResponse.statusCode == 200) {
-          print('✅ Données envoyées avec succès après renouvellement.');
-        } else {
-          print('❌ Échec persistant: ${retryResponse.statusCode} - ${retryResponse.body}');
-        }
-      }
+      print('✅ Toutes les données envoyées avec succès en lot.');
     } else {
-      print('❌ Erreur HTTP ${response.statusCode} : ${response.body}');
+      print('❌ Erreur lors de l\'envoi des données en lot: ${response.statusCode} - ${response.body}');
     }
   } catch (e) {
-    print('🚨 Erreur lors de l\'envoi des données : $e');
+    print('🚨 Erreur lors de l\'envoi des données en lot: $e');
   }
 }
