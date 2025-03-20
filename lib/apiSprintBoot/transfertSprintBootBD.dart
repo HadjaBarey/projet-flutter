@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,7 +8,9 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 
 final storage = FlutterSecureStorage();
 
-// Fonction pour récupérer les données de Hive
+//Fonction qui permettrons de recuperer les données de mes 2 tables maitresses pour pouvoir combiner mes données pour les cibler dans mes enregistrements
+
+// Fonction pour récupérer les données de Hive concernant la table principal 
 Future<List<OrangeModel>> getDataFromHive() async {
   try {
     if (Hive.isBoxOpen('todobos')) {
@@ -20,6 +23,39 @@ Future<List<OrangeModel>> getDataFromHive() async {
     return [];
   }
 }
+
+// Fonction pour récupérer les données de Hive concernant la table Entreprinse 
+// Fonction pour récupérer l'unique entreprise enregistrée dans todobos2
+Future<EntrepriseModel?> getEntrepriseFromHive() async {
+  try {
+    if (Hive.isBoxOpen('todobos2')) {
+      await Hive.close();
+    }
+    Box<EntrepriseModel> box = await Hive.openBox<EntrepriseModel>('todobos2');
+    if (box.isNotEmpty) {
+      return box.values.first; // Récupérer la seule entrée
+    }
+  } catch (e) {
+    print('Erreur Hive (todobos2) : $e');
+  }
+  return null;
+}
+
+// Future<EntrepriseModel?> getDataFromHive2() async {
+//   try {
+//     if (Hive.isBoxOpen('todobos2')) {
+//       await Hive.close();
+//     }
+//     Box<EntrepriseModel> box = await Hive.openBox<EntrepriseModel>('todobos2');
+//     return box.get(0); // Supposant qu'il y a une seule entrée dans 'todobos2'
+//   } catch (e) {
+//     print('Erreur Hive (todobos2) : $e');
+//     return null;
+//   }
+// }
+
+//Fin Fonction qui permettrons de recuperer les données de mes 2 tables maitresses pour pouvoir combiner mes données pour les cibler dans mes enregistrements
+
 
 // Fonction pour vérifier si le token est expiré ou va expirer bientôt
 Future<bool> isTokenExpired() async {
@@ -144,6 +180,14 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
       return;
     }
 
+
+    // Récupérer les données de l'entreprise
+    EntrepriseModel? entreprise = await getEntrepriseFromHive();
+    if (entreprise == null) {
+      print('❌ Aucune entreprise trouvée.');
+      return;
+    }
+
     String? token = await getToken();
     if (token == null) {
       print('❌ Impossible d\'obtenir un token valide.');
@@ -177,7 +221,14 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
         "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
         "idTrans": operation.idTrans,
         "created_at": "",
-        "updated_at": ""
+        "updated_at": "",
+
+        // Ajout des données de l'entreprise
+        "idEntreprise": entreprise.idEntreprise,
+        "nomEntreprise": entreprise.NomEntreprise,
+        "directeurEntreprise": entreprise.DirecteurEntreprise,
+        "NumeroTelEntreprise": entreprise.NumeroTelEntreprise,
+        "emailEntreprise": entreprise.emailEntreprise
       };
       
       // Encoder directement l'objet JSON (sans l'envelopper dans "operations")
@@ -242,11 +293,20 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
   }
 }
 
+
+
 // APPROCHE ALTERNATIVE: Essayer d'envoyer l'ensemble des opérations en adaptant le format
 Future<void> transfertDataToSpringBootBatch(List<OrangeModel> operations) async {
   try {
     if (operations.isEmpty) {
       print('❌ Aucune donnée à envoyer.');
+      return;
+    }
+
+    // Récupérer les données de l'entreprise
+    EntrepriseModel? entreprise = await getEntrepriseFromHive();
+    if (entreprise == null) {
+      print('❌ Aucune entreprise trouvée.');
       return;
     }
 
@@ -278,7 +338,14 @@ Future<void> transfertDataToSpringBootBatch(List<OrangeModel> operations) async 
         "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
         "idTrans": operation.idTrans,
         "created_at": "",
-        "updated_at": ""
+        "updated_at": "",
+
+         // Ajout des données de l'entreprise
+        "idEntreprise": entreprise.idEntreprise,
+        "nomEntreprise": entreprise.NomEntreprise,
+        "directeurEntreprise": entreprise.DirecteurEntreprise,
+        "NumeroTelEntreprise": entreprise.NumeroTelEntreprise,
+        "emailEntreprise": entreprise.emailEntreprise
       };
     }).toList();
     

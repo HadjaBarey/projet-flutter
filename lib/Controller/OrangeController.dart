@@ -186,39 +186,41 @@ void updateSelectedOption(int value) {
 }
 
 
-
 //////controle de la date /////////////
 Future<void> DateControleRecupere() async {
-  var EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
-  
-  if (EntrepriseBox.isEmpty) {
-   // print("Boîte Hive des entreprises non initialisée ou vide");
-    // Initialisez avec une date par défaut ou gérez cette condition comme nécessaire
-    dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-  } else {
-    // Recherchez l'entreprise correspondante dans la boîte Hive
-    // var entreprise = EntrepriseBox.values.firstWhereOrNull(
-    //   (entreprise) => entreprise.idEntreprise == 1);
-
-    var entreprise = EntrepriseBox.values.last;
-    
-    if (entreprise != null) {
-      try {
-        // Vérifiez si la date n'est pas vide avant de la parser
-        if (entreprise.DateControle.isNotEmpty) {
-          DateFormat dateFormat = DateFormat('dd/MM/yyyy');
-          dateFormat.parseStrict(entreprise.DateControle); // Essayez de parser la date pour vérifier si elle est valide
-          dateOperationController.text = entreprise.DateControle;
-        } else {
-          //print("La date de contrôle est vide");
-        }
-      } catch (e) {
-       // print("Erreur lors de la conversion de la date : $e");
-      }
-    } else {
-      dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-      //print('Aucune entreprise trouvée avec l\'ID 1');
+  try {
+    // Vérifier si la boîte est déjà ouverte
+    if (!Hive.isBoxOpen("todobos2")) {
+      await Hive.openBox<EntrepriseModel>("todobos2");
     }
+    
+    var EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
+    
+    if (EntrepriseBox.isEmpty) {
+      dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    } else {
+      var entreprise = EntrepriseBox.values.last;
+      
+      if (entreprise != null) {
+        try {
+          if (entreprise.DateControle.isNotEmpty) {
+            DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+            dateFormat.parseStrict(entreprise.DateControle);
+            dateOperationController.text = entreprise.DateControle;
+          } else {
+            dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+          }
+        } catch (e) {
+          //print("Erreur lors de la conversion de la date : $e");
+          dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+        }
+      } else {
+        dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+      }
+    }
+  } catch (e) {
+    //print("Erreur dans DateControleRecupere: $e");
+    dateOperationController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   }
 }
 

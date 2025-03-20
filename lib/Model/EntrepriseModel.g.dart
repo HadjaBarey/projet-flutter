@@ -22,7 +22,7 @@ EntrepriseModel read(BinaryReader reader) {
     NomEntreprise: fields[1] as String? ?? "", // Valeur par défaut : ""
     DirecteurEntreprise: fields[2] as String? ?? "",
     DateControle: fields[3] as String? ?? "",
-    NumeroTelephone: fields[4] as String? ?? "",
+    NumeroTelEntreprise: fields[4] as String? ?? "",
     emailEntreprise: fields[5] as String? ?? "",
   );
 }
@@ -41,7 +41,7 @@ EntrepriseModel read(BinaryReader reader) {
       ..writeByte(3)
       ..write(obj.DateControle)
       ..writeByte(4)
-      ..write(obj.NumeroTelephone)
+      ..write(obj.NumeroTelEntreprise)
       ..writeByte(5)
       ..write(obj.emailEntreprise);
   }

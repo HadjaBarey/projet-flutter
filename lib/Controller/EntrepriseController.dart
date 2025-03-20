@@ -14,7 +14,7 @@ class EntrepriseController {
   TextEditingController NomEntrepriseController = TextEditingController();
   TextEditingController DirecteurEntrepriseController = TextEditingController();
   TextEditingController DateControleController = TextEditingController();
-  TextEditingController NumeroTelephoneController = TextEditingController();
+  TextEditingController NumeroTelEntrepriseController = TextEditingController();
   TextEditingController emailEntrepriseController = TextEditingController();
 
   EntrepriseModel Entreprise = EntrepriseModel(
@@ -22,7 +22,7 @@ class EntrepriseController {
     NomEntreprise: '',
     DirecteurEntreprise: '',
     DateControle: '',
-    NumeroTelephone:'',
+    NumeroTelEntreprise:'',
     emailEntreprise:'',
   );
 
@@ -36,7 +36,7 @@ class EntrepriseController {
       NomEntreprise:  Entreprise.NomEntreprise,
       DirecteurEntreprise: Entreprise.DirecteurEntreprise,
       DateControle: Entreprise.DateControle,
-      NumeroTelephone: Entreprise.NumeroTelephone,
+      NumeroTelEntreprise: Entreprise.NumeroTelEntreprise,
       emailEntreprise: Entreprise.emailEntreprise,
     );
     // idEntrepriseController.text = Entreprise.idEntreprise.toString();
@@ -88,7 +88,7 @@ class EntrepriseController {
       NomEntreprise: '',
       DirecteurEntreprise: '',
       DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
-      NumeroTelephone:'',
+      NumeroTelEntreprise:'',
       emailEntreprise:'',
     );
     await saveEntrepriseData(null);
@@ -100,7 +100,7 @@ class EntrepriseController {
       NomEntreprise: '',
       DirecteurEntreprise: '',
       DateControle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
-      NumeroTelephone:'',
+      NumeroTelEntreprise:'',
       emailEntreprise:'',
     );
     await saveEntrepriseData(null);
@@ -125,14 +125,14 @@ Future<void> deleteAllEntreprises() async {
     String? NomEntreprise,
     String? DirecteurEntreprise,
     String? DateControle,
-    String? NumeroTelephone,
+    String? NumeroTelEntreprise,
     String? emailEntreprise,
   }) {
     if (idEntreprise != null) Entreprise.idEntreprise = idEntreprise;
     if (NomEntreprise != null) Entreprise.NomEntreprise = NomEntreprise;
     if (DirecteurEntreprise != null) Entreprise.DirecteurEntreprise = DirecteurEntreprise;
     if (DateControle != null) Entreprise.DateControle = DateControle;
-    if (NumeroTelephone != null) Entreprise.NumeroTelephone = NumeroTelephone;
+    if (NumeroTelEntreprise != null) Entreprise.NumeroTelEntreprise = NumeroTelEntreprise;
     if (emailEntreprise != null) Entreprise.emailEntreprise = emailEntreprise;
   }
 
@@ -261,7 +261,7 @@ Future<void> loadEntrepriseData() async {
     NomEntrepriseController.text = entreprise.NomEntreprise;
     DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
     DateControleController.text = entreprise.DateControle;
-    NumeroTelephoneController.text = entreprise.NumeroTelephone;
+    NumeroTelEntrepriseController.text = entreprise.NumeroTelEntreprise;
     emailEntrepriseController.text = entreprise.emailEntreprise;
     // print("ID Entreprise11111: ${idEntrepriseController.text}");
     // print("Nom Entreprise11111: ${NomEntrepriseController.text}");
