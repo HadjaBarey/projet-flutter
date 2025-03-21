@@ -41,19 +41,6 @@ Future<EntrepriseModel?> getEntrepriseFromHive() async {
   return null;
 }
 
-// Future<EntrepriseModel?> getDataFromHive2() async {
-//   try {
-//     if (Hive.isBoxOpen('todobos2')) {
-//       await Hive.close();
-//     }
-//     Box<EntrepriseModel> box = await Hive.openBox<EntrepriseModel>('todobos2');
-//     return box.get(0); // Supposant qu'il y a une seule entrée dans 'todobos2'
-//   } catch (e) {
-//     print('Erreur Hive (todobos2) : $e');
-//     return null;
-//   }
-// }
-
 //Fin Fonction qui permettrons de recuperer les données de mes 2 tables maitresses pour pouvoir combiner mes données pour les cibler dans mes enregistrements
 
 
@@ -173,13 +160,12 @@ Future<bool> handleAuthError(http.Response response) async {
 }
 
 // FONCTION CORRIGÉE: envoie chaque opération individuellement au format attendu par l'API
-Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
+Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre) async { 
   try {
     if (operations.isEmpty) {
       print('❌ Aucune donnée à envoyer.');
       return;
     }
-
 
     // Récupérer les données de l'entreprise
     EntrepriseModel? entreprise = await getEntrepriseFromHive();
@@ -198,15 +184,22 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
     
     String apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/create';
     
+    // Filtrer les opérations en fonction de la date saisie
+    List<OrangeModel> operationsFiltrees = operations.where((operation) => operation.dateoperation == dateFiltre).toList();
+
+    if (operationsFiltrees.isEmpty) {
+      print('📆 Aucune opération trouvée pour la date $dateFiltre.');
+      return;
+    }
+
     // Compteurs pour les statistiques
     int successCount = 0;
     int failCount = 0;
     
     // Traiter chaque opération individuellement
-    for (OrangeModel operation in operations) {
-      // Créer un objet conforme au format attendu par l'API
+    for (OrangeModel operation in operationsFiltrees) {
       final Map<String, dynamic> operationJson = {
-        "codeoperation": operation.idoperation.toString(), // Ajout de codeoperation si nécessaire
+        "codeoperation": operation.idoperation.toString(),
         "idoperation": operation.idoperation,
         "dateoperation": operation.dateoperation,
         "montant": operation.montant,
@@ -222,20 +215,10 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
         "idTrans": operation.idTrans,
         "created_at": "",
         "updated_at": "",
-
-        // Ajout des données de l'entreprise
         "numeroTelEntreprise": entreprise.numeroTelEntreprise
-
-        // "idEntreprise": entreprise.idEntreprise,
-        // "nomEntreprise": entreprise.NomEntreprise,
-        // "directeurEntreprise": entreprise.DirecteurEntreprise,
-        // "NumeroTelEntreprise": entreprise.NumeroTelEntreprise,
-        // "emailEntreprise": entreprise.emailEntreprise
       };
       
-      // Encoder directement l'objet JSON (sans l'envelopper dans "operations")
       final jsonPayload = json.encode(operationJson);
-      
       print('📦 Envoi de l\'opération: $jsonPayload');
 
       try {
@@ -255,7 +238,6 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
           print('❌ Erreur de format de données (400): ${response.body}');
           failCount++;
         } else if (await handleAuthError(response)) {
-          // Récupérer un nouveau token et réessayer
           String? newToken = await getToken();
           if (newToken != null) {
             final retryResponse = await http.post(
@@ -288,12 +270,13 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations) async {
     }
     
     // Afficher le résumé
-    print('📊 Résumé du transfert: $successCount réussites, $failCount échecs sur ${operations.length} opérations');
-    
+    print('📊 Résumé du transfert: $successCount réussites, $failCount échecs sur ${operationsFiltrees.length} opérations');
+
   } catch (e) {
     print('🚨 Erreur générale lors du transfert des données: $e');
   }
 }
+
 
 
 
