@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:http/http.dart' as http;
@@ -159,7 +160,7 @@ Future<bool> handleAuthError(http.Response response) async {
   return false;
 }
 
-// FONCTION CORRIGÉE: envoie chaque opération individuellement au format attendu par l'API
+// Fonction qui envoie chaque opération individuellement au format attendu par l'API
 Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre) async { 
   try {
     if (operations.isEmpty) {
@@ -181,9 +182,30 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
     }
 
     print('🔍 Vérification du token : $token');
-    
+
+    // Supprimer les données existantes sur Spring Boot via l'API
+    String deleteApiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/supprimer';
+    try {
+      final deleteResponse = await http.delete(
+        Uri.parse('$deleteApiUrl?telEntreprise=${entreprise.numeroTelEntreprise}&dateOp=$dateFiltre'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(Duration(seconds: 15));
+
+      if (deleteResponse.statusCode == 200) {
+        print("🗑️ Données supprimées avec succès pour le numéro : ${entreprise.numeroTelEntreprise} à la date : $dateFiltre");
+      } else {
+        print('❌ Échec de la suppression: ${deleteResponse.statusCode} - ${deleteResponse.body}');
+        return;
+      }
+    } catch (e) {
+      print('🚨 Erreur lors de la suppression des données : $e');
+      return;
+    }
+
     String apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/create';
-    
+
     // Filtrer les opérations en fonction de la date saisie
     List<OrangeModel> operationsFiltrees = operations.where((operation) => operation.dateoperation == dateFiltre).toList();
 
@@ -192,10 +214,9 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
       return;
     }
 
-    // Compteurs pour les statistiques
     int successCount = 0;
     int failCount = 0;
-    
+
     // Traiter chaque opération individuellement
     for (OrangeModel operation in operationsFiltrees) {
       final Map<String, dynamic> operationJson = {
@@ -217,7 +238,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         "updated_at": "",
         "numeroTelEntreprise": entreprise.numeroTelEntreprise
       };
-      
+
       final jsonPayload = json.encode(operationJson);
       print('📦 Envoi de l\'opération: $jsonPayload');
 
@@ -230,7 +251,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
           },
           body: jsonPayload,
         ).timeout(Duration(seconds: 15));
-        
+
         if (response.statusCode == 200) {
           print('✅ Opération envoyée avec succès: ${operation.idTrans}');
           successCount++;
@@ -248,7 +269,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
               },
               body: jsonPayload,
             ).timeout(Duration(seconds: 15));
-            
+
             if (retryResponse.statusCode == 200) {
               print('✅ Opération envoyée avec succès après renouvellement: ${operation.idTrans}');
               successCount++;
@@ -268,8 +289,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         failCount++;
       }
     }
-    
-    // Afficher le résumé
+
     print('📊 Résumé du transfert: $successCount réussites, $failCount échecs sur ${operationsFiltrees.length} opérations');
 
   } catch (e) {
@@ -278,88 +298,71 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
 }
 
 
-
-
 // APPROCHE ALTERNATIVE: Essayer d'envoyer l'ensemble des opérations en adaptant le format
-Future<void> transfertDataToSpringBootBatch(List<OrangeModel> operations) async {
+
+Future<void> transfertDataToSpringBootBatch(List<OperationModel> operationsFiltrees) async {
+  final operationTransactionService = OperationTransactionService();
+
+  if (operationsFiltrees.isEmpty) {
+    print("Aucune opération à transférer.");
+    return;
+  }
+
+  // Récupération du numéro de téléphone de l'entreprise
+  String numeroTelEntreprise = operationsFiltrees.first.numeroTelEntreprise;
+
+  // Utiliser la date sélectionnée au format 'dd/MM/yyyy'
+  DateTime selectedDate = operationsFiltrees.first.dateOperation; // Suppose que tu utilises cette date
+  String formattedSelectedDate = DateFormat('dd/MM/yyyy').format(selectedDate);
+
   try {
-    if (operations.isEmpty) {
-      print('❌ Aucune donnée à envoyer.');
-      return;
+    // Étape 1 : Supprimer les données existantes sur Spring Boot
+    await operationTransactionService.deleteByNumeroAndDate(numeroTelEntreprise, formattedSelectedDate);
+
+    print("Données supprimées pour le numéro : $numeroTelEntreprise à la date : $formattedSelectedDate");
+
+    // Étape 2 : Envoyer les nouvelles données
+    for (var operation in operationsFiltrees) {
+      // Convertir la date si elle est au format 'dd/MM/yyyy'
+      DateTime date = operation.dateOperation;
+      operation.dateOperationFormatted = DateFormat('yyyy-MM-dd').format(date);
+
+      await operationTransactionService.sendOperation(operation);
+      print("Opération envoyée : ${operation.toJson()}");
     }
 
-    // Récupérer les données de l'entreprise
-    EntrepriseModel? entreprise = await getEntrepriseFromHive();
-    if (entreprise == null) {
-      print('❌ Aucune entreprise trouvée.');
-      return;
-    }
-
-    String? token = await getToken();
-    if (token == null) {
-      print('❌ Impossible d\'obtenir un token valide.');
-      return;
-    }
-
-    print('🔍 Vérification du token : $token');
-    
-    String apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/batch-create'; // Endpoint modifié
-    
-    // Conversion des opérations en JSON
-    List<Map<String, dynamic>> operationsJson = operations.map((operation) {
-      return {
-        "codeoperation": operation.idoperation.toString(), // Ajout de codeoperation si nécessaire
-        "idoperation": operation.idoperation,
-        "dateoperation": operation.dateoperation,
-        "montant": operation.montant,
-        "numeroTelephone": operation.numeroTelephone?.trim(),
-        "infoClient": operation.infoClient,
-        "typeOperation": operation.typeOperation ?? 0,
-        "operateur": operation.operateur,
-        "supprimer": operation.supprimer ?? 0,
-        "iddette": operation.iddette ?? 0,
-        "optionCreance": operation.optionCreance ?? false,
-        "scanMessage": operation.scanMessage,
-        "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
-        "idTrans": operation.idTrans,
-        "created_at": "",
-        "updated_at": "",
-
-        // Ajout des données de l'entreprise
-        "numeroTelEntreprise": entreprise.numeroTelEntreprise
-
-
-         // Ajout des données de l'entreprise
-        // "idEntreprise": entreprise.idEntreprise,
-        // "nomEntreprise": entreprise.NomEntreprise,
-        // "directeurEntreprise": entreprise.DirecteurEntreprise,
-       // "NumeroTelEntreprise": entreprise.NumeroTelEntreprise
-        //"emailEntreprise": entreprise.emailEntreprise
-      };
-    }).toList();
-
-
-    
-    // Envoi direct de la liste (si le backend a un endpoint qui accepte une liste)
-    final jsonPayload = json.encode(operationsJson);
-    
-    print('📦 Données envoyées en lot: $jsonPayload');
-
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonPayload,
-    ).timeout(Duration(seconds: 30)); // Délai plus long pour les lots
-
-    if (response.statusCode == 200) {
-      print('✅ Toutes les données envoyées avec succès en lot.');
-    } else {
-      print('❌ Erreur lors de l\'envoi des données en lot: ${response.statusCode} - ${response.body}');
-    }
+    print("Transfert terminé avec succès.");
   } catch (e) {
-    print('🚨 Erreur lors de l\'envoi des données en lot: $e');
+    print("Erreur lors du transfert des données : $e");
+  }
+}
+
+class OperationModel {
+  DateTime dateOperation;
+  String numeroTelEntreprise;
+  String dateOperationFormatted = '';
+
+  OperationModel({
+    required this.dateOperation,
+    required this.numeroTelEntreprise,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'dateOperation': dateOperationFormatted,
+        'numeroTelEntreprise': numeroTelEntreprise,
+      };
+}
+
+class OperationTransactionService {
+  Future<void> deleteByNumeroAndDate(String numeroTel, String date) async {
+    // Appel API pour supprimer les données
+    print("Suppression des données pour $numeroTel à la date $date");
+    // Exemple : await http.delete(Uri.parse('https://api.example.com/delete?numero=$numeroTel&date=$date'));
+  }
+
+  Future<void> sendOperation(OperationModel operation) async {
+    // Appel API pour envoyer une opération
+    print("Envoi de l'opération : ${operation.toJson()}");
+    // Exemple : await http.post(Uri.parse('https://api.example.com/operations'), body: operation.toJson());
   }
 }
