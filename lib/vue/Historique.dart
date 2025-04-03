@@ -76,7 +76,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
               return false;
             }
             // Filtrage par numéro de téléphone
-            if (searchQuery.isNotEmpty && !depos.numeroTelephone.toLowerCase().contains(searchQuery)) {
+            if (searchQuery.isNotEmpty && !depos.numero_telephone.toLowerCase().contains(searchQuery)) {
               return false;
             }
 
@@ -139,7 +139,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
   }
 
   void _handleRowClicked(OrangeModel clickedDepos) {
-    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numeroTelephone}, ${clickedDepos.infoClient}, ${clickedDepos.typeOperation}, ${clickedDepos.operateur}');
+    print('Ligne cliquée : ${clickedDepos.montant}, ${clickedDepos.numero_telephone}, ${clickedDepos.info_client}, ${clickedDepos.typeoperation}, ${clickedDepos.operateur}');
   }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
@@ -160,9 +160,9 @@ class _HistoriquePageState extends State<HistoriquePage> {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '1') {
+    if (depos.typeoperation == 1 && depos.operateur == '1') {
       return 'Opération: Dépôt Orange';
-    } else if (depos.typeOperation == 2 && depos.operateur == '1') {
+    } else if (depos.typeoperation == 2 && depos.operateur == '1') {
       return 'Opération: Retrait Orange';
     // } else if (depos.typeOperation == 1 && depos.operateur == '2') {
     //   return 'Opération: Dépôt Moov';
@@ -175,7 +175,7 @@ class _HistoriquePageState extends State<HistoriquePage> {
   @override
   Widget build(BuildContext context) {
     List<OrangeModel> filteredList = _deposList
-      .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanMessage == 'Message Scanné' && depos.optionCreance==false)
+      .where((depos) => depos.supprimer == 0 && depos.operateur == '1' && depos.scanmessage == 'Message Scanné' && depos.optionCreance==false)
       .toList();
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation
@@ -286,11 +286,11 @@ class _HistoriquePageState extends State<HistoriquePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Numéro de téléphone: ${depos.numeroTelephone}',
+                                'Numéro de téléphone: ${depos.numero_telephone}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                               Text(
-                                'Information client: ${depos.infoClient}',
+                                'Information client: ${depos.info_client}',
                                 style: const TextStyle(fontSize: 14),
                               ),
                               Text(

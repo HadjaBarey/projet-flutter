@@ -7,30 +7,22 @@ Future<void> saveDefaultEntrepriseModel() async {
 
   String dateDuJour = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
-  EntrepriseModel defaultEntreprise = EntrepriseModel(
-    idEntreprise: 1,
-    NomEntreprise: 'KADOUS SOLUTIONS SARL',
-    DirecteurEntreprise: 'OUEDRAOGO M.Kader',
-    DateControle: dateDuJour,
-    numeroTelEntreprise:"00000000",
-    emailEntreprise:"entreprise@gmail.com",
+  // Vérifie si l'élément avec la clé 1 existe déjà
+  if (!box.containsKey(1)) {
+    EntrepriseModel defaultEntreprise = EntrepriseModel(
+      idEntreprise: 1,
+      NomEntreprise: 'KADOUS SOLUTIONS SARL',
+      DirecteurEntreprise: 'OUEDRAOGO M.Kader',
+      DateControle: dateDuJour,
+      numeroTelEntreprise: "00000000",
+      emailEntreprise: "entreprise@gmail.com",
+    );
 
-  );
-
-  // Vérifiez les valeurs avant la sauvegarde
-  // print('Nom Entreprise: ${defaultEntreprise.NomEntreprise}');
-  // print('Directeur Entreprise: ${defaultEntreprise.DirecteurEntreprise}');
-
-  await box.put(1, defaultEntreprise);
-
-  // Lire immédiatement après l'écriture
-  // var storedData = box.get(1) as EntrepriseModel?;
-  // print('ID Entreprise: ${storedData?.idEntreprise}');
-  // print('Nom Entreprise: ${storedData?.NomEntreprise}');
-  // print('Directeur Entreprise: ${storedData?.DirecteurEntreprise}');
-  // print('Date Controle: ${storedData?.DateControle}');
+    await box.put(1, defaultEntreprise);
+    print('Valeur par défaut enregistrée avec succès.');
+  } else {
+    print('Les données existent déjà, pas besoin de les enregistrer.');
+  }
 
   await box.close(); // Ferme la boîte pour s'assurer que les données sont écrites
-
- // print('Valeur par défaut enregistrée avec succès.');
 }

@@ -94,7 +94,7 @@ Future<bool> refreshToken() async {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $refreshTokenValue',
       },
-    ).timeout(Duration(seconds: 15));
+    ).timeout(Duration(seconds: 15)); 
     
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -224,16 +224,16 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         "idoperation": operation.idoperation,
         "dateoperation": operation.dateoperation,
         "montant": operation.montant,
-        "numeroTelephone": operation.numeroTelephone?.trim(),
-        "infoClient": operation.infoClient,
-        "typeOperation": operation.typeOperation ?? 0,
+        "numeroTelephone": operation.numero_telephone?.trim(),
+        "infoClient": operation.info_client,
+        "typeOperation": operation.typeoperation ?? 0,
         "operateur": operation.operateur,
         "supprimer": operation.supprimer ?? 0,
         "iddette": operation.iddette ?? 0,
         "optionCreance": operation.optionCreance ?? false,
-        "scanMessage": operation.scanMessage,
+        "scanMessage": operation.scanmessage,
         "numeroIndependant": operation.numeroIndependant?.trim() ?? "",
-        "idTrans": operation.idTrans,
+        "idTrans": operation.idtrans,
         "created_at": "",
         "updated_at": "",
         "numeroTelEntreprise": entreprise.numeroTelEntreprise
@@ -253,7 +253,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         ).timeout(Duration(seconds: 15));
 
         if (response.statusCode == 200) {
-          print('✅ Opération envoyée avec succès: ${operation.idTrans}');
+          print('✅ Opération envoyée avec succès: ${operation.idtrans}');
           successCount++;
         } else if (response.statusCode == 400) {
           print('❌ Erreur de format de données (400): ${response.body}');
@@ -271,7 +271,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
             ).timeout(Duration(seconds: 15));
 
             if (retryResponse.statusCode == 200) {
-              print('✅ Opération envoyée avec succès après renouvellement: ${operation.idTrans}');
+              print('✅ Opération envoyée avec succès après renouvellement: ${operation.idtrans}');
               successCount++;
             } else {
               print('❌ Échec persistant: ${retryResponse.statusCode} - ${retryResponse.body}');
@@ -285,7 +285,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
           failCount++;
         }
       } catch (e) {
-        print('🚨 Erreur lors de l\'envoi de l\'opération ${operation.idTrans}: $e');
+        print('🚨 Erreur lors de l\'envoi de l\'opération ${operation.idtrans}: $e');
         failCount++;
       }
     }

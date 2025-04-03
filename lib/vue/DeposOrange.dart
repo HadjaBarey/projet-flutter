@@ -29,7 +29,7 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
     controller.initializeData().then((_) {
       setState(() {
         // Mettre à jour le texte du contrôleur infoClient
-        controller.infoClientController.text = controller.depos.infoClient;
+        controller.infoClientController.text = controller.depos.info_client;
       });
     });
   }

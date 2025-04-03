@@ -31,12 +31,12 @@ class _UpdateMoovState extends State<UpdateMoov> {
 
     // Initialisez les contrôleurs avec les valeurs de depos
     controller.montantController.text = widget.depos.montant;
-    controller.numeroTelephoneController.text = widget.depos.numeroTelephone;
-    controller.infoClientController.text = widget.depos.infoClient;
+    controller.numeroTelephoneController.text = widget.depos.numero_telephone;
+    controller.infoClientController.text = widget.depos.info_client;
     controller.numeroIndependantController.text = widget.depos.numeroIndependant;
-    controller.scanMessageController.text = widget.depos.scanMessage;
+    controller.scanMessageController.text = widget.depos.scanmessage;
     controller.optionCreanceController.value = widget.depos.optionCreance;
-    controller.idTransController.text = widget.depos.idTrans;
+    controller.idTransController.text = widget.depos.idtrans;
 
     // Imprimez les valeurs pour le débogage
     print("Initial idoperation: ${widget.depos.idoperation}");
@@ -51,17 +51,17 @@ Future<void> _updateDepos() async {
   OrangeModel updatedDepos = OrangeModel(
     idoperation: widget.depos.idoperation,
     montant: controller.montantController.text,
-    numeroTelephone: controller.numeroTelephoneController.text,
-    infoClient: controller.infoClientController.text,
+    numero_telephone: controller.numeroTelephoneController.text,
+    info_client: controller.infoClientController.text,
     optionCreance: controller.optionCreanceController.value,
-    scanMessage: controller.scanMessageController.text,
+    scanmessage: controller.scanMessageController.text,
     numeroIndependant: controller.numeroIndependantController.text,
     operateur: widget.depos.operateur,
     dateoperation: widget.depos.dateoperation,
-    typeOperation: widget.depos.typeOperation,
+    typeoperation: widget.depos.typeoperation,
     iddette: widget.depos.iddette,
     supprimer: widget.depos.supprimer,
-    idTrans: controller.idTransController.text,
+    idtrans: controller.idTransController.text,
   );
 
   var existingDeposKey = updatedDepos.idoperation;

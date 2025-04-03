@@ -85,16 +85,16 @@ class OrangeController {
     idoperation: 0,
     dateoperation: '',
     montant: '',
-    numeroTelephone: '',
-    infoClient: '',
-    typeOperation: 0,
+    numero_telephone: '',
+    info_client: '',
+    typeoperation: 0,
     operateur: '1',
     supprimer: 0,
     iddette: 0,
     optionCreance : false,
-    scanMessage: '',
+    scanmessage: '',
     numeroIndependant: '',
-    idTrans: '',
+    idtrans: '',
   );
 
   
@@ -245,16 +245,16 @@ Future<void> DateControleRecupere() async {
   if (idoperation != null) depos.idoperation = idoperation;
   if (dateoperation != null) depos.dateoperation = dateoperation;
   if (montant != null) depos.montant = montant;
-  if (numeroTelephone != null) depos.numeroTelephone = numeroTelephone;
-  if (infoClient != null) depos.infoClient = infoClient;
-  if (typeOperation != null) depos.typeOperation = typeOperation;
+  if (numeroTelephone != null) depos.numero_telephone = numeroTelephone;
+  if (infoClient != null) depos.info_client = infoClient;
+  if (typeOperation != null) depos.typeoperation = typeOperation;
   if (operateur != null) depos.operateur = operateur;
   if (supprimer != null) depos.supprimer = supprimer;
   if (iddette != null) depos.iddette = iddette;
   if (optionCreance != null) depos.optionCreance = optionCreance;
-  if (scanMessage != null) depos.scanMessage = scanMessage;
+  if (scanMessage != null) depos.scanmessage = scanMessage;
   if (numeroIndependant != null) depos.numeroIndependant = numeroIndependant;
-  if (idTrans != null) depos.idTrans = idTrans;
+  if (idTrans != null) depos.idtrans = idTrans;
 
 }
 
@@ -301,16 +301,16 @@ Future<void> DateControleRecupere() async {
         idoperation: depos.idoperation,
         dateoperation: depos.dateoperation,
         montant: montant,
-        numeroTelephone: numeroTelephone,
-        infoClient: infoClient,
-        typeOperation: depos.typeOperation,
+        numero_telephone: numeroTelephone,
+        info_client: infoClient,
+        typeoperation: depos.typeoperation,
         operateur: depos.operateur,
         supprimer: depos.supprimer,
         iddette: depos.iddette,
         optionCreance: optionCreance,  
-        scanMessage :scanMessage,
+        scanmessage :scanMessage,
         numeroIndependant :numeroIndependant,
-        idTrans : idTrans,
+        idtrans : idTrans,
       );
       updateDeposInHive(_deposList[index]);
     }
@@ -366,16 +366,16 @@ Future<void> DateControleRecupere() async {
       idoperation: depos.idoperation + 1,
       dateoperation: DateFormat('yyyy-MM-dd').format(DateTime.now()),
       montant: '',
-      numeroTelephone: '',
-      infoClient: '',
-      typeOperation: 0,
+      numero_telephone: '',
+      info_client: '',
+      typeoperation: 0,
       operateur: '',
       supprimer: 0,
       iddette: 0,
       optionCreance: false,
-      scanMessage: '',
+      scanmessage: '',
       numeroIndependant: '',
-      idTrans: '',
+      idtrans: '',
       
     );
     idOperationController.text = depos.idoperation.toString();
@@ -711,7 +711,7 @@ Future<void> deleteNonScannedDeposInHive(int idoperation) async {
 
   for (var key in intKeys) {
     final OrangeModel? value = box.get(key);
-    if (value != null && value.idoperation == idoperation && value.scanMessage == '') {
+    if (value != null && value.idoperation == idoperation && value.scanmessage == '') {
       keyToDelete = key;
     //  print('Trouvé pour suppression - Clé: $key, Valeur: ${value.idoperation}');
       break; // Une fois trouvé, vous pouvez sortir de la boucle
@@ -819,7 +819,7 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
     bool dateMatches = itemDate.year == controlDate.year &&
                        itemDate.month == controlDate.month &&
                        itemDate.day == controlDate.day;
-    bool scanMessageMatches = item.scanMessage == 'Message Scanné';
+    bool scanMessageMatches = item.scanmessage == 'Message Scanné';
     bool optionCreanceMatches = !item.optionCreance;
 
     return dateMatches && scanMessageMatches && optionCreanceMatches;
@@ -851,13 +851,13 @@ Future<Map<String, Map<String, double>>> calculateSum(DateFormat dateFormat) asy
       double montant = double.tryParse(item.montant) ?? 0.0;
       String operateurKey = item.operateur;
 
-      if (item.typeOperation == 1) {
+      if (item.typeoperation == 1) {
         if (diminution.containsKey(operateurKey)) {
           diminution[operateurKey] = diminution[operateurKey]! + montant;
         } else {
           diminution[operateurKey] = montant;
         }
-      } else if (item.typeOperation == 2) {
+      } else if (item.typeoperation == 2) {
         if (augmentation.containsKey(operateurKey)) {
           augmentation[operateurKey] = augmentation[operateurKey]! + montant;
         } else {
@@ -967,7 +967,7 @@ Future<bool> VerificationIdTrans(BuildContext context) async {
   // Filtrer les éléments dans la liste filtrée en fonction de l'idTrans
   for (var item in filteredList) {
   //  print('Comparaison avec item.idTrans: ${item.idTrans}');
-    if (item.idTrans == idTransToCheck) {
+    if (item.idtrans == idTransToCheck) {
       // Si une correspondance est trouvée, affichez le dialogue d'erreur et retourner false
       showErrorDialog(context, "Une transaction avec cet ID Trans existe déjà.");
      // print('ID Trans trouvé, retour false');

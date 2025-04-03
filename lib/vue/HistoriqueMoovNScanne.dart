@@ -172,9 +172,9 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   }
 
   String _getOperationDescription(OrangeModel depos) {
-    if (depos.typeOperation == 1 && depos.operateur == '2') {
+    if (depos.typeoperation == 1 && depos.operateur == '2') {
       return 'Opération: Dépôt Moov';
-    } else if (depos.typeOperation == 2 && depos.operateur == '2') {
+    } else if (depos.typeoperation == 2 && depos.operateur == '2') {
       return 'Opération: Retrait Moov';
     // } else if (depos.typeOperation == 1 && depos.operateur == '2') {
     //   return 'Opération: Dépôt Moov';
@@ -187,7 +187,7 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
  List<OrangeModel> filteredList = _deposList
-    .where((depos) => (depos.operateur == '2' && depos.scanMessage == '') || depos.optionCreance == true)
+    .where((depos) => (depos.operateur == '2' && depos.scanmessage == '') || depos.optionCreance == true)
     .toList(); 
 
 
@@ -302,11 +302,11 @@ void _handleRowClicked(OrangeModel clickedDepos) {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Numéro de téléphone: ${depos.numeroTelephone}',
+                                'Numéro de téléphone: ${depos.numero_telephone}',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                'Information client: ${depos.infoClient}',
+                                'Information client: ${depos.info_client}',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(

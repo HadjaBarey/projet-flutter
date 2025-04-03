@@ -20,16 +20,16 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       idoperation: fields[0] as int,
        dateoperation: fields[1] as String? ?? '', // Assurez-vous de fournir une valeur par défaut si null
       montant: fields[2] as String? ?? '',
-      numeroTelephone: fields[3] as String? ?? '',
-      infoClient: fields[4] as String? ?? '',
-      typeOperation: fields[5] as int,
+      numero_telephone: fields[3] as String? ?? '',
+      info_client: fields[4] as String? ?? '',
+      typeoperation: fields[5] as int,
       operateur: fields[6] as String? ?? '',
       supprimer: fields[7] as int,
       iddette: fields[8] as int,
       optionCreance: fields[9] as bool,
-      scanMessage: fields[10] as String? ?? '',
+      scanmessage: fields[10] as String? ?? '',
       numeroIndependant: fields[11] as String? ?? '',
-      idTrans: fields[12] as String? ?? '',
+      idtrans: fields[12] as String? ?? '',
     );
   }
 
@@ -44,11 +44,11 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       ..writeByte(2)
       ..write(obj.montant)
       ..writeByte(3)
-      ..write(obj.numeroTelephone)
+      ..write(obj.numero_telephone)
       ..writeByte(4)
-      ..write(obj.infoClient)
+      ..write(obj.info_client)
       ..writeByte(5)
-      ..write(obj.typeOperation)
+      ..write(obj.typeoperation)
       ..writeByte(6)
       ..write(obj.operateur)
       ..writeByte(7)
@@ -58,11 +58,11 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
       ..writeByte(9)
       ..write(obj.optionCreance)
       ..writeByte(10)
-      ..write(obj.scanMessage)
+      ..write(obj.scanmessage)
       ..writeByte(11)
       ..write(obj.numeroIndependant)
       ..writeByte(12)
-      ..write(obj.idTrans);
+      ..write(obj.idtrans);
   }
 
   @override

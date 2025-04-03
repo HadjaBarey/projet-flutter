@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
 
 part 'OrangeModel.g.dart';
@@ -14,13 +16,13 @@ class OrangeModel extends HiveObject {
   String montant;
 
   @HiveField(3)
-  String numeroTelephone;
+  String numero_telephone;
 
   @HiveField(4)
-  String infoClient;
+  String info_client;
 
   @HiveField(5)
-  int typeOperation;
+  int typeoperation;
 
   @HiveField(6)
   String operateur;
@@ -35,28 +37,28 @@ class OrangeModel extends HiveObject {
   bool optionCreance;
 
   @HiveField(10)
-  String scanMessage;
+  String scanmessage;
 
   @HiveField(11)
   String numeroIndependant;
 
   @HiveField(12)
-  String idTrans;
+  String idtrans;
 
   OrangeModel({
     required this.idoperation,
     required this.dateoperation,
     required this.montant,
-    required this.numeroTelephone,
-    required this.infoClient,
-    required this.typeOperation,
+    required this.numero_telephone,
+    required this.info_client,
+    required this.typeoperation,
     required this.operateur,
     required this.supprimer,
     required this.iddette,
     this.optionCreance = false,
-    required this.scanMessage,
+    required this.scanmessage,
     required this.numeroIndependant,
-    required this.idTrans,
+    required this.idtrans,
   });
 
   factory OrangeModel.fromJSON(Map<String, dynamic> json) {
@@ -64,16 +66,16 @@ class OrangeModel extends HiveObject {
       idoperation: json['idoperation'] ?? 0,
       dateoperation: json['dateoperation'] ?? '',
       montant: json['montant'] ?? '',
-      numeroTelephone: json['numeroTelephone'] ?? '',
-      infoClient: json['infoClient'] ?? '',
-      typeOperation: json['typeOperation'] ?? 0,
+      numero_telephone: json['numero_telephone'] ?? '',
+      info_client: json['info_client'] ?? '',
+      typeoperation: json['typeoperation'] ?? 0,
       operateur: json['operateur'] ?? '',
       supprimer: json['supprimer'] ?? 0,
       iddette: json['iddette'] ?? 0,
       optionCreance: json['optionCreance'] ?? false,
-      scanMessage: json['scanMessage'] ?? '',
+      scanmessage: json['scanmessage'] ?? '',
       numeroIndependant: json['numeroIndependant'] ?? '',
-      idTrans: json['idTrans'] ?? '',
+      idtrans: json['idtrans'] ?? '',
     );
   }
 
@@ -81,32 +83,32 @@ class OrangeModel extends HiveObject {
       : idoperation = 0,
         dateoperation = '',
         montant = '',
-        numeroTelephone = '',
-        infoClient = '',
-        typeOperation = 0,
+        numero_telephone = '',
+        info_client = '',
+        typeoperation = 0,
         operateur = '',
         supprimer = 0,
         iddette = 0,
         optionCreance = false,
-        scanMessage = '',
+        scanmessage = '',
         numeroIndependant = '',
-        idTrans = '';
+        idtrans = '';
 
   Map<String, dynamic> toJson() {
     return {
       'idoperation': idoperation,
       'dateoperation': dateoperation,
       'montant': montant,
-      'numeroTelephone': numeroTelephone,
-      'infoClient': infoClient,
-      'typeOperation': typeOperation,
+      'numero_telephone': numero_telephone,
+      'info_client': info_client,
+      'typeoperation': typeoperation,
       'operateur': operateur,
       'supprimer': supprimer,
       'iddette': iddette,
       'optionCreance': optionCreance,
-      'scanMessage': scanMessage,
+      'scanmessage': scanmessage,
       'numeroIndependant': numeroIndependant,
-      'idTrans': idTrans,
+      'idtrans': idtrans,
     };
   }
 }
