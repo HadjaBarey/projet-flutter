@@ -249,54 +249,76 @@ class _ParametrageState extends State<Parametrage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
+                    width: 150,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      border: Border.all(
+                        color: Colors.black87,
+                        width: 0.0,
+                      ),
+                      borderRadius: BorderRadius.circular(15.0),
                     ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () async {
-                      // Appel de la fonction pour copier le fichier exporté vers un autre dossier
-                      await exportDataToJson();
-                      // Afficher une confirmation à l'utilisateur
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text('Exportation terminée'),
-                          content: Text(
-                              'Les données ont été exportées avec succès.'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(15.0),
+                      onTap: () async {
+                        // Demande de confirmation avant d'exporter
+                        bool confirm = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Confirmation'),
+                              content: Text('Voulez-vous vraiment exporter les données du téléphone vers le fichier?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false), // Annuler
+                                  child: Text('Non'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(true), // Confirmer
+                                  child: Text('Oui'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirm == true) {
+                          // Appel de la fonction pour exporter les données
+                          await exportDataToJson();
+
+                          // Affichage du message de succès
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Exportation terminée'),
+                              content: Text('Les données ont été exportées vers le fichier avec succès.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
+                          );
+                        }
+                      },
+                      child: Center(
+                        child: Text(
+                          'Export Data',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Export Data',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
-                ),
 
-                
                 Container(
                   width: 150,
                   height: 100,
@@ -311,24 +333,48 @@ class _ParametrageState extends State<Parametrage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(15.0),
                     onTap: () async {
-                      importDataFromJson();
-                      // Afficher une confirmation à l'utilisateur
-                      showDialog(
+                      // Demande de confirmation avant l'importation
+                      bool confirm = await showDialog(
                         context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text('Données importées'),
-                          content:
-                              Text('Les données ont été importé avec succès.'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        ),
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Confirmation'),
+                            content: Text('Voulez-vous vraiment importer les données du fichier vers le téléphone?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false), // Annuler
+                                child: Text('Non'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true), // Confirmer
+                                child: Text('Oui'),
+                              ),
+                            ],
+                          );
+                        },
                       );
+
+                      if (confirm == true) {
+                        // Appel de la fonction pour importer les données
+                        await importDataFromJson();
+
+                        // Affichage du message de succès après l'importation
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Importation terminée'),
+                            content: Text('Les données ont été importées vers le téléphone avec succès.'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     },
                     child: Center(
                       child: Text(
@@ -343,6 +389,9 @@ class _ParametrageState extends State<Parametrage> {
                     ),
                   ),
                 ),
+
+                
+
               ],
             ),
 
@@ -363,20 +412,60 @@ class _ParametrageState extends State<Parametrage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(15.0),
                     onTap: () async {
-                      
                       showDatePickerDialog(context, (selectedDate) async {
-                        try {
-                          // Vérifier le token
-                          String? token = await getTokenDataFlutter();
-                          if (token == null) {
-                            bool isConnected = await connexionManuelleDataFlutter(
-                                'ouedraogomariam@gmail.com', '000');
-                            if (!isConnected) {
+                        // Demande de confirmation avant l'exportation
+                        bool confirm = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Confirmation'),
+                              content: Text('Voulez-vous vraiment exporter les données du téléphone vers internet pour la date : $selectedDate ?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false), // Annuler
+                                  child: Text('Non'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(true), // Confirmer
+                                  child: Text('Oui'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirm == true) {
+                          try {
+                            // Vérifier si l'utilisateur est connecté à Spring Boot
+                            String? token = await getTokenDataFlutter();
+                            if (token == null) {
+                              bool isConnected = await connexionManuelleDataFlutter('ouedraogomariam@gmail.com', '000');
+                              if (!isConnected) {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: Text('Erreur de connexion'),
+                                    content: Text('Vous devez être connecté internet pour exporter les données vers internet.'),
+                                    actions: [
+                                      TextButton(
+                                        child: Text('OK'),
+                                        onPressed: () => Navigator.of(context).pop(),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return; // Arrêter l'exécution
+                              }
+                            }
+
+                            // Récupérer les informations de l'entreprise
+                            EntrepriseModel? entreprise = await getEntrepriseFromHive();
+                            if (entreprise == null || entreprise.numeroTelEntreprise.isEmpty) {
                               showDialog(
                                 context: context,
                                 builder: (_) => AlertDialog(
-                                  title: Text('Erreur de connexion'),
-                                  content: Text('Impossible de se connecter.'),
+                                  title: Text('Information manquante'),
+                                  content: Text('Le numéro de téléphone de l\'entreprise n\'est pas renseigné.'),
                                   actions: [
                                     TextButton(
                                       child: Text('OK'),
@@ -385,50 +474,43 @@ class _ParametrageState extends State<Parametrage> {
                                   ],
                                 ),
                               );
-                              return;
+                              return; // Arrêter l'exécution
                             }
+
+                            // Récupérer les données
+                            final operations = await getDataFromHive();
+
+                            // Envoyer les données
+                            await transfertDataToSpringBoot(operations, selectedDate);
+
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text('Données exportées'),
+                                content: Text('Les données ont été exportées du tééphone vers internet avec succès pour la date : $selectedDate'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } catch (e) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text('Erreur'),
+                                content: Text('Erreur lors de l\'exportation des données vers internet: $e'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
                           }
-
-                          // Récupérer les données
-                          EntrepriseModel? entreprise = await getEntrepriseFromHive();
-                          if (entreprise == null) {
-                            print('❌ Aucune entreprise trouvée.');
-                            return;
-                          }
-
-                          final operations = await getDataFromHive();
-
-                          // Envoyer les données
-                          await transfertDataToSpringBoot(operations, selectedDate);
-
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: Text('Données exportées'),
-                              content: Text(
-                                  'Les données ont été exportées avec succès pour la date : $selectedDate'),
-                              actions: [
-                                TextButton(
-                                  child: Text('OK'),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ],
-                            ),
-                          );
-                        } catch (e) {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: Text('Erreur'),
-                              content: Text('Erreur lors de l\'exportation : $e'),
-                              actions: [
-                                TextButton(
-                                  child: Text('OK'),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ],
-                            ),
-                          );
                         }
                       });
                     },
@@ -446,95 +528,121 @@ class _ParametrageState extends State<Parametrage> {
                   ),
                 ),
 
+
                 // Deuxième bouton : Import backEnd
-              Container(
-  width: 150,
-  height: 100,
-  decoration: BoxDecoration(
-    color: Colors.grey[300],
-    border: Border.all(color: Colors.black87, width: 0.0),
-    borderRadius: BorderRadius.circular(15.0),
-  ),
-  child: InkWell(
-    borderRadius: BorderRadius.circular(15.0),
-    onTap: () async {
-      showDatePickerDialog(context, (selectedDate) async {
-        try {
-          // Vérifier si la date est vide ou invalide
-          if (selectedDate.isEmpty || selectedDate == "00000000") {
-            print("🚨 Date invalide : $selectedDate");
-            return;
-          }
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(color: Colors.black87, width: 0.0),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () async {
+                      showDatePickerDialog(context, (selectedDate) async {
+                        // Vérifier si l'utilisateur est connecté à Spring Boot avant d'aller plus loin
+                        String? token = await getTokenDataFlutter();
+                        if (token == null) {
+                          bool isConnected = await connexionManuelleDataFlutter('ouedraogomariam@gmail.com', '000');
+                          if (!isConnected) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text('Erreur de connexion'),
+                                content: Text('Vous devez être connecté à internet pour importer les données vers le téléphone.'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return; // Arrêter l'exécution ici si l'utilisateur n'est pas connecté
+                          }
+                        }
 
-          // Vérification du token
-          String? token = await getTokenDataFlutter(); // Utilisez la fonction correcte pour récupérer le token
-          if (token == null) {
-            bool isConnected = await connexionManuelleDataFlutter('ouedraogomariam@gmail.com', '000');
-            if (!isConnected) {
-              showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: Text('Erreur de connexion'),
-                  content: Text('Impossible de se connecter.'),
-                  actions: [
-                    TextButton(
-                      child: Text('OK'),
-                      onPressed: () => Navigator.of(context).pop(),
+                        // Demande de confirmation avant d'importer
+                        bool confirm = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Confirmation'),
+                              content: Text('Voulez-vous vraiment importer les données de internet vers le téléphone pour la date : $selectedDate ?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false), // Annuler
+                                  child: Text('Non'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(true), // Confirmer
+                                  child: Text('Oui'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirm == true) {
+                          try {
+                            // Vérifier si la date est vide ou invalide
+                            if (selectedDate.isEmpty || selectedDate == "00000000") {
+                              print("🚨 Date invalide : $selectedDate");
+                              return;
+                            }
+
+                            // Importation des données depuis Spring Boot et stockage dans Hive
+                            await transfertDataToFlutter(context, selectedDate);
+
+                            // Afficher une confirmation de succès
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text('Données importées'),
+                                content: Text('Les données ont été importées de internet vers le téléphone avec succès pour la date : $selectedDate'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } catch (e) {
+                            // Afficher un message d'erreur en cas d'exception
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text('Erreur'),
+                                content: Text('Erreur lors de l\'importation de internet vers le téléphone : $e'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        }
+                      });
+                    },
+                    child: Center(
+                      child: Text(
+                        'Import backEnd',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              );
-              return;
-            }
-          }
 
-         // Importation des données depuis Spring Boot et stockage dans Hive
-         await transfertDataToFlutter(context, selectedDate);
-          // Afficher une confirmation de succès
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text('Données importées'),
-              content: Text('Les données ont été importées avec succès pour la date : $selectedDate'),
-              actions: [
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          );
-        } catch (e) {
-          // Afficher un message d'erreur en cas d'exception
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text('Erreur'),
-              content: Text('Erreur lors de l\'importation : $e'),
-              actions: [
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          );
-        }
-      });
-    },
-    child: Center(
-      child: Text(
-        'Import backEnd',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 18.0,
-          fontWeight: FontWeight.bold,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    ),
-  ),
-)
 
               ],
             ),
