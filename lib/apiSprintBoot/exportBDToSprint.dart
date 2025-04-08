@@ -1,3 +1,5 @@
+import 'dart:async'; // Pour TimeoutException
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
@@ -5,7 +7,7 @@ import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
+import 'connexionToken.dart';
 
 final storage = FlutterSecureStorage();
 
@@ -26,7 +28,6 @@ Future<List<OrangeModel>> getDataFromHive() async {
 }
 
 // Fonction pour récupérer les données de Hive concernant la table Entreprinse 
-// Fonction pour récupérer l'unique entreprise enregistrée dans todobos2
 Future<EntrepriseModel?> getEntrepriseFromHive() async {
   try {
     if (Hive.isBoxOpen('todobos2')) {
@@ -45,123 +46,11 @@ Future<EntrepriseModel?> getEntrepriseFromHive() async {
 //Fin Fonction qui permettrons de recuperer les données de mes 2 tables maitresses pour pouvoir combiner mes données pour les cibler dans mes enregistrements
 
 
-// Fonction pour vérifier si le token est expiré ou va expirer bientôt
-Future<bool> isTokenExpired() async {
-  String? token = await storage.read(key: 'token');
-  if (token == null) return true;
-  
-  try {
-    // Vérifie si le token est déjà expiré
-    if (JwtDecoder.isExpired(token)) return true;
-    
-    // Vérifie si le token va expirer dans les 5 minutes
-    final decodedToken = JwtDecoder.decode(token);
-    final expirationTime = DateTime.fromMillisecondsSinceEpoch(decodedToken['exp'] * 1000);
-    final currentTime = DateTime.now();
-    final difference = expirationTime.difference(currentTime).inMinutes;
-    
-    // Si le token expire dans moins de 5 minutes, on le considère comme expiré
-    return difference < 5;
-  } catch (e) {
-    print('Erreur lors de la vérification du token : $e');
-    return true;
-  }
-}
 
-// Fonction pour récupérer le token (vérifie l'expiration)
-Future<String?> getToken() async {
-  if (await isTokenExpired()) {
-    print('🔄 Token expiré ou absent, renouvellement...');
-    bool refreshSuccess = await refreshToken();
-    if (!refreshSuccess) {
-      print('🔄 Échec du rafraîchissement, tentative de connexion...');
-      bool loginSuccess = await connexionManuelle('ouedraogomariam@gmail.com', '000');
-      if (!loginSuccess) return null;
-    }
-  }
-  return await storage.read(key: 'token');
-}
 
-// Fonction pour rafraîchir le token
-Future<bool> refreshToken() async {
-  try {
-    String? refreshTokenValue = await storage.read(key: 'refresh_token');
-    if (refreshTokenValue == null) return false;
-    
-    final response = await http.post(
-      Uri.parse('http://192.168.100.6:8081/api/v1/auth/refresh-token'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $refreshTokenValue',
-      },
-    ).timeout(Duration(seconds: 15)); 
-    
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      String? newAccessToken = data['access_token'];
-      String? newRefreshToken = data['refresh_token'];
-      
-      if (newAccessToken != null) {
-        await storage.write(key: 'token', value: newAccessToken);
-        if (newRefreshToken != null) {
-          await storage.write(key: 'refresh_token', value: newRefreshToken);
-        }
-        print('🔑 Token rafraîchi avec succès');
-        return true;
-      }
-    }
-    return false;
-  } catch (e) {
-    print('Erreur lors du rafraîchissement du token : $e');
-    return false;
-  }
-}
-
-// Fonction de connexion manuelle
-Future<bool> connexionManuelle(String email, String password) async {
-  try {
-    final response = await http.post(
-      Uri.parse('http://192.168.100.6:8081/api/v1/auth/authenticate'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'email': email, 'password': password}),
-    ).timeout(Duration(seconds: 15));
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      String? accessToken = data['access_token'];
-      String? refreshToken = data['refresh_token'];
-      
-      if (accessToken != null) {
-        await storage.write(key: 'token', value: accessToken);
-        if (refreshToken != null) {
-          await storage.write(key: 'refresh_token', value: refreshToken);
-        }
-        print('🔑 Connexion réussie et token stocké');
-        return true;
-      }
-    } else {
-      print('❌ Échec de connexion: ${response.statusCode} - ${response.body}');
-    }
-    return false;
-  } catch (e) {
-    print('Erreur connexion : $e');
-    return false;
-  }
-}
-
-// Fonction pour gérer les erreurs HTTP 401 ou 403 (token expiré)
-Future<bool> handleAuthError(http.Response response) async {
-  if (response.statusCode == 401 || response.statusCode == 403) {
-    print('🔒 Erreur d\'authentification, tentative de renouvellement...');
-    await storage.delete(key: 'token');
-    String? newToken = await getToken();
-    return newToken != null;
-  }
-  return false;
-}
 
 // Fonction qui envoie chaque opération individuellement au format attendu par l'API
-Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre) async { 
+Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre, BuildContext context) async { 
   try {
     if (operations.isEmpty) {
       print('❌ Aucune donnée à envoyer.');
@@ -175,7 +64,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
       return;
     }
 
-    String? token = await getToken();
+    String? token = await getToken(context);
     if (token == null) {
       print('❌ Impossible d\'obtenir un token valide.');
       return;
@@ -258,8 +147,8 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         } else if (response.statusCode == 400) {
           print('❌ Erreur de format de données (400): ${response.body}');
           failCount++;
-        } else if (await handleAuthError(response)) {
-          String? newToken = await getToken();
+        } else if (await handleAuthError(response,context)) {
+          String? newToken = await getToken(context);
           if (newToken != null) {
             final retryResponse = await http.post(
               Uri.parse(apiUrl),
@@ -355,14 +244,11 @@ class OperationModel {
 
 class OperationTransactionService {
   Future<void> deleteByNumeroAndDate(String numeroTel, String date) async {
-    // Appel API pour supprimer les données
-    print("Suppression des données pour $numeroTel à la date $date");
-    // Exemple : await http.delete(Uri.parse('https://api.example.com/delete?numero=$numeroTel&date=$date'));
+    //print("Suppression des données pour $numeroTel à la date $date");
   }
-
   Future<void> sendOperation(OperationModel operation) async {
-    // Appel API pour envoyer une opération
-    print("Envoi de l'opération : ${operation.toJson()}");
-    // Exemple : await http.post(Uri.parse('https://api.example.com/operations'), body: operation.toJson());
+   // print("Envoi de l'opération : ${operation.toJson()}");
   }
 }
+
+

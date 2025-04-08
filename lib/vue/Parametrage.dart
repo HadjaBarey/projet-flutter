@@ -2,22 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Pour formater la date
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
-import 'package:kadoustransfert/apiSprintBoot/transfertFlutterBD.dart';
-import 'package:kadoustransfert/vue/Connexion.dart';
+import 'package:kadoustransfert/apiSprintBoot/connexionToken.dart';
+import 'package:kadoustransfert/apiSprintBoot/importBDToFlutter.dart';
 import 'package:kadoustransfert/vue/CopyData.dart';
 import 'package:kadoustransfert/vue/Entreprise.dart';
-import 'package:kadoustransfert/vue/ExportWhatSapp.dart';
-import 'package:kadoustransfert/vue/ExporterData.dart';
 import 'package:kadoustransfert/vue/ImporterData.dart';
 import 'package:kadoustransfert/vue/ListAddSim.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
-import 'package:kadoustransfert/vue/ListOpTransaction.dart';
-import 'package:kadoustransfert/vue/ListUtilisateur.dart';
 import 'package:kadoustransfert/vue/SynchroniseAddSim.dart';
 import 'package:kadoustransfert/vue/SynchroniseEntreprise.dart';
 import 'package:kadoustransfert/vue/ViderBD.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:kadoustransfert/apiSprintBoot/transfertSprintBootBD.dart';// Importer le fichier de gestion de la connexion
+import 'package:kadoustransfert/apiSprintBoot/exportBDToSprint.dart';
 
 class Parametrage extends StatefulWidget {
   const Parametrage({Key? key}) : super(key: key);
@@ -248,76 +243,77 @@ class _ParametrageState extends State<Parametrage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Container(
-                    width: 150,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      border: Border.all(
-                        color: Colors.black87,
-                        width: 0.0,
-                      ),
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(15.0),
-                      onTap: () async {
-                        // Demande de confirmation avant d'exporter
-                        bool confirm = await showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Confirmation'),
-                              content: Text('Voulez-vous vraiment exporter les données du téléphone vers le fichier?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(false), // Annuler
-                                  child: Text('Non'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(true), // Confirmer
-                                  child: Text('Oui'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
+               Container(
+  width: 150,
+  height: 100,
+  decoration: BoxDecoration(
+    color: Colors.grey[300],
+    border: Border.all(
+      color: Colors.black87,
+      width: 0.0,
+    ),
+    borderRadius: BorderRadius.circular(15.0),
+  ),
+  child: InkWell(
+    borderRadius: BorderRadius.circular(15.0),
+    onTap: () async {
+      // Demande de confirmation avant d'exporter
+      bool confirm = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirmation'),
+            content: Text('Voulez-vous vraiment exporter les données du téléphone vers le fichier?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // Annuler
+                child: Text('Non'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true), // Confirmer
+                child: Text('Oui'),
+              ),
+            ],
+          );
+        },
+      );
 
-                        if (confirm == true) {
-                          // Appel de la fonction pour exporter les données
-                          await exportDataToJson();
+      if (confirm == true) {
+        // Appel de la fonction pour exporter les données
+        await exportDataToJson();
 
-                          // Affichage du message de succès
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: Text('Exportation terminée'),
-                              content: Text('Les données ont été exportées vers le fichier avec succès.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
-                      child: Center(
-                        child: Text(
-                          'Export Data',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
+        // Affichage du message de succès
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text('Exportation terminée'),
+            content: Text('Les données ont été exportées vers le fichier avec succès.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    },
+    child: Center(
+      child: Text(
+        'Export Data',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    ),
+  ),
+),
+
 
                 Container(
                   width: 150,
@@ -437,9 +433,9 @@ class _ParametrageState extends State<Parametrage> {
                         if (confirm == true) {
                           try {
                             // Vérifier si l'utilisateur est connecté à Spring Boot
-                            String? token = await getTokenDataFlutter();
+                            String? token = await getToken(context);
                             if (token == null) {
-                              bool isConnected = await connexionManuelleDataFlutter('ouedraogomariam@gmail.com', '000');
+                              bool isConnected = await connexionManuelle(context,'ouedraogomariam@gmail.com', '000');
                               if (!isConnected) {
                                 showDialog(
                                   context: context,
@@ -481,7 +477,7 @@ class _ParametrageState extends State<Parametrage> {
                             final operations = await getDataFromHive();
 
                             // Envoyer les données
-                            await transfertDataToSpringBoot(operations, selectedDate);
+                            await transfertDataToSpringBoot(operations, selectedDate,context);
 
                             showDialog(
                               context: context,
@@ -543,9 +539,9 @@ class _ParametrageState extends State<Parametrage> {
                     onTap: () async {
                       showDatePickerDialog(context, (selectedDate) async {
                         // Vérifier si l'utilisateur est connecté à Spring Boot avant d'aller plus loin
-                        String? token = await getTokenDataFlutter();
+                        String? token = await getToken(context);
                         if (token == null) {
-                          bool isConnected = await connexionManuelleDataFlutter('ouedraogomariam@gmail.com', '000');
+                          bool isConnected = await connexionManuelle(context,'ouedraogomariam@gmail.com', '000');
                           if (!isConnected) {
                             showDialog(
                               context: context,

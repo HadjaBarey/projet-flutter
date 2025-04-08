@@ -19,9 +19,9 @@ Future<void> saveDefaultEntrepriseModel() async {
     );
 
     await box.put(1, defaultEntreprise);
-    print('Valeur par défaut enregistrée avec succès.');
+   // print('Valeur par défaut enregistrée avec succès.');
   } else {
-    print('Les données existent déjà, pas besoin de les enregistrer.');
+    //print('Les données existent déjà, pas besoin de les enregistrer.');
   }
 
   await box.close(); // Ferme la boîte pour s'assurer que les données sont écrites

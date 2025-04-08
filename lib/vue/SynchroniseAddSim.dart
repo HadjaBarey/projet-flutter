@@ -5,7 +5,6 @@ Future<void> saveMultipleDefaultAddSimModels() async {
   // Ouvrir la boîte Hive pour AddSimModel
   var box = await Hive.openBox<AddSimModel>('todobos5');
 
-  // Créer plusieurs instances de AddSimModel avec des valeurs par défaut différentes
   List<AddSimModel> defaultSims = [
     AddSimModel(
       idOperateur: 1,
@@ -44,11 +43,15 @@ Future<void> saveMultipleDefaultAddSimModels() async {
     ),
   ];
 
-
-  // Enregistrer chaque instance dans la boîte Hive
   for (var sim in defaultSims) {
-    await box.add(sim);
-  }
+    // Spécifier que le type peut être nul
+    AddSimModel? existingSim = box.values.firstWhere(
+      (element) => element.idOperateur == sim.idOperateur,
+      orElse: () => null as AddSimModel, // cast pour satisfaire le typage
+    );
 
- // print('Plusieurs valeurs par défaut enregistrées avec succès.');
+    if (existingSim == null) {
+      await box.add(sim);
+    }
+  }
 }
