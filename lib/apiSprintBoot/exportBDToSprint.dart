@@ -52,6 +52,14 @@ Future<EntrepriseModel?> getEntrepriseFromHive() async {
 // Fonction qui envoie chaque opération individuellement au format attendu par l'API
 Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre, BuildContext context) async { 
   try {
+
+     // Vérifie la connexion Internet avant tout
+    if (!await isConnectedToInternet()) {
+      print("🚫 Aucune connexion Internet, transfert annulé.");
+      return;
+    }
+
+
     if (operations.isEmpty) {
       print('❌ Aucune donnée à envoyer.');
       return;
@@ -250,5 +258,8 @@ class OperationTransactionService {
    // print("Envoi de l'opération : ${operation.toJson()}");
   }
 }
+
+
+
 
 

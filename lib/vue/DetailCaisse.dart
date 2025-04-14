@@ -16,9 +16,19 @@ class _PageDetailCaisseState extends State<PageDetailCaisse> {
 
   @override
   void initState() {
-    super.initState();
-    _caisseDataFuture = widget.caisseController.getAllCaisseData(DateTime.now());
+     super.initState();
+    _loadCaisseData(); // on déplace dans une fonction propre
   }
+
+  void _loadCaisseData() async {
+  await widget.caisseController.DateControleRecupere();
+  // Vérification debug
+  //print("📅 Date utilisée pour le filtre : ${widget.caisseController.dateJournalController.text}");
+  setState(() {
+    _caisseDataFuture = widget.caisseController.getAllCaisseData(widget.caisseController.dateJournalController);
+  });
+}
+
 
   // Méthode pour filtrer les données selon l'opérateur sélectionné
   Future<List<JournalCaisseModel>> _filterCaisseData(List<JournalCaisseModel> caisseData) async {

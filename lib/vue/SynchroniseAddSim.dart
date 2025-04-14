@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:kadoustransfert/Model/AddSimModel.dart';
+import 'package:collection/collection.dart';
 
 Future<void> saveMultipleDefaultAddSimModels() async {
   // Ouvrir la boîte Hive pour AddSimModel
@@ -45,10 +46,9 @@ Future<void> saveMultipleDefaultAddSimModels() async {
 
   for (var sim in defaultSims) {
     // Spécifier que le type peut être nul
-    AddSimModel? existingSim = box.values.firstWhere(
-      (element) => element.idOperateur == sim.idOperateur,
-      orElse: () => null as AddSimModel, // cast pour satisfaire le typage
-    );
+  AddSimModel? existingSim = box.values.firstWhereOrNull(
+  (element) => element.idOperateur == sim.idOperateur,
+);
 
     if (existingSim == null) {
       await box.add(sim);

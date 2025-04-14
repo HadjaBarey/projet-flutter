@@ -228,6 +228,8 @@ class CaisseController {
   //  print('Valeur de dateJournalController.text: ${dateJournalController.text}');
   }
 
+
+
   void showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -261,10 +263,6 @@ class CaisseController {
 Future<String> getLibOperateur(String operateur) async {
   // Ouvrir la boîte Hive
   var addSimBox = await Hive.openBox<AddSimModel>('todobos5');
-
-  // Déboguer le contenu de la boîte pour s'assurer qu'elle contient des données
-  //print('Contenu de addSimBox: ${addSimBox.values.toList()}');
-
   // Rechercher le modèle correspondant
   AddSimModel? correspondingAddSimModel = addSimBox.values.firstWhere(
     (addSim) => addSim.idOperateur.toString() == operateur,
@@ -291,37 +289,32 @@ Future<String> getLibOperateur(String operateur) async {
 }
 
 
-
-
-Future<List<JournalCaisseModel>> getAllCaisseData(DateTime dateFilter) async {
+Future<List<JournalCaisseModel>> getAllCaisseData(TextEditingController dateController) async {
   List<JournalCaisseModel> allCaisseData = [];
-  
+
   try {
-    // Assurez-vous que la boîte est initialisée
     await initializeBox();
-
-    // Vérifiez si la boîte contient des éléments
-    if (todobos6.isNotEmpty) {
-      // Itérez à travers toutes les valeurs de la boîte
       allCaisseData = todobos6.values.toList();
+        DateTime dateFilter = DateFormat('dd/MM/yyyy').parseStrict(dateController.text);
 
-      // Filtrer les données en fonction de la date
-      allCaisseData = allCaisseData.where((data) {
-        // Convertir la date stockée en DateTime pour la comparaison
-        DateTime dataDate = DateTime.parse(data.dateJournal); // Assurez-vous que dateJournal est au format ISO 8601
-        return dataDate.year == dateFilter.year &&
-               dataDate.month == dateFilter.month &&
-               dataDate.day == dateFilter.day;
-      }).toList();
-    } 
-  } catch (e) {
-    // Gérer les erreurs
-   // print('Erreur lors de la récupération des données : $e');
-  }
+        allCaisseData = allCaisseData.where((data) {
+          try {
+            String rawDate = data.dateJournal.split(" ").first;
+            DateTime dataDate = DateFormat('dd/MM/yyyy').parseStrict(rawDate);
+
+            print("🔍 Comparaison: ${dataDate.toString()} == ${dateFilter.toString()}");
+
+            return dataDate.year == dateFilter.year &&
+                   dataDate.month == dateFilter.month &&
+                   dataDate.day == dateFilter.day;
+          } catch (e) {
+            return false;
+          }
+        }).toList();
+  } catch (e) {}
 
   return allCaisseData;
 }
-
 
 
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kadoustransfert/Controller/CaisseController.dart';
 import 'package:kadoustransfert/vue/DetailCaisse.dart';
-//import 'package:kadoustransfert/Controller/OrangeController.dart';
 
 class AddCaisssePage extends StatefulWidget {
   final CaisseController caisseController;
@@ -81,39 +81,43 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                 ],
               ),
               SizedBox(height: 35),
-              Row(
-                children: [
-                  Text(
-                    'Solde Initial:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 1, color: Colors.black),
-                        borderRadius: BorderRadius.all(Radius.circular(5)),
-                        color: Colors.redAccent,
-                      ),
-                      child: TextFormField(
-                        controller: widget.caisseController.montantJController,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        enabled: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Erreur';
-                          }
-                          return null;
-                        },
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+             Row(
+  children: [
+    Text(
+      'Solde Initial:',
+      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    ),
+    SizedBox(width: 10),
+    Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(width: 1, color: Colors.black),
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+          color: Colors.redAccent,
+        ),
+        child: TextFormField(
+          controller: widget.caisseController.montantJController,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          enabled: true,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Erreur';
+            }
+            return null;
+          },
+          keyboardType: TextInputType.text, // Changer ici
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*\.?\d*$')),
+          ],
+        ),
+      ),
+    ),
+  ],
+),
+
               SizedBox(height: 35),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,

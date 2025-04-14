@@ -2,18 +2,44 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 final storage = FlutterSecureStorage();
 
+
 Future<bool> isConnectedToInternet() async {
-  var connectivityResult = await Connectivity().checkConnectivity();
-  return connectivityResult != ConnectivityResult.none;
+final connectivityResult = await Connectivity().checkConnectivity();
+
+  // Aucun réseau détecté (Wi-Fi, mobile, etc.)
+  if (connectivityResult == ConnectivityResult.none) {
+    print("❌ Aucune connexion réseau détectée.");
+    return false;
+  }
+
+  try {
+    // On teste une vraie résolution DNS sur Google
+    final result = await InternetAddress.lookup('google.com').timeout(Duration(seconds: 3));
+    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+      print("✅ Connexion internet active");
+      return true;
+    }
+  } on SocketException catch (_) {
+    print("📡 SocketException : impossible d'accéder à internet.");
+  } on TimeoutException {
+    print("⏳ Timeout lors du test DNS");
+  }
+
+  return false;
 }
+
+
+
+
+
 
 Future<bool> checkInternetBeforeApiCall(BuildContext context) async {
   if (!await isConnectedToInternet()) {
@@ -30,6 +56,12 @@ Future<http.Response?> secureHttpGet({
   Map<String, String>? headers,
   Duration timeout = const Duration(seconds: 30),
 }) async {
+  if (!await isConnectedToInternet()) {
+   // print("📡 Aucune connexion détectée, GET annulé.");
+    showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
+    return null;
+  }
+
   try {
     final response = await http.get(Uri.parse(url), headers: headers).timeout(timeout);
     return response;
@@ -46,6 +78,7 @@ Future<http.Response?> secureHttpGet({
   return null;
 }
 
+
 Future<http.Response?> secureHttpPost({
   required BuildContext context,
   required String url,
@@ -54,23 +87,29 @@ Future<http.Response?> secureHttpPost({
   Encoding? encoding,
   Duration timeout = const Duration(seconds: 30),
 }) async {
+  if (!await isConnectedToInternet()) {
+  // print("📡 Aucune connexion détectée, POST annulé.");
+  //  showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
+    return null;
+  }
   try {
     final response = await http
         .post(Uri.parse(url), headers: headers, body: body, encoding: encoding)
         .timeout(timeout);
     return response;
   } on TimeoutException {
-    print("⏳ Timeout POST");
-    showAlertDialog(context, "⏳ Le serveur ne répond pas. Vérifiez votre connexion.");
+     print("⏳ Timeout POST");
+    // showAlertDialog(context, "⏳ Le serveur ne répond pas. Vérifiez votre connexion.");
   } on SocketException {
     print("📡 Pas de connexion réseau POST");
-    showAlertDialog(context, "📡 Aucune connexion réseau détectée.");
+    // showAlertDialog(context, "📡 Aucune connexion réseau détectée.");
   } catch (e) {
-    print("💥 Erreur POST : $e");
-    showAlertDialog(context, "💥 Une erreur est survenue : $e");
+     print("💥 Erreur POST : $e");
+    // showAlertDialog(context, "💥 Une erreur est survenue : $e");
   }
   return null;
 }
+
 
 
 
@@ -132,7 +171,7 @@ Future<bool> refreshToken(BuildContext context) async {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $refreshTokenValue',
       },
-      timeout: Duration(seconds: 120),
+      timeout: Duration(seconds: 15),
     );
 
     if (response != null && response.statusCode == 200) {
