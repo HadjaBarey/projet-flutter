@@ -11,6 +11,7 @@ import 'package:kadoustransfert/vue/ListAddSim.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
 import 'package:kadoustransfert/vue/SynchroniseAddSim.dart';
 import 'package:kadoustransfert/vue/SynchroniseEntreprise.dart';
+import 'package:kadoustransfert/vue/SynchroniseJournalCaisse.dart';
 import 'package:kadoustransfert/vue/ViderBD.dart';
 import 'package:kadoustransfert/apiSprintBoot/exportBDToSprint.dart';
 
@@ -87,6 +88,7 @@ class _ParametrageState extends State<Parametrage> {
 
                       // Si l'utilisateur a confirmé, procéder à la synchronisation
                       if (confirmation == true) {
+                        //IntialiseCaisse();
                         saveMultipleDefaultAddSimModels();
                         saveDefaultEntrepriseModel();
 

@@ -258,6 +258,16 @@ class CaisseController {
     //print("Operateur Options: $operateurOptions");
   }
 
+Future<List<Map<String, String>>> getAllOperateursActifs() async {
+  return operateurOptions
+      .map((op) => {
+            'operateur': op['value'] ?? '',
+            'typeCompte': op['typeCompte'] ?? '1', // utilise la valeur existante si présente
+          })
+      .toList();
+}
+
+
 
 
 Future<String> getLibOperateur(String operateur) async {
