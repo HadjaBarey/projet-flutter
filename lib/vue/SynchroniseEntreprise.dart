@@ -15,7 +15,7 @@ Future<void> saveDefaultEntrepriseModel() async {
       DirecteurEntreprise: 'OUEDRAOGO M.Kader',
       DateControle: dateDuJour,
       numeroTelEntreprise: "00000000",
-      emailEntreprise: "entreprise@gmail.com",
+      emailEntreprise: "",
     );
 
     await box.put(1, defaultEntreprise);

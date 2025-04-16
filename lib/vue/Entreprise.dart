@@ -166,7 +166,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                       controller: entrepriseController.emailEntrepriseController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: 'email',
+                        labelText: 'Mot de passe',
                         labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       validator: (value) {

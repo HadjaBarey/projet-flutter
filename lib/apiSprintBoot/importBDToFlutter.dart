@@ -49,9 +49,14 @@ Future<void> transfertDataToFlutter(BuildContext context, String selectedDate) a
         return;
       }
 
-      // 4. Récupérer le numéro de téléphone
+      // 4. Récupérer le numéro de téléphone et le mot de passe( emailentreprise )
       String entrepriseNumero = box2.getAt(0)?.numeroTelEntreprise ?? "";
       if (entrepriseNumero.isEmpty) return;
+
+      String emailentreprise = box2.getAt(0)?.emailEntreprise ?? "";
+      if (emailentreprise.isEmpty) return;
+
+
 
       // 5. Ouvrir la boîte 'todobos'
       Box<OrangeModel>? box1;
@@ -75,7 +80,7 @@ Future<void> transfertDataToFlutter(BuildContext context, String selectedDate) a
 
       // 7. Construire l'URL
       final apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/listTransaction';
-      final fullUrl = '$apiUrl?entrepriseNumero=$entrepriseNumero&dateopera=$normalizedDate';
+      final fullUrl = '$apiUrl?entrepriseNumero=$entrepriseNumero&dateopera=$normalizedDate&emailEPR=$emailentreprise';
 
       // 8. Requête HTTP
      final response = await secureHttpGet(

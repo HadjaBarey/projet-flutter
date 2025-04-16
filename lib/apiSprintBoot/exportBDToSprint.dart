@@ -47,8 +47,6 @@ Future<EntrepriseModel?> getEntrepriseFromHive() async {
 
 
 
-
-
 // Fonction qui envoie chaque opération individuellement au format attendu par l'API
 Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre, BuildContext context) async { 
   try {
@@ -84,14 +82,14 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
     String deleteApiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/supprimer';
     try {
       final deleteResponse = await http.delete(
-        Uri.parse('$deleteApiUrl?telEntreprise=${entreprise.numeroTelEntreprise}&dateOp=$dateFiltre'),
+        Uri.parse('$deleteApiUrl?telEntreprise=${entreprise.numeroTelEntreprise}&dateOp=$dateFiltre&emailEP=${entreprise.emailEntreprise}'),
         headers: {
           'Authorization': 'Bearer $token',
         },
       ).timeout(Duration(seconds: 15));
 
       if (deleteResponse.statusCode == 200) {
-        print("🗑️ Données supprimées avec succès pour le numéro : ${entreprise.numeroTelEntreprise} à la date : $dateFiltre");
+        print("🗑️ Données supprimées avec succès pour le numéro : ${entreprise.numeroTelEntreprise} et le mot de passe ${entreprise.emailEntreprise} à la date : $dateFiltre");
       } else {
         print('❌ Échec de la suppression: ${deleteResponse.statusCode} - ${deleteResponse.body}');
         return;
@@ -133,7 +131,8 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         "idTrans": operation.idtrans,
         "created_at": "",
         "updated_at": "",
-        "numeroTelEntreprise": entreprise.numeroTelEntreprise
+        "numeroTelEntreprise": entreprise.numeroTelEntreprise,
+        "emailentreprise": entreprise.emailEntreprise
       };
 
       final jsonPayload = json.encode(operationJson);

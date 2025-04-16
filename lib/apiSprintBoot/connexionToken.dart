@@ -37,10 +37,6 @@ final connectivityResult = await Connectivity().checkConnectivity();
 }
 
 
-
-
-
-
 Future<bool> checkInternetBeforeApiCall(BuildContext context) async {
   if (!await isConnectedToInternet()) {
     showAlertDialog(context, "📱 Vous n’êtes pas connecté à Internet.");
