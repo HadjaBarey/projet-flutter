@@ -7,6 +7,7 @@ import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:kadoustransfert/Model/UsersKeyModel.dart';
 import 'connexionToken.dart';
 
 final storage = FlutterSecureStorage();
@@ -47,6 +48,8 @@ Future<EntrepriseModel?> getEntrepriseFromHive() async {
 
 
 
+//Fin Fonction qui permettrons de recuperer les données de mes 2 tables maitresses pour pouvoir combiner mes données pour les cibler dans mes enregistrements
+
 // Fonction qui envoie chaque opération individuellement au format attendu par l'API
 Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String dateFiltre, BuildContext context) async { 
   try {
@@ -69,6 +72,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
       print('❌ Aucune entreprise trouvée.');
       return;
     }
+
 
     String? token = await getToken(context);
     if (token == null) {
@@ -133,6 +137,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         "updated_at": "",
         "numeroTelEntreprise": entreprise.numeroTelEntreprise,
         "emailentreprise": entreprise.emailEntreprise
+        
       };
 
       final jsonPayload = json.encode(operationJson);
@@ -149,7 +154,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
         ).timeout(Duration(seconds: 15));
 
         if (response.statusCode == 200) {
-          print('✅ Opération envoyée avec succès: ${operation.idtrans}');
+          print('✅ Opération envoyée avec succès: ${operation.dateoperation}');
           successCount++;
         } else if (response.statusCode == 400) {
           print('❌ Erreur de format de données (400): ${response.body}');

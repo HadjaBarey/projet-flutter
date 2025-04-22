@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
+import 'package:kadoustransfert/vue/UsersKey.dart';
 
 class EntreprisePage extends StatefulWidget {
   final EntrepriseController entrepriseController;
@@ -83,8 +85,8 @@ class _EntreprisePageState extends State<EntreprisePage> {
         ),
         backgroundColor: Colors.orange,
       ),
-      body: FutureBuilder<void>(
-        future: loadEntreprise(),
+      body:FutureBuilder<void>(
+          future: loadEntreprise(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -152,9 +154,9 @@ class _EntreprisePageState extends State<EntreprisePage> {
                         labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ce champ est requis';
-                        }
+                        // if (value == null || value.isEmpty) {
+                        //   return 'Ce champ est requis';
+                        // }
                         entrepriseController.updateEntreprise(numeroTelEntreprise: value);
                         return null;
                       },
@@ -170,9 +172,9 @@ class _EntreprisePageState extends State<EntreprisePage> {
                         labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Ce champ est requis';
-                        }
+                        // if (value == null || value.isEmpty) {
+                        //   return 'Ce champ est requis';
+                        // }
                         entrepriseController.updateEntreprise(emailEntreprise: value);
                         return null;
                       },
@@ -202,6 +204,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                       child: const Text('Date du jour'),
                     ),
                     SizedBox(height: 20),
+
                     ElevatedButton(
                       onPressed: () {
                         if (entrepriseController.formKey.currentState!.validate()) {
@@ -241,6 +244,19 @@ class _EntreprisePageState extends State<EntreprisePage> {
           }
         },
       ),
-    );
+
+       // ✅ Ton bouton en bas à droite
+  floatingActionButton: FloatingActionButton.extended(
+    onPressed: () async {
+      final box = await getUsersKeyBox();
+      showAddItemDialog(context, box);
+    },
+    label: Text('Clée'),
+    icon: Icon(Icons.add),
+    backgroundColor: Colors.blueGrey,
+  ),
+  floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+);
+
   }
 }

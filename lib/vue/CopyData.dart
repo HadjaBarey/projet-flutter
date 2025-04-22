@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
+import 'package:kadoustransfert/Model/UsersKeyModel.dart';
 import 'package:kadoustransfert/Model/UtilisateurModel.dart';
 import 'package:kadoustransfert/Model/OpTransactionModel.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
@@ -33,6 +34,7 @@ Future<void> exportDataToJson() async {
       final boxUtilisateur = await Hive.openBox<UtilisateurModel>('todobos4');
       final boxAddSim = await Hive.openBox<AddSimModel>('todobos5');
       final boxJournalCaisse = await Hive.openBox<JournalCaisseModel>('todobos6');
+      final boxUsersKeyModel = await Hive.openBox<UsersKeyModel>('todobos7');
 
       // Transformer les données en JSON
       final data = {
@@ -43,6 +45,8 @@ Future<void> exportDataToJson() async {
         'todobos4': boxUtilisateur.values.map((e) => e.toJson()).toList(),
         'todobos5': boxAddSim.values.map((e) => e.toJson()).toList(),
         'todobos6': boxJournalCaisse.values.map((e) => e.toJson()).toList(),
+        'todobos7': boxUsersKeyModel.values.map((e) => e.toJson()).toList(),
+
       };
 
       // Créer et écrire le fichier dans le répertoire de l'app

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kadoustransfert/Model/UsersKeyModel.dart';
 import 'package:kadoustransfert/vue/Connexion.dart';
 import 'Model/JournalCaisseModel.dart';
 import 'Model/AddSimModel.dart';
@@ -22,6 +23,7 @@ void main() async {
   Hive.registerAdapter(UtilisateurModelAdapter());
   Hive.registerAdapter(AddSimModelAdapter());
   Hive.registerAdapter(JournalCaisseModelAdapter());
+  Hive.registerAdapter(UsersKeyModelAdapter());
 
   // Ouvrir les boîtes Hive nécessaires
   await Hive.openBox<OrangeModel>('todobos');
@@ -31,6 +33,7 @@ void main() async {
   await Hive.openBox<UtilisateurModel>('todobos4');
   await Hive.openBox<AddSimModel>('todobos5');
   await Hive.openBox<JournalCaisseModel>('todobos6');
+  await Hive.openBox<UsersKeyModel>('todobos7');
 
   runApp(MyApp());
 }

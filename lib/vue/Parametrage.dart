@@ -399,9 +399,9 @@ class _ParametrageState extends State<Parametrage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Premier bouton : Export backEnd
-                Container(
-                  width: 150, // Largeur fixe
-                  height: 100, // Hauteur fixe
+            Container(
+                  width: 150,
+                  height: 100,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     border: Border.all(color: Colors.black87, width: 0.0),
@@ -410,24 +410,91 @@ class _ParametrageState extends State<Parametrage> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(15.0),
                     onTap: () async {
-                      showDatePickerDialog(context, (selectedDate) async {
-                        // Demande de confirmation avant l'exportation
+                      try {
+                        // Vérifier la connexion internet
+                        bool isConnected = await isConnectedToInternet();
+                        if (!isConnected) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Erreur de connexion'),
+                              content: Text(
+                                  'Vous devez être connecté à Internet pour exporter les données.'),
+                              actions: [
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
+
+                        // Vérifier connexion utilisateur à Spring Boot
+                        String? token = await getToken(context);
+                        if (token == null) {
+                          bool isManuallyConnected = await connexionManuelle(
+                            context,
+                            'ouedraogomariam@gmail.com',
+                            '000',
+                          );
+                          if (!isManuallyConnected) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text('Erreur de connexion'),
+                                content: Text(
+                                    'Vous devez être connecté à Spring Boot pour exporter les données.'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        // Récupérer l'entreprise
+                        EntrepriseModel? entreprise = await getEntrepriseFromHive();
+                        if (entreprise == null ||
+                            entreprise.numeroTelEntreprise.isEmpty ||
+                            entreprise.DateControle.isEmpty) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Information manquante'),
+                              content: Text(
+                                  'Le numéro de téléphone ou la date de contrôle de l\'entreprise est manquant.'),
+                              actions: [
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
+
+                        // Demander confirmation
                         bool confirm = await showDialog(
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: Text('Confirmation'),
                               content: Text(
-                                  'Voulez-vous vraiment exporter les données du téléphone vers internet pour la date : $selectedDate ?'),
+                                  'Voulez-vous vraiment exporter les données du téléphone vers internet pour la date : ${entreprise.DateControle} ?'),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.of(context)
-                                      .pop(false), // Annuler
+                                  onPressed: () => Navigator.of(context).pop(false),
                                   child: Text('Non'),
                                 ),
                                 TextButton(
-                                  onPressed: () => Navigator.of(context)
-                                      .pop(true), // Confirmer
+                                  onPressed: () => Navigator.of(context).pop(true),
                                   child: Text('Oui'),
                                 ),
                               ],
@@ -435,119 +502,44 @@ class _ParametrageState extends State<Parametrage> {
                           },
                         );
 
-                        if (confirm == true) {
-                          try {
-                            // Vérification de la connexion internet avant d'exporter
-                            bool isConnected = await isConnectedToInternet();
-                            if (!isConnected) {
-                              showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                  title: Text('Erreur de connexion'),
-                                  content: Text(
-                                      'Vous devez être connecté à Internet pour exporter les données.'),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('OK'),
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return; // Arrêter l'exécution si pas de connexion
-                            }
+                        if (confirm != true) return;
 
-                            // Vérifier si l'utilisateur est connecté à Spring Boot
-                            String? token = await getToken(context);
-                            if (token == null) {
-                              bool isManuallyConnected =
-                                  await connexionManuelle(context,
-                                      'ouedraogomariam@gmail.com', '000');
-                              if (!isManuallyConnected) {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: Text('Erreur de connexion'),
-                                    content: Text(
-                                        'Vous devez être connecté à Spring Boot pour exporter les données.'),
-                                    actions: [
-                                      TextButton(
-                                        child: Text('OK'),
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                return; // Arrêter l'exécution si pas de connexion
-                              }
-                            }
+                        // Récupérer les opérations
+                        final operations = await getDataFromHive();
 
-                            // Récupérer les informations de l'entreprise
-                            EntrepriseModel? entreprise =
-                                await getEntrepriseFromHive();
-                            if (entreprise == null ||
-                                entreprise.numeroTelEntreprise.isEmpty) {
-                              showDialog(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                  title: Text('Information manquante'),
-                                  content: Text(
-                                      'Le numéro de téléphone de l\'entreprise n\'est pas renseigné.'),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('OK'),
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return; // Arrêter l'exécution si information manquante
-                            }
+                        // Envoyer vers Spring Boot
+                        await transfertDataToSpringBoot(operations, entreprise.DateControle, context);
 
-                            // Récupérer les données
-                            final operations = await getDataFromHive();
-
-                            // Envoyer les données
-                            await transfertDataToSpringBoot(
-                                operations, selectedDate, context);
-
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: Text('Données exportées'),
-                                content: Text(
-                                    'Les données ont été exportées du téléphone vers internet avec succès pour la date : $selectedDate'),
-                                actions: [
-                                  TextButton(
-                                    child: Text('OK'),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                  ),
-                                ],
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Données exportées'),
+                            content: Text(
+                                'Les données ont été exportées du téléphone vers internet avec succès pour la date : ${entreprise.DateControle}'),
+                            actions: [
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () => Navigator.of(context).pop(),
                               ),
-                            );
-                          } catch (e) {
-                            showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: Text('Erreur'),
-                                content: Text(
-                                    'Erreur lors de l\'exportation des données vers internet: $e'),
-                                actions: [
-                                  TextButton(
-                                    child: Text('OK'),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                  ),
-                                ],
+                            ],
+                          ),
+                        );
+                      } catch (e) {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Erreur'),
+                            content: Text(
+                                'Erreur lors de l\'exportation des données vers internet: $e'),
+                            actions: [
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () => Navigator.of(context).pop(),
                               ),
-                            );
-                          }
-                        }
-                      });
+                            ],
+                          ),
+                        );
+                      }
                     },
                     child: Center(
                       child: Text(
@@ -562,6 +554,8 @@ class _ParametrageState extends State<Parametrage> {
                     ),
                   ),
                 ),
+
+
 
                 // Deuxième bouton : Import backEnd
                 Container(

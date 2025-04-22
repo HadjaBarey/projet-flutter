@@ -18,18 +18,18 @@ class OrangeModelAdapter extends TypeAdapter<OrangeModel> {
     };
     return OrangeModel(
       idoperation: fields[0] as int,
-       dateoperation: fields[1] as String? ?? '', // Assurez-vous de fournir une valeur par défaut si null
-      montant: fields[2] as String? ?? '',
-      numero_telephone: fields[3] as String? ?? '',
-      info_client: fields[4] as String? ?? '',
+      dateoperation: fields[1] as String,
+      montant: fields[2] as String,
+      numero_telephone: fields[3] as String,
+      info_client: fields[4] as String,
       typeoperation: fields[5] as int,
-      operateur: fields[6] as String? ?? '',
+      operateur: fields[6] as String,
       supprimer: fields[7] as int,
       iddette: fields[8] as int,
       optionCreance: fields[9] as bool,
-      scanmessage: fields[10] as String? ?? '',
-      numeroIndependant: fields[11] as String? ?? '',
-      idtrans: fields[12] as String? ?? '',
+      scanmessage: fields[10] as String,
+      numeroIndependant: fields[11] as String,
+      idtrans: fields[12] as String,
     );
   }
 
