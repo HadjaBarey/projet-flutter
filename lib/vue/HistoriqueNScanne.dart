@@ -190,8 +190,10 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
  List<OrangeModel> filteredList = _deposList
-    .where((depos) => (depos.operateur == '1' && depos.scanmessage == '') || depos.optionCreance == true)
-    .toList(); 
+    .where((depos) => 
+      (depos.operateur == '1' && depos.scanmessage == '' && depos.optionCreance != true) ||
+      (depos.operateur == '1' && depos.optionCreance == true)
+    ).toList(); 
 
 
 

@@ -19,10 +19,8 @@ class _CaissePageState extends State<CaissePage> {
   final OrangeController _orangeController = OrangeController([]);
   String? dateControle;
   DateTime dateJour = new DateTime.now();
-  final ValueNotifier<List<JournalCaisseModel>> _filteredListNotifier = ValueNotifier<List<JournalCaisseModel>>([]);
-
-
-
+  final ValueNotifier<List<JournalCaisseModel>> _filteredListNotifier =
+      ValueNotifier<List<JournalCaisseModel>>([]);
 
   double getSumMontantJ() {
     double sum = 0.0;
@@ -31,25 +29,22 @@ class _CaissePageState extends State<CaissePage> {
     }
     return sum;
   }
-  
 
   Future<void> DateControleRecupere() async {
-    await _controller.DateControleRecupere().then((v){
-       setState(() {
+    await _controller.DateControleRecupere().then((v) {
+      setState(() {
         dateControle = _controller.dateJournalController.text;
-       // print('Date de contrôle récupérée : $dateControle');
+        // print('Date de contrôle récupérée : $dateControle');
         filterListByDate();
-      });  
-    }); 
-    
+      });
+    });
   }
-
-
 
   void filterListByDate() {
     // print("ma date ");
     if (dateControle != null) {
-      _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == dateControle).toList();
+      _filteredListNotifier.value =
+          listCaiss.where((item) => item.dateJournal == dateControle).toList();
       //print('Liste filtrée par date : ${_filteredListNotifier.value}');
     } else {
       _filteredListNotifier.value = listCaiss;
@@ -57,150 +52,163 @@ class _CaissePageState extends State<CaissePage> {
     }
   }
 
-Future<List<TableRow>> buildTableRows(List<JournalCaisseModel> filteredList) async {
-  final formatter = NumberFormat('###,###', 'fr_FR');
+  Future<List<TableRow>> buildTableRows(
+      List<JournalCaisseModel> filteredList) async {
+    final formatter = NumberFormat('###,###', 'fr_FR');
 
-  // Remplacer opérateur par '100' pour typeCompte == 2
-  for (var item in filteredList) {
-    if (item.typeCompte == '2') {
-      item.operateur = '100'; // Caisse virtuelle
+    // Remplacer opérateur par '100' pour typeCompte == 2
+    for (var item in filteredList) {
+      if (item.typeCompte == '2') {
+        item.operateur = '100'; // Caisse virtuelle
+      }
     }
-  }
 
-  // Récupérer dynamiquement les opérateurs actifs
-  List<Map<String, String>> allOperateurs = await _controller.getAllOperateursActifs();
+    // liste des operateurs affichés dans le tableau de la caisse
+    List<Map<String, String>> normalizeOperateurs(
+        List<Map<String, String>> list) {
+      final seen = <String>{};
+      final uniqueList = <Map<String, String>>[];
 
-  // Ajouter manuellement l'opérateur virtuel '100'
-  allOperateurs.add({'operateur': '100', 'typeCompte': '2'});
+      for (var op in list) {
+        final operateur = (op['operateur'] ?? '').trim();
+        final typeCompte = (op['typeCompte'] ?? '').trim();
+        final key = '$operateur|$typeCompte';
 
-  // Trier la liste filtrée
-  filteredList.sort((a, b) {
-    int operateurComparison = a.operateur.compareTo(b.operateur);
-    if (operateurComparison != 0) return operateurComparison;
-    return a.typeCompte.compareTo(b.typeCompte);
-  });
+        if (!seen.contains(key)) {
+          seen.add(key);
+          uniqueList.add({'operateur': operateur, 'typeCompte': typeCompte});
+        }
+      }
+      return uniqueList;
+    }
 
-  // Regrouper les montants par clé opérateur et typeCompte
-  Map<String, double> sumMap = {};
-  for (var item in filteredList) {
-    String key = '${item.operateur}_${item.typeCompte}';
-    double montant = double.tryParse(item.montantJ) ?? 0.0;
-    sumMap[key] = (sumMap[key] ?? 0.0) + montant;
-  }
+    // Ensuite tu l'appelles :
+    List<Map<String, String>> allOperateurs =
+        await _controller.getAllOperateursActifs();
+    allOperateurs.add({'operateur': '100', 'typeCompte': '2'});
+    allOperateurs = normalizeOperateurs(allOperateurs); // ✅ OK maintenant
 
-  // Calculer augmentation et diminution
-  final sumResult = await _orangeController.calculateSum(DateFormat('dd/MM/yyyy'));
-  final augmentation = sumResult['augmentation'] ?? {};
-  final diminution = sumResult['diminution'] ?? {};
+    // Regrouper les montants par clé opérateur et typeCompte
+    Map<String, double> sumMap = {};
+    for (var item in filteredList) {
+      String key = '${item.operateur}_${item.typeCompte}';
+      double montant = double.tryParse(item.montantJ) ?? 0.0;
+      sumMap[key] = (sumMap[key] ?? 0.0) + montant;
+    }
 
-  double totalSoldeInitial = 0.0;
-  double totalSoldeFinal = 0.0;
-  List<TableRow> rows = [];
+    // Calculer augmentation et diminution
+    final sumResult =
+        await _orangeController.calculateSum(DateFormat('dd/MM/yyyy'));
+    final augmentation = sumResult['augmentation'] ?? {};
+    final diminution = sumResult['diminution'] ?? {};
 
-  // Générer les lignes du tableau pour chaque opérateur
-  for (var op in allOperateurs) {
-    String operateur = op['operateur']!;
-    String typeCompte = op['typeCompte']!;
-    String key = '${operateur}_${typeCompte}';
+    double totalSoldeInitial = 0.0;
+    double totalSoldeFinal = 0.0;
+    List<TableRow> rows = [];
 
-    // Calculer le montant total pour cet opérateur et type de compte
-    double montant = sumMap[key] ?? 0.0;
-    String formattedMontant = _formatMontant(montant, formatter);
+    // Générer les lignes du tableau pour chaque opérateur
+    for (var op in allOperateurs) {
+      String operateur = op['operateur']!;
+      String typeCompte = op['typeCompte']!;
+      String key = '${operateur}_${typeCompte}';
 
-    double aug = augmentation[operateur] ?? 0.0;
-    double dim = diminution[operateur] ?? 0.0;
+      // Calculer le montant total pour cet opérateur et type de compte
+      double montant = sumMap[key] ?? 0.0;
+      String formattedMontant = _formatMontant(montant, formatter);
 
-    // Calculer le solde final
-    double soldeFinal = montant + aug - dim;
-    String formattedSoldeFinal = _formatMontant(soldeFinal, formatter);
+      double aug = augmentation[operateur] ?? 0.0;
+      double dim = diminution[operateur] ?? 0.0;
 
-    totalSoldeInitial += montant;
-    totalSoldeFinal += soldeFinal;
+      // Calculer le solde final
+      double soldeFinal = montant + aug - dim;
+      String formattedSoldeFinal = _formatMontant(soldeFinal, formatter);
 
-    // Ajouter une ligne au tableau
+      totalSoldeInitial += montant;
+      totalSoldeFinal += soldeFinal;
+
+      // Ajouter une ligne au tableau
+      rows.add(
+        TableRow(
+          children: [
+            TableCell(
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: operateur == '100'
+                    ? Text('Caisse') // Libellé spécifique pour caisse virtuelle
+                    : FutureBuilder<String>(
+                        future: _controller.getLibOperateur(operateur),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError || !snapshot.hasData) {
+                            return Text('Non disponible');
+                          } else {
+                            return Text(snapshot.data ?? 'Caisse');
+                          }
+                        },
+                      ),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(formattedMontant),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(_formatMontant(aug, formatter)),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(_formatMontant(dim, formatter)),
+              ),
+            ),
+            TableCell(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(formattedSoldeFinal),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Ajouter la ligne des totaux
     rows.add(
       TableRow(
         children: [
-          TableCell(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: operateur == '100'
-                  ? Text('Caisse') // Libellé spécifique pour caisse virtuelle
-                  : FutureBuilder<String>(
-                      future: _controller.getLibOperateur(operateur),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        } else if (snapshot.hasError || !snapshot.hasData) {
-                          return Text('Non disponible');
-                        } else {
-                          return Text(snapshot.data ?? 'Caisse');
-                        }
-                      },
-                    ),
-            ),
-          ),
+          TableCell(child: Center(child: Text('Totaux'))),
           TableCell(
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(formattedMontant),
+              child: Text(_formatMontant(totalSoldeInitial, formatter)),
             ),
           ),
+          TableCell(child: Text('')),
+          TableCell(child: Text('')),
           TableCell(
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(_formatMontant(aug, formatter)),
-            ),
-          ),
-          TableCell(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(_formatMontant(dim, formatter)),
-            ),
-          ),
-          TableCell(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(formattedSoldeFinal),
+              child: Text(_formatMontant(totalSoldeFinal, formatter)),
             ),
           ),
         ],
       ),
     );
+
+    return rows;
   }
 
-  // Ajouter la ligne des totaux
-  rows.add(
-    TableRow(
-      children: [
-        TableCell(child: Center(child: Text('Totaux'))),
-        TableCell(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text(_formatMontant(totalSoldeInitial, formatter)),
-          ),
-        ),
-        TableCell(child: Text('')),
-        TableCell(child: Text('')),
-        TableCell(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text(_formatMontant(totalSoldeFinal, formatter)),
-          ),
-        ),
-      ],
-    ),
-  );
-
-  return rows;
-}
-
 // Helper function pour formater les montants
-String _formatMontant(double montant, NumberFormat formatter) {
-  return formatter.format(montant).replaceAll(',', ' ');
-}
-
-
+  String _formatMontant(double montant, NumberFormat formatter) {
+    return formatter.format(montant).replaceAll(',', ' ');
+  }
 
   Future<void> iniData() async {
     try {
@@ -229,16 +237,19 @@ String _formatMontant(double montant, NumberFormat formatter) {
   @override
   Widget build(BuildContext context) {
     double totalMontantJ = getSumMontantJ();
-     _filteredListNotifier.value = listCaiss.where((item) => item.dateJournal == _controller.dateJournalController.text).toList();
-    final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR').format(totalMontantJ).replaceAll(',', ' ');
-
-
+    _filteredListNotifier.value = listCaiss
+        .where((item) =>
+            item.dateJournal == _controller.dateJournalController.text)
+        .toList();
+    final formattedTotalMontantJ = NumberFormat('###,###', 'fr_FR')
+        .format(totalMontantJ)
+        .replaceAll(',', ' ');
 
 // Calculer la hauteur dynamique en fonction de la taille de l'écran
-  double screenHeight = MediaQuery.of(context).size.height;
-  double dynamicSpacing = screenHeight * 0.05; // Par exemple, 5% de la hauteur de l'écran
+    double screenHeight = MediaQuery.of(context).size.height;
+    double dynamicSpacing =
+        screenHeight * 0.05; // Par exemple, 5% de la hauteur de l'écran
 
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('TABLEAUX DES TRANSACTIONS'),
@@ -263,13 +274,19 @@ String _formatMontant(double montant, NumberFormat formatter) {
                           border: TableBorder.all(width: 1.0),
                           children: [
                             TableRow(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              decoration:
+                                  BoxDecoration(color: Colors.grey[200]),
                               children: [
                                 TableCell(child: Center(child: Text('Compte'))),
-                                TableCell(child: Center(child: Text('Solde Initial'))),
-                                TableCell(child: Center(child: Text('Augmentation'))),
-                                TableCell(child: Center(child: Text('Diminution'))),
-                                TableCell(child: Center(child: Text('Solde Final'))),
+                                TableCell(
+                                    child:
+                                        Center(child: Text('Solde Initial'))),
+                                TableCell(
+                                    child: Center(child: Text('Augmentation'))),
+                                TableCell(
+                                    child: Center(child: Text('Diminution'))),
+                                TableCell(
+                                    child: Center(child: Text('Solde Final'))),
                               ],
                             ),
                             ...snapshot.data!,
@@ -281,18 +298,16 @@ String _formatMontant(double montant, NumberFormat formatter) {
                 },
               ),
             ),
-        ],
+          ],
+        ),
       ),
-    ),     
-
-
-
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddCaisssePage(caisseController: _controller),
+              builder: (context) =>
+                  AddCaisssePage(caisseController: _controller),
             ),
           );
           if (result == true) {

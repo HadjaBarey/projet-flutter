@@ -358,32 +358,17 @@ Future<void> DateControleRecupere() async {
 
     // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
   Future<List<OrangeModel>> _loadDeposFromHive() async {
+    if (todobos == null || !todobos!.isOpen) {
+      todobos = await Hive.openBox<OrangeModel>('todobos');
+    }
+
     List<OrangeModel> deposits = [];
     for (var value in todobos!.values) {
       deposits.add(value);
     }
     return deposits;
-  }
+}
 
-
-  // Sélectionner une image à partir de la caméra
-//   Future<void> pickImageCamera(BuildContext context) async {
-//   try {
-//     var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-//     if (returnedImage == null) return;
-//     selectedImage = XFile(returnedImage.path);
-//     final inputImage = InputImage.fromFilePath(returnedImage.path);
-//     if (scan == 2) {
-//       await recognizeText(context, inputImage);
-//     } else {
-//       await detecterText(context, inputImage);
-//     }
-
-//   } catch (e) {
-//     // Gestion des erreurs
-//     print("Error picking image: $e");
-//   }
-// }
 
 Future<void> pickImageCamera(BuildContext context) async {
   try {
@@ -423,8 +408,6 @@ Future<void> pickImageCamera(BuildContext context) async {
     showErrorDialog(context, 'Une erreur est survenue lors de la sélection de l\'image.');
   }
 }
-
-
 
 
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {

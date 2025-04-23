@@ -20,7 +20,6 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
     widget.caisseController.CaisseOperateursController();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +47,8 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'ID Opération',
-                    labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    labelStyle:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   enabled: false,
                 ),
@@ -69,10 +69,12 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                         color: Colors.grey,
                       ),
                       child: TextFormField(
-                        controller: widget.caisseController.dateJournalController,
+                        controller:
+                            widget.caisseController.dateJournalController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          labelStyle: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         enabled: false,
                       ),
@@ -81,43 +83,44 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                 ],
               ),
               SizedBox(height: 35),
-             Row(
-  children: [
-    Text(
-      'Solde Initial:',
-      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    ),
-    SizedBox(width: 10),
-    Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(width: 1, color: Colors.black),
-          borderRadius: BorderRadius.all(Radius.circular(5)),
-          color: Colors.redAccent,
-        ),
-        child: TextFormField(
-          controller: widget.caisseController.montantJController,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          enabled: true,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Erreur';
-            }
-            return null;
-          },
-          keyboardType: TextInputType.text, // Changer ici
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*\.?\d*$')),
-          ],
-        ),
-      ),
-    ),
-  ],
-),
-
+              Row(
+                children: [
+                  Text(
+                    'Solde Initial:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 1, color: Colors.black),
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
+                        color: Colors.redAccent,
+                      ),
+                      child: TextFormField(
+                        controller: widget.caisseController.montantJController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          labelStyle: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        enabled: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Erreur';
+                          }
+                          return null;
+                        },
+                        keyboardType: TextInputType.text, // Changer ici
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^[-+]?\d*\.?\d*$')),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: 35),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -132,7 +135,8 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                           value: widget.caisseController.selectedTypeCpt,
                           onChanged: (value) {
                             setState(() {
-                              widget.caisseController.updateSelectedTypeOpe(value!);
+                              widget.caisseController
+                                  .updateSelectedTypeOpe(value!);
                             });
                           },
                           items: widget.caisseController.TypeComptes
@@ -146,7 +150,8 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'Type Compte',
-                            labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            labelStyle: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -154,16 +159,19 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                   ),
                   SizedBox(height: 35),
                   ValueListenableBuilder<List<Map<String, String>>>(
-                    valueListenable: widget.caisseController.operateurOptionsNotifier,
-                    builder: (context, operateurOptions, _) {                    
+                    valueListenable:
+                        widget.caisseController.operateurOptionsNotifier,
+                    builder: (context, operateurOptions, _) {
                       return DropdownButtonFormField<String>(
-                        value: widget.caisseController.operateurController.text.isEmpty
+                        value: widget.caisseController.operateurController.text
+                                .isEmpty
                             ? null
                             : widget.caisseController.operateurController.text,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Opérateur',
-                          labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          labelStyle: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         items: operateurOptions.map((operateur) {
                           return DropdownMenuItem<String>(
@@ -173,20 +181,20 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                         }).toList(),
                         onChanged: (newValue) {
                           setState(() {
-                            widget.caisseController.operateurController.text = newValue!;
+                            widget.caisseController.operateurController.text =
+                                newValue!;
                           });
                         },
                       );
                     },
                   ),
-
-
                 ],
               ),
               SizedBox(height: 35),
               ElevatedButton(
                 onPressed: () {
-                  if (widget.caisseController.formKey.currentState!.validate()) {
+                  if (widget.caisseController.formKey.currentState!
+                      .validate()) {
                     widget.caisseController.formKey.currentState!.save();
                     widget.caisseController.saveAddCaisseData().then((_) {
                       setState(() {
@@ -195,7 +203,8 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                       Navigator.pop(context, true);
                     }).catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Erreur lors de l\'enregistrement')),
+                        const SnackBar(
+                            content: Text('Erreur lors de l\'enregistrement')),
                       );
                     });
                   }
@@ -213,54 +222,49 @@ class _AddCaisssePageState extends State<AddCaisssePage> {
                   side: MaterialStateProperty.all(const BorderSide(
                     color: Colors.grey,
                   )),
-                  backgroundColor: MaterialStateProperty.all(Colors.greenAccent),
+                  backgroundColor:
+                      MaterialStateProperty.all(Colors.greenAccent),
                 ),
               ),
-
-               SizedBox(height: 250),
-
-               ElevatedButton(
-                  onPressed: () {
+              SizedBox(height: 250),
+              ElevatedButton(
+                onPressed: () {
                   // Navigation vers la nouvelle page
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PageDetailCaisse(caisseController:CaisseController()),
+                      builder: (context) => PageDetailCaisse(
+                          caisseController: CaisseController()),
                     ),
                   );
                 },
-
-                  child: Text(
-                    'Détail des transactions',
-                    style: TextStyle(
-                      color: Colors.black,        // Couleur du texte
-                      fontWeight: FontWeight.bold, // Texte en gras
+                child: Text(
+                  'Détail des transactions',
+                  style: TextStyle(
+                    color: Colors.black, // Couleur du texte
+                    fontWeight: FontWeight.bold, // Texte en gras
+                  ),
+                ),
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  style: ButtonStyle(
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 100, vertical: 15),
-                    ),
-                    side: MaterialStateProperty.all(const BorderSide(
-                      color: Colors.black12,
-                    )),
-                    backgroundColor: MaterialStateProperty.all(Colors.brown),
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                   ),
-                )
-
-
+                  side: MaterialStateProperty.all(const BorderSide(
+                    color: Colors.black12,
+                  )),
+                  backgroundColor: MaterialStateProperty.all(Colors.brown),
+                ),
+              )
             ],
           ),
         ),
-        
       ),
-
-    
     );
   }
 }
+

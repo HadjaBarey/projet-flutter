@@ -20,13 +20,12 @@ class CaisseController {
   TextEditingController montantJController = TextEditingController();
   TextEditingController typeCompteController = TextEditingController();
   TextEditingController operateurController = TextEditingController();
-  ValueNotifier<List<Map<String, String>>> operateurOptionsNotifier = ValueNotifier([]);
- 
+  ValueNotifier<List<Map<String, String>>> operateurOptionsNotifier =
+      ValueNotifier([]);
+
   // Liste des opérateurs
   List<AddSimModel> operateurList = [];
   List<Map<String, String>> operateurOptions = [];
-
-
 
   // Méthode pour charger les données depuis la boîte Hive
   Future<List<JournalCaisseModel>> loadData() async {
@@ -52,66 +51,71 @@ class CaisseController {
     {'value': '3', 'label': 'unité'},
   ];
   String selectedTypeCpt = '1';
-  
 
   Future<void> initializeData() async {
     await Hive.initFlutter();
     await initializeBox();
     await DateControleRecupere();
     await loadOperateurs(); // Assurez-vous que operateurList est remplie ici
-   // print('Operateur List après chargement: $operateurList');
+    // print('Operateur List après chargement: $operateurList');
     CaisseOperateursController();
   }
 
   Future<void> loadOperateurs() async {
     try {
-      operateurList = await fetchOperateursFromDatabase();
-     // print('Operateur List chargée: $operateurList');
+      final all = await fetchOperateursFromDatabase();
+
+      // Supprimer les doublons basés sur idOperateur
+      final seen = <int>{};
+      operateurList = all.where((sim) {
+        if (seen.contains(sim.idOperateur)) return false;
+        seen.add(sim.idOperateur);
+        return true;
+      }).toList();
+
       _updateOperateurOptions();
-      CaisseOperateursController(); // Assurez-vous de mettre à jour les options après le chargement
+      CaisseOperateursController();
     } catch (e) {
-   // print('Erreur lors du chargement des opérateurs: $e');
+      // print('Erreur lors du chargement des opérateurs: $e');
     }
   }
 
-
-   void _updateOperateurOptions() {
+  void _updateOperateurOptions() {
     final options = operateurList
-        .map((item) => {'value': item.idOperateur.toString(), 'label': item.LibOperateur})
+        .map((item) =>
+            {'value': item.idOperateur.toString(), 'label': item.LibOperateur})
         .toList();
     operateurOptionsNotifier.value = options;
   }
 
-
   Future<List<AddSimModel>> fetchOperateursFromDatabase() async {
     await initializeBox(); // Assurez-vous que la boîte est initialisée
-    
+
     List<AddSimModel> operateurs = [];
-    
+
     // Vérifiez si la boîte n'est pas vide et récupérez les valeurs
     if (todobos5.isNotEmpty) {
       // Filtrer les valeurs en utilisant 'where' pour vérifier le type et les convertir
       operateurs = todobos5.values
-          .where((value) => value is AddSimModel) // Filtrer les objets de type AddSimModel
+          .where((value) =>
+              value is AddSimModel) // Filtrer les objets de type AddSimModel
           .cast<AddSimModel>() // Convertir en List<AddSimModel>
           .toList();
     }
-    
+
     return operateurs;
   }
 
-
   String getTypeOperationLabel(String value) {
-    final option = TypeComptes.firstWhere((element) => element['value'] == value, orElse: () => {'label': 'Inconnu'});
+    final option = TypeComptes.firstWhere(
+        (element) => element['value'] == value,
+        orElse: () => {'label': 'Inconnu'});
     return option['label']!;
   }
 
-
   void updateSelectedTypeOpe(String value) {
-    selectedTypeCpt = value; 
+    selectedTypeCpt = value;
   }
-
-
 
   JournalCaisseModel Caisse = JournalCaisseModel(
     idjournal: 0,
@@ -159,16 +163,15 @@ class CaisseController {
       Hive.registerAdapter(AddSimModelAdapter());
     }
     todobos6 = await Hive.openBox<JournalCaisseModel>("todobos6");
-     todobos5 = await Hive.openBox<AddSimModel>("todobos5");
+    todobos5 = await Hive.openBox<AddSimModel>("todobos5");
     await _initializeEntreprisesBox();
     // Écouteur pour surveiller les changements sur la boîte todobos5
     todobos5.listenable().addListener(() {
-      loadOperateurs();  // Recharge les opérateurs automatiquement en cas de modification
+      loadOperateurs(); // Recharge les opérateurs automatiquement en cas de modification
     });
     //await _initializeEntreprisesBox(); // Assurez-vous d'initialiser entrepriseBox
-   // print('Hive and boxes initialized.');
+    // print('Hive and boxes initialized.');
   }
-
 
   Future<void> saveAddCaisseData() async {
     try {
@@ -183,12 +186,12 @@ class CaisseController {
 
       // Enregistrer dans la boîte Hive
       await todobos6.put(Caisse.idjournal, Caisse);
-     // print("Enregistrement réussi : $Caisse");
+      // print("Enregistrement réussi : $Caisse");
 
       // Réinitialiser le formulaire après enregistrement
       resetFormFields();
     } catch (e) {
-   //   print("Erreur lors de l'enregistrement : $e");
+      //   print("Erreur lors de l'enregistrement : $e");
     }
   }
 
@@ -204,33 +207,129 @@ class CaisseController {
 
     if (entrepriseBox.isEmpty) {
       //print("Boîte Hive des entreprises non initialisée ou vide");
-      dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+      dateJournalController.text =
+          DateFormat('dd/MM/yyyy').format(DateTime.now());
     } else {
       var entreprise = entrepriseBox.values.last;
       if (entreprise != null) {
         try {
           if (entreprise.DateControle.isNotEmpty) {
             DateFormat dateFormat = DateFormat('dd/MM/yyyy');
-            DateTime parsedDate = dateFormat.parseStrict(entreprise.DateControle);
+            DateTime parsedDate =
+                dateFormat.parseStrict(entreprise.DateControle);
             dateJournalController.text = dateFormat.format(parsedDate);
           } else {
-            dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+            dateJournalController.text =
+                DateFormat('dd/MM/yyyy').format(DateTime.now());
           }
         } catch (e) {
-         // print("Erreur lors de la conversion de la date : $e");
-          dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+          // print("Erreur lors de la conversion de la date : $e");
+          dateJournalController.text =
+              DateFormat('dd/MM/yyyy').format(DateTime.now());
         }
       } else {
-        dateJournalController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+        dateJournalController.text =
+            DateFormat('dd/MM/yyyy').format(DateTime.now());
       }
     }
 
-  //  print('Valeur de dateJournalController.text: ${dateJournalController.text}');
+    //  print('Valeur de dateJournalController.text: ${dateJournalController.text}');
   }
 
+ 
+  List<Map<String, String>> normalizeOperateurs(List<AddSimModel> sims) {
+    final seen = <String>{};
+    final result = sims
+        .where((sim) {
+          if (seen.contains(sim.idOperateur.toString())) return false;
+          seen.add(sim.idOperateur.toString());
+          return true;
+        })
+        .map((sim) => {
+              'value': sim.idOperateur.toString(),
+              'label': sim.LibOperateur,
+            })
+        .toList();
 
+ //   print("✅ Liste opérateurs sans doublons: $result");
+    return result;
+  }
 
-  void showErrorDialog(BuildContext context, String message) {
+  void CaisseOperateursController() {
+    operateurOptions = normalizeOperateurs(operateurList);
+    operateurOptionsNotifier.value = operateurOptions;
+  }
+
+  Future<List<Map<String, String>>> getAllOperateursActifs() async {
+    return operateurOptions
+        .map((op) => {
+              'operateur': op['value'] ?? '',
+              'typeCompte': op['typeCompte'] ??
+                  '1', // utilise la valeur existante si présente
+            })
+        .toList();
+  }
+
+  Future<String> getLibOperateur(String operateur) async {
+    // Ouvrir la boîte Hive
+    var addSimBox = await Hive.openBox<AddSimModel>('todobos5');
+    // Rechercher le modèle correspondant
+    AddSimModel? correspondingAddSimModel = addSimBox.values.firstWhere(
+      (addSim) => addSim.idOperateur.toString() == operateur,
+      orElse: () => AddSimModel(
+        idOperateur: 0,
+        LibOperateur: '',
+        NumPhone: '',
+        CodeAgent: '',
+        supprimer: 0,
+      ), // Retourner null si aucune correspondance n'est trouvée
+    );
+
+    // Déboguer le résultat de la recherche
+    if (correspondingAddSimModel != null) {
+      // print('Modèle trouvé: ${correspondingAddSimModel.LibOperateur}');
+    } else {
+      // print('Aucun modèle trouvé pour l\'opérateur $operateur');
+    }
+
+    // Retourner le libellé ou 'Caisse' si aucune correspondance n'est trouvée
+    return correspondingAddSimModel?.LibOperateur.isNotEmpty == true
+        ? correspondingAddSimModel.LibOperateur
+        : 'Caisse';
+  }
+
+  Future<List<JournalCaisseModel>> getAllCaisseData(
+      TextEditingController dateController) async {
+    List<JournalCaisseModel> allCaisseData = [];
+
+    try {
+      await initializeBox();
+      allCaisseData = todobos6.values.toList();
+      DateTime dateFilter =
+          DateFormat('dd/MM/yyyy').parseStrict(dateController.text);
+
+      allCaisseData = allCaisseData.where((data) {
+        try {
+          String rawDate = data.dateJournal.split(" ").first;
+          DateTime dataDate = DateFormat('dd/MM/yyyy').parseStrict(rawDate);
+
+          print(
+              "🔍 Comparaison: ${dataDate.toString()} == ${dateFilter.toString()}");
+
+          return dataDate.year == dateFilter.year &&
+              dataDate.month == dateFilter.month &&
+              dataDate.day == dateFilter.day;
+        } catch (e) {
+          return false;
+        }
+      }).toList();
+    } catch (e) {}
+
+    return allCaisseData;
+  }
+}
+
+ void showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -250,81 +349,3 @@ class CaisseController {
     );
   }
 
-  void CaisseOperateursController() {
-    operateurOptions = operateurList
-        .map((item) => {'value': item.idOperateur.toString(), 'label': item.LibOperateur})
-        .toList();
-
-    //print("Operateur Options: $operateurOptions");
-  }
-
-Future<List<Map<String, String>>> getAllOperateursActifs() async {
-  return operateurOptions
-      .map((op) => {
-            'operateur': op['value'] ?? '',
-            'typeCompte': op['typeCompte'] ?? '1', // utilise la valeur existante si présente
-          })
-      .toList();
-}
-
-
-
-
-Future<String> getLibOperateur(String operateur) async {
-  // Ouvrir la boîte Hive
-  var addSimBox = await Hive.openBox<AddSimModel>('todobos5');
-  // Rechercher le modèle correspondant
-  AddSimModel? correspondingAddSimModel = addSimBox.values.firstWhere(
-    (addSim) => addSim.idOperateur.toString() == operateur,
-    orElse:  () => AddSimModel(
-          idOperateur: 0,
-          LibOperateur: '',
-          NumPhone: '',
-          CodeAgent: '',
-          supprimer: 0,
-        ), // Retourner null si aucune correspondance n'est trouvée
-  );
-
-  // Déboguer le résultat de la recherche
-  if (correspondingAddSimModel != null) {
-   // print('Modèle trouvé: ${correspondingAddSimModel.LibOperateur}');
-  } else {
-   // print('Aucun modèle trouvé pour l\'opérateur $operateur');
-  }
-
-  // Retourner le libellé ou 'Caisse' si aucune correspondance n'est trouvée
-  return correspondingAddSimModel?.LibOperateur.isNotEmpty == true
-      ? correspondingAddSimModel.LibOperateur
-      : 'Caisse';
-}
-
-
-Future<List<JournalCaisseModel>> getAllCaisseData(TextEditingController dateController) async {
-  List<JournalCaisseModel> allCaisseData = [];
-
-  try {
-    await initializeBox();
-      allCaisseData = todobos6.values.toList();
-        DateTime dateFilter = DateFormat('dd/MM/yyyy').parseStrict(dateController.text);
-
-        allCaisseData = allCaisseData.where((data) {
-          try {
-            String rawDate = data.dateJournal.split(" ").first;
-            DateTime dataDate = DateFormat('dd/MM/yyyy').parseStrict(rawDate);
-
-            print("🔍 Comparaison: ${dataDate.toString()} == ${dateFilter.toString()}");
-
-            return dataDate.year == dateFilter.year &&
-                   dataDate.month == dateFilter.month &&
-                   dataDate.day == dateFilter.day;
-          } catch (e) {
-            return false;
-          }
-        }).toList();
-  } catch (e) {}
-
-  return allCaisseData;
-}
-
-
-}

@@ -383,14 +383,18 @@ Future<void> DateControleRecupere() async {
   }
 
 
-  // Méthode privée pour charger tous les dépôts à partir de la boîte Hive
   Future<List<OrangeModel>> _loadDeposFromHive() async {
-    List<OrangeModel> deposits = [];
-    for (var value in todobos!.values) {
-      deposits.add(value);
-    }
-    return deposits;
+  if (todobos == null || !todobos!.isOpen) {
+    todobos = await Hive.openBox<OrangeModel>('todobos');
   }
+
+  List<OrangeModel> deposits = [];
+  for (var value in todobos!.values) {
+    deposits.add(value);
+  }
+  return deposits;
+}
+
 
 
   // Sélectionner une image à partir de la caméra

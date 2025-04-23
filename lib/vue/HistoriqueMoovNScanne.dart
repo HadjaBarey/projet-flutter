@@ -187,9 +187,10 @@ void _handleRowClicked(OrangeModel clickedDepos) {
   @override
   Widget build(BuildContext context) {
  List<OrangeModel> filteredList = _deposList
-    .where((depos) => (depos.operateur == '2' && depos.scanmessage == '') || depos.optionCreance == true)
-    .toList(); 
-
+    .where((depos) => 
+      (depos.operateur == '2' && depos.scanmessage == '' && depos.optionCreance != true) ||
+      (depos.operateur == '2' && depos.optionCreance == true)
+    ).toList();
 
 
     // Trier la liste filtrée par ordre décroissant sur le champ idoperation

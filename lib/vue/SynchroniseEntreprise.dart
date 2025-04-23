@@ -14,7 +14,7 @@ Future<void> saveDefaultEntrepriseModel() async {
       NomEntreprise: 'KADOUS SOLUTIONS SARL',
       DirecteurEntreprise: 'OUEDRAOGO M.Kader',
       DateControle: dateDuJour,
-      numeroTelEntreprise: "00000000",
+      numeroTelEntreprise: "",
       emailEntreprise: "",
     );
 

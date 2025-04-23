@@ -12,29 +12,45 @@ final storage = FlutterSecureStorage();
 
 
 Future<bool> isConnectedToInternet() async {
-final connectivityResult = await Connectivity().checkConnectivity();
-
-  // Aucun réseau détecté (Wi-Fi, mobile, etc.)
-  if (connectivityResult == ConnectivityResult.none) {
-    print("❌ Aucune connexion réseau détectée.");
+  try {
+    final connectivityResult = await Connectivity()
+        .checkConnectivity()
+        .timeout(const Duration(seconds: 2));
+    
+    if (connectivityResult == ConnectivityResult.none) {
+      print("❌ Aucun réseau détecté");
+      return false;
+    }
+  } on TimeoutException catch (_) {
+    print("⏳ Timeout lors de checkConnectivity()");
+    return false;
+  } catch (e) {
+    print("💥 Erreur inconnue checkConnectivity() : $e");
     return false;
   }
 
+  // Si réseau détecté, on teste Google
   try {
-    // On teste une vraie résolution DNS sur Google
-    final result = await InternetAddress.lookup('google.com').timeout(Duration(seconds: 3));
-    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-      print("✅ Connexion internet active");
+    final response = await http
+        .get(Uri.parse('https://clients3.google.com/generate_204'))
+        .timeout(const Duration(seconds: 3));
+    if (response.statusCode == 204) {
+      print("✅ Connexion internet confirmée");
       return true;
+    } else {
+      print("⚠️ Réponse inattendue du test Google");
     }
+  } on TimeoutException catch (_) {
+    print("⏳ Timeout lors du test Google");
   } on SocketException catch (_) {
-    print("📡 SocketException : impossible d'accéder à internet.");
-  } on TimeoutException {
-    print("⏳ Timeout lors du test DNS");
+    print("📡 SocketException Google test");
+  } catch (e) {
+    print("💥 Erreur inconnue test Google : $e");
   }
 
   return false;
 }
+
 
 
 Future<bool> checkInternetBeforeApiCall(BuildContext context) async {
@@ -45,6 +61,17 @@ Future<bool> checkInternetBeforeApiCall(BuildContext context) async {
   return true;
 }
 
+Future<bool> hasWorkingDNS() async {
+  try {
+    final result = await InternetAddress.lookup('google.com').timeout(Duration(seconds: 2));
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (e) {
+    print("❌ DNS inaccessible : $e");
+    return false;
+  }
+}
+
+
 
 Future<http.Response?> secureHttpGet({
   required BuildContext context,
@@ -52,11 +79,11 @@ Future<http.Response?> secureHttpGet({
   Map<String, String>? headers,
   Duration timeout = const Duration(seconds: 30),
 }) async {
-  if (!await isConnectedToInternet()) {
-   // print("📡 Aucune connexion détectée, GET annulé.");
-    showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
-    return null;
-  }
+bool isConnected = await isConnectedToInternet();
+if (!isConnected || !(await hasWorkingDNS())) {
+  showAlertDialog(context, "📡 Pas de connexion internet détectée.");
+  return null;
+}
 
   try {
     final response = await http.get(Uri.parse(url), headers: headers).timeout(timeout);
@@ -83,28 +110,34 @@ Future<http.Response?> secureHttpPost({
   Encoding? encoding,
   Duration timeout = const Duration(seconds: 30),
 }) async {
-  if (!await isConnectedToInternet()) {
-  // print("📡 Aucune connexion détectée, POST annulé.");
-  //  showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
-    return null;
-  }
   try {
+    final isConnected = await isConnectedToInternet();
+    if (!isConnected) {
+      showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
+      return null;
+    }
+
+    print("📤 Envoi POST vers $url...");
     final response = await http
         .post(Uri.parse(url), headers: headers, body: body, encoding: encoding)
         .timeout(timeout);
+
     return response;
-  } on TimeoutException {
-     print("⏳ Timeout POST");
-    // showAlertDialog(context, "⏳ Le serveur ne répond pas. Vérifiez votre connexion.");
-  } on SocketException {
-    print("📡 Pas de connexion réseau POST");
-    // showAlertDialog(context, "📡 Aucune connexion réseau détectée.");
+  } on TimeoutException catch (_) {
+    print("⏳ Timeout POST vers $url");
+    showAlertDialog(context, "⏳ Le serveur ne répond pas. Vérifiez votre connexion.");
+  } on SocketException catch (_) {
+    print("📡 Erreur réseau lors du POST");
+    showAlertDialog(context, "📡 Aucune connexion au serveur détectée.");
   } catch (e) {
-     print("💥 Erreur POST : $e");
-    // showAlertDialog(context, "💥 Une erreur est survenue : $e");
+    print("💥 Erreur imprévue POST : $e");
+    showAlertDialog(context, "💥 Une erreur inattendue est survenue : $e");
   }
+
   return null;
 }
+
+
 
 
 
@@ -127,27 +160,64 @@ Future<bool> isTokenExpire() async {
 }
 
 // Fonction pour récupérer un token valide
-  Future<String?> getToken(BuildContext context) async {
+  // Future<String?> getToken(BuildContext context) async {
 
+  // if (!await isConnectedToInternet()) {
+  //   showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
+  //   return null;
+  // }
+
+  // if (await isTokenExpire()) {
+  //   print('🔄 Token expiré ou absent, tentative de renouvellement...');
+  //   // Tente de rafraîchir le token
+  //   bool refreshSuccess = await refreshToken(context);
+  //   if (!refreshSuccess) {
+  //     // Ne tente PAS la connexion manuelle
+  //     print('❌ Échec du rafraîchissement du token. Connexion annulée.');
+  //     showAlertDialog(
+  //         context, "❌ Votre session a expiré. Veuillez vous reconnecter manuellement.");
+  //     return null;
+  //   }
+  // }
+  //   return await storage.read(key: 'token');
+  // } 
+
+  Future<String?> getToken(BuildContext context) async {
   if (!await isConnectedToInternet()) {
     showAlertDialog(context, "📡 Vous n’êtes pas connecté à Internet.");
     return null;
   }
 
-  if (await isTokenExpire()) {
-    print('🔄 Token expiré ou absent, tentative de renouvellement...');
-    // Tente de rafraîchir le token
+  String? token = await storage.read(key: 'token');
+
+  if (token == null) {
+    print("⚠️ Aucun token trouvé. Demande de connexion manuelle.");
+    showAlertDialog(
+      context,
+      "🔐 Vous n’êtes pas connecté. Veuillez vous connecter pour continuer."
+    );
+    return null;
+  }
+
+  // Si le token existe mais est expiré ou proche de l'expiration
+  if (JwtDecoder.isExpired(token)) {
+    print('🔄 Token expiré, tentative de renouvellement...');
     bool refreshSuccess = await refreshToken(context);
     if (!refreshSuccess) {
-      // Ne tente PAS la connexion manuelle
       print('❌ Échec du rafraîchissement du token. Connexion annulée.');
       showAlertDialog(
-          context, "❌ Votre session a expiré. Veuillez vous reconnecter manuellement.");
+        context,
+        "❌ Votre session a expiré. Veuillez vous reconnecter manuellement."
+      );
       return null;
     }
-  }
+    // On récupère le nouveau token après le refresh
     return await storage.read(key: 'token');
-  } 
+  }
+
+  return token;
+}
+
 
 
 // Fonction pour rafraîchir le token

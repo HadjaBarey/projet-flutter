@@ -1,7 +1,5 @@
-import 'dart:io'; // Pour SocketException
-import 'dart:async'; // Pour TimeoutException
+import 'dart:async'; 
 import 'package:hive/hive.dart';
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -32,19 +30,19 @@ Future<UsersKeyModel?> getUserKeyFromHive() async {
 
 
 Future<void> transfertDataToFlutter(BuildContext context, String selectedDate) async {
-  print("📦 Début du transfert des données...");
+  //print("📦 Début du transfert des données...");
 
   // 0. Récupérer les données de usersKey (todobos7)
   UsersKeyModel? userskey = await getUserKeyFromHive();
   if (userskey == null) {
-    print('❌ Aucune entreprise trouvée dans usersKey.');
+   // print('❌ Aucune entreprise trouvée dans usersKey.');
     return;
   }
 
   // 0bis. Récupérer le numéro aléatoire
   String numeroAleatoire = userskey.numeroaleatoire ?? "";
   if (numeroAleatoire.isEmpty) {
-    print("❌ Le numéro aléatoire est vide.");
+   // print("❌ Le numéro aléatoire est vide.");
     return;
   }
 
@@ -52,13 +50,13 @@ Future<void> transfertDataToFlutter(BuildContext context, String selectedDate) a
     // 1. Récupérer un token valide
     String? token = await getToken(context);
     if (token == null) {
-      print("❌ Impossible d'obtenir un token valide.");
+     // print("❌ Impossible d'obtenir un token valide.");
       return;
     }
 
     // 2. Vérifier et formater la date
     if (selectedDate.isEmpty || selectedDate == "00000000") {
-      print("❌ Date sélectionnée invalide.");
+    //  print("❌ Date sélectionnée invalide.");
       return;
     }
 
@@ -66,12 +64,12 @@ Future<void> transfertDataToFlutter(BuildContext context, String selectedDate) a
     try {
       parsedDate = DateFormat('dd/MM/yyyy').parseStrict(selectedDate);
     } catch (e) {
-      print("❌ Erreur lors du parsing de la date : $e");
+     // print("❌ Erreur lors du parsing de la date : $e");
       return;
     }
 
     final normalizedDate = DateFormat('dd/MM/yyyy').format(parsedDate);
-    print("📅 Date normalisée : $normalizedDate");
+    //print("📅 Date normalisée : $normalizedDate");
 
     // 3. Ouvrir la boîte Hive 'todobos2' (Entreprise)
     Box<EntrepriseModel>? box2;
@@ -82,30 +80,29 @@ Future<void> transfertDataToFlutter(BuildContext context, String selectedDate) a
         box2 = Hive.box<EntrepriseModel>('todobos2');
       }
     } catch (e) {
-      print("🚨 Erreur lors de l'ouverture de 'todobos2' : $e");
+    //  print("🚨 Erreur lors de l'ouverture de 'todobos2' : $e");
       return;
     }
 
     // 4. Récupérer les infos entreprise
 
   // 🔁 Comparer avec la date dans EntrepriseModel
-String? dateEnregistrement = box2.getAt(0)?.DateControle;
-if (dateEnregistrement != null && dateEnregistrement.isNotEmpty) {
-  try {
-    DateTime dateSaisie = DateFormat('dd/MM/yyyy').parseStrict(selectedDate);
-    DateTime dateEntreprise = DateFormat('dd/MM/yyyy').parseStrict(dateEnregistrement);
+      String? dateEnregistrement = box2.getAt(0)?.DateControle;
+      if (dateEnregistrement != null && dateEnregistrement.isNotEmpty) {
+        try {
+          DateTime dateSaisie = DateFormat('dd/MM/yyyy').parseStrict(selectedDate);
+          DateTime dateEntreprise = DateFormat('dd/MM/yyyy').parseStrict(dateEnregistrement);
 
-    if (!dateSaisie.isBefore(dateEntreprise)) {
-      showAlertDialog(context, "❌ La date sélectionnée est égale ou postérieure à la date d’enregistrement de l’entreprise.");
-      return;
-    }
-  } catch (e) {
-    print("❌ Erreur lors de la comparaison des dates : $e");
-    showAlertDialog(context, "❌ Erreur de format de date.");
-    return;
-  }
-}
-
+          if (!dateSaisie.isBefore(dateEntreprise)) {
+            showAlertDialog(context, "❌ La date sélectionnée est égale ou postérieure à la date d’enregistrement de l’entreprise.");
+            return;
+          }
+        } catch (e) {
+         // print("❌ Erreur lors de la comparaison des dates : $e");
+          showAlertDialog(context, "❌ Erreur de format de date.");
+          return;
+        }
+      }
 
       // Remplacer les champs vides par %%
       String entrepriseNumero = box2.getAt(0)?.numeroTelEntreprise ?? "";
@@ -114,9 +111,9 @@ if (dateEnregistrement != null && dateEnregistrement.isNotEmpty) {
       entrepriseNumero = entrepriseNumero.isEmpty ? '%%' : entrepriseNumero;
       emailentreprise = emailentreprise.isEmpty ? '%%' : emailentreprise;
 
-      print("📨 Numéro entreprise : $entrepriseNumero");
-      print("📧 Email entreprise : $emailentreprise");
-      print("🔐 Numéro aléatoire : $numeroAleatoire");
+      // print("📨 Numéro entreprise : $entrepriseNumero");
+      // print("📧 Email entreprise : $emailentreprise");
+      // print("🔐 Numéro aléatoire : $numeroAleatoire");
 
 
     // 5. Ouvrir la boîte Hive 'todobos' (OrangeModel)
@@ -138,18 +135,18 @@ if (dateEnregistrement != null && dateEnregistrement.isNotEmpty) {
       int key = box1.keyAt(box1.values.toList().indexOf(item));
       await box1.delete(key);
     }
-    print("🗑️ ${itemsToDelete.length} transaction(s) supprimée(s) pour la date $normalizedDate");
+  //  print("🗑️ ${itemsToDelete.length} transaction(s) supprimée(s) pour la date $normalizedDate");
 
     // 7. Construire l'URL de l'API
     final apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/listTransaction';
    // Si les champs sont vides, on met %%
-entrepriseNumero = entrepriseNumero.isEmpty ? '%%' : entrepriseNumero;
-emailentreprise = emailentreprise.isEmpty ? '%%' : emailentreprise;
-final fullUrl = '$apiUrl'
-  '?entrepriseNumero=${Uri.encodeComponent(entrepriseNumero)}'
-  '&dateopera=$normalizedDate'
-  '&emailEPR=${Uri.encodeComponent(emailentreprise)}'
-  '&numalea=${Uri.encodeComponent(numeroAleatoire)}';
+      entrepriseNumero = entrepriseNumero.isEmpty ? '%%' : entrepriseNumero;
+      emailentreprise = emailentreprise.isEmpty ? '%%' : emailentreprise;
+      final fullUrl = '$apiUrl'
+      '?entrepriseNumero=${Uri.encodeComponent(entrepriseNumero)}'
+      '&dateopera=$normalizedDate'
+      '&emailEPR=${Uri.encodeComponent(emailentreprise)}'
+      '&numalea=${Uri.encodeComponent(numeroAleatoire)}';
 
 
     print("🌐 URL appelée : $fullUrl");
@@ -167,13 +164,13 @@ final fullUrl = '$apiUrl'
 
     if (response != null && response.statusCode == 200) {
       final responseBody = utf8.decode(response.bodyBytes);
-      print("📥 Réponse brute : $responseBody");
+     // print("📥 Réponse brute : $responseBody");
 
       List<dynamic> data = json.decode(responseBody);
-      print("📦 Nombre de données reçues : ${data.length}");
+      //print("📦 Nombre de données reçues : ${data.length}");
 
       if (data.isEmpty) {
-        print("⚠️ Aucune donnée à importer.");
+        //print("⚠️ Aucune donnée à importer.");
         return;
       }
 
@@ -181,20 +178,20 @@ final fullUrl = '$apiUrl'
         try {
           OrangeModel transaction = OrangeModel.fromJSON(item);
           await box1.add(transaction);
-          print("✅ Transaction ajoutée : ${transaction.toString()}");
+          //print("✅ Transaction ajoutée : ${transaction.toString()}");
         } catch (e) {
-          print("❌ Erreur de parsing ou ajout Hive : $e");
+          //print("❌ Erreur de parsing ou ajout Hive : $e");
         }
       }
 
-      print("🎉 Données importées avec succès !");
-      print("📦 Total dans la boîte 'todobos' : ${box1.length}");
+     // print("🎉 Données importées avec succès !");
+      //print("📦 Total dans la boîte 'todobos' : ${box1.length}");
 
     } else if (response != null) {
       showAlertDialog(context, "❌ Erreur serveur : ${response.statusCode}");
     }
   } catch (e) {
-    print("🚨 Erreur générale : $e");
+   // print("🚨 Erreur générale : $e");
     showAlertDialog(context, "❌ Une erreur interne est survenue.");
   }
 }

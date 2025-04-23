@@ -60,7 +60,6 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
       return;
     }
 
-
     if (operations.isEmpty) {
       print('❌ Aucune donnée à envoyer.');
       return;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Pour formater la date
+import 'package:intl/intl.dart'; 
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/apiSprintBoot/connexionToken.dart';
@@ -11,7 +11,6 @@ import 'package:kadoustransfert/vue/ListAddSim.dart';
 import 'package:kadoustransfert/vue/ListClient.dart';
 import 'package:kadoustransfert/vue/SynchroniseAddSim.dart';
 import 'package:kadoustransfert/vue/SynchroniseEntreprise.dart';
-import 'package:kadoustransfert/vue/SynchroniseJournalCaisse.dart';
 import 'package:kadoustransfert/vue/ViderBD.dart';
 import 'package:kadoustransfert/apiSprintBoot/exportBDToSprint.dart';
 
