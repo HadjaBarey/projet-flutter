@@ -27,6 +27,7 @@ class MoovController {
   final TextEditingController montantController = TextEditingController();
   final TextEditingController numeroTelephoneController = TextEditingController();
   final TextEditingController scanMessageController = TextEditingController();
+//1
 
   // Instance du service d'appel
   final CallService callService = CallService();
@@ -65,6 +66,7 @@ class MoovController {
   TextEditingController iddetteController = TextEditingController(text: '0'); // Valeur par défaut pour pas supprimer par defaut
   TextEditingController numeroIndependantController = TextEditingController(); 
   TextEditingController idTransController = TextEditingController(); 
+
   // Assurez-vous que optionCreanceController est un ValueNotifier<bool>
   ValueNotifier<bool> optionCreanceController = ValueNotifier<bool>(false); // Utiliser ValueNotifier<bool>
 
@@ -185,7 +187,6 @@ void updateSelectedOption(int value) {
     optionCreanceController.value = false; // Mettez à jour la valeur directement
   }
 }
-
 
 
 

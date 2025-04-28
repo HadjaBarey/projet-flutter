@@ -483,15 +483,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',multiLine: true);
     RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
 
-    //RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([A-Z0-9.]{1,22})');
-
-    ///RegExp idTransRegExp = RegExp(r'ID Trans:\s*([A-Z0-9.]+)');
-  //  RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO):\s*([A-Z0-9.]+)', caseSensitive: false);
- // RegExp idTransRegExp = RegExp(r'(ID Trans|CD|CI|RC|PP2|CO)\s*:\s*([A-Z0-9.]+)', caseSensitive: false);
-
-
     
-
     // Recherche des mots clés dans le texte
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
