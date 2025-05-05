@@ -14,19 +14,18 @@ import 'package:hive/hive.dart';
 
 Future<void> exportDataToJson() async {
   try {
-    // Demander les permissions de stockage et de gestion du stockage
     final storageStatus = await Permission.storage.request();
     final manageStorageStatus = await Permission.manageExternalStorage.request();
 
     if (storageStatus.isGranted && manageStorageStatus.isGranted) {
-      // Supprimer le fichier existant (optionnel)
       final appDir = await getApplicationDocumentsDirectory();
-      final sourceFile = File('${appDir.path}/data_export.json');
-      if (await sourceFile.exists()) {
-        await sourceFile.delete();
+      final tempFilePath = '${appDir.path}/data_export.json';
+      final tempFile = File(tempFilePath);
+
+      if (await tempFile.exists()) {
+        await tempFile.delete();
       }
 
-      // Ouvrir les boîtes Hive
       final boxOrangeModel = await Hive.openBox<OrangeModel>('todobos');
       final boxClient = await Hive.openBox<ClientModel>('todobos1');
       final boxEntreprise = await Hive.openBox<EntrepriseModel>('todobos2');
@@ -36,38 +35,44 @@ Future<void> exportDataToJson() async {
       final boxJournalCaisse = await Hive.openBox<JournalCaisseModel>('todobos6');
       final boxUsersKeyModel = await Hive.openBox<UsersKeyModel>('todobos7');
 
-      // Transformer les données en JSON
-      final data = {
-        'todobos': boxOrangeModel.values.map((e) => e.toJson()).toList(),
-        'todobos1': boxClient.values.map((e) => e.toJson()).toList(),
-        'todobos2': boxEntreprise.values.map((e) => e.toJson()).toList(),
-        'todobos3': boxTransaction.values.map((e) => e.toJson()).toList(),
-        'todobos4': boxUtilisateur.values.map((e) => e.toJson()).toList(),
-        'todobos5': boxAddSim.values.map((e) => e.toJson()).toList(),
-        'todobos6': boxJournalCaisse.values.map((e) => e.toJson()).toList(),
-        'todobos7': boxUsersKeyModel.values.map((e) => e.toJson()).toList(),
+        Future<List<Map<String, dynamic>>> batchExport(box) async {
+          List<Map<String, dynamic>> allData = [];
+          final items = box.values.toList();
+          for (int i = 0; i < items.length; i += 500) {
+            final batch = items.sublist(i, (i + 500 > items.length) ? items.length : i + 500);
+            allData.addAll(batch.map((e) => e.toJson()).cast<Map<String, dynamic>>());
+            await Future.delayed(Duration(milliseconds: 50));
+          }
+          return allData;
+        }
 
+      final data = {
+        'todobos': await batchExport(boxOrangeModel),
+        'todobos1': await batchExport(boxClient),
+        'todobos2': await batchExport(boxEntreprise),
+        'todobos3': await batchExport(boxTransaction),
+        'todobos4': await batchExport(boxUtilisateur),
+        'todobos5': await batchExport(boxAddSim),
+        'todobos6': await batchExport(boxJournalCaisse),
+        'todobos7': await batchExport(boxUsersKeyModel),
       };
 
-      // Créer et écrire le fichier dans le répertoire de l'app
-      final newSourceFile = File('${appDir.path}/data_export.json');
-      await newSourceFile.writeAsString(jsonEncode(data));
-      print('✅ Données exportées vers : ${newSourceFile.path}');
+      await tempFile.writeAsString(jsonEncode(data));
+      print('✅ Données exportées vers : $tempFilePath');
 
-      // Copier le fichier vers le répertoire Téléchargements
       final downloadsDir = Directory('/storage/emulated/0/Download');
       if (!downloadsDir.existsSync()) {
         downloadsDir.createSync(recursive: true);
       }
 
-      final destinationFilePath = '${downloadsDir.path}/data_export.json';
-      await newSourceFile.copy(destinationFilePath);
+      final finalPath = '${downloadsDir.path}/data_export.json';
+      await tempFile.copy(finalPath);
 
-      print('✅ Fichier copié dans le dossier Téléchargements : $destinationFilePath');
+      print('✅ Fichier copié dans le dossier Téléchargements : $finalPath');
     } else {
-      print('❌ Permissions de stockage refusées. Impossible d\'exporter les données.');
+      print('❌ Permissions de stockage refusées.');
     }
   } catch (e) {
-    print('❌ Erreur lors de l\'exportation des données : $e');
+    print('❌ Erreur lors de l\'exportation : $e');
   }
 }

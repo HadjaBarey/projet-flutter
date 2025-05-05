@@ -12,7 +12,7 @@ class AuthKTransfert{
       if(response.statusCode==200){
         responsedata= jsonDecode(response.body);
       }else{
-        print("maivaise reques ${response.statusCode}");
+        print("mauvaise reques ${response.statusCode}");
       }
       return responsedata;
     }catch(e){
@@ -21,3 +21,4 @@ class AuthKTransfert{
     //!return null;
   }
 }
+

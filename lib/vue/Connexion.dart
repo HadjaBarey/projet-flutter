@@ -32,19 +32,20 @@ class _LoginPageState extends State<LoginPage> {
         }
       });
     } catch(e) {
-     // print("pas de boot");
+     print("pas de boot");
     }
   }
 
-  Future<void> _verification() async {
+
+
+Future<void> _verification() async {
     if (!mounted) return;  // Vérification ajoutée pour éviter des problèmes si widget est démonté
     
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
+ 
     try {
-      String? savedDate = prefs.getString('date_fin');
+      String? savedDate = prefs.getString('dateFinAbon');
       madate = savedDate != null ? DateTime.tryParse(savedDate) : null;
-
       if (mounted) {
         setState(() {
           auth = prefs.getBool("auth") ?? false;
@@ -53,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (madate == null || madate!.isBefore(DateTime.now())) {
       //  print("Licence expirée ou inexistante.");
-
+ await prefs.setBool("auth", false); // 👈 Désactivation forcée ici
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -70,10 +71,12 @@ class _LoginPageState extends State<LoginPage> {
         }
       }
     } catch (e, stacktrace) {
-      // print("Erreur dans la vérification de la licence : $e");
-      // print("Trace : $stacktrace");
+      print("Erreur dans la vérification de la licence : $e");
+      print("Trace : $stacktrace");
     }
   }
+
+
 
   Future<void> _verif() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -85,12 +88,12 @@ class _LoginPageState extends State<LoginPage> {
         // Appel de la méthode si la valeur est valide
         verifAndprolonge(madatasave);
       } else {
-       // print("Aucune donnée sauvegardée pour 'password'.");
+        print("Aucune donnée sauvegardée pour 'password'.");
       }
     } catch (e, stacktrace) {
       // Gestion des erreurs et log des détails
-      // print("Erreur lors de la récupération des données : $e");
-      // print("Trace : $stacktrace");
+      print("Erreur lors de la récupération des données : $e");
+      print("Trace : $stacktrace");
     }
   }
 
@@ -110,16 +113,16 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return;  // Vérification après l'opération asynchrone
 
-      if (response.containsKey('date_fin')) {
+      if (response.containsKey('dateFinAbon')) {
         DateTime today = DateTime.now();
-        DateTime newExpiryDate = DateTime.parse(response['date_fin']);
+        DateTime newExpiryDate = DateTime.parse(response['dateFinAbon']);
 
         if (newExpiryDate.isAfter(today)) {
           // La licence est valide
           prefs.setBool('auth', true);
           prefs.setString('password', password);
-          prefs.setString('date_fin', newExpiryDate.toIso8601String());
-         // print("Licence valide jusqu'à $newExpiryDate");
+          prefs.setString('dateFinAbon', newExpiryDate.toIso8601String());
+          print("Licence valide jusqu'à $newExpiryDate");
 
           if (mounted) {  // Vérification avant d'utiliser context
             ScaffoldMessenger.of(context).showSnackBar(
@@ -134,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           // Licence expirée
           prefs.setBool('auth', false);
-         // print("La licence a expiré. Veuillez renouveler.");
+          print("La licence a expiré. Veuillez renouveler.");
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Licence expirée. Veuillez la renouveler.')),
@@ -143,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else if (response.containsKey('error')) {
         // Erreur côté serveur ou mot de passe invalide
-        //print("Erreur du serveur : ${response['error']}");
+        print("Erreur du serveur : ${response['error']}");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Erreur du serveur : ${response['error']}')),
@@ -160,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       // Gestion des erreurs réseau ou autres
-     // print("Erreur de connexion : $e");
+      print("Erreur de connexion : $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur de connexion : $e')),
@@ -175,65 +178,85 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Connexion avec validation du mot de passe
-  Future<void> connectmyUser() async {
-    if (!mounted) return;  // Vérification ajoutée 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      if (mounted) {
-        setState(() {
-          logi = true; // Affiche un chargement
-        });
-      }
+//   // Connexion avec validation du mot de passe
+Future<void> connectmyUser() async {
+  if (!mounted) return;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      final response = await AuthKTransfert.authBypass({"password": _passwordController.text});
+  try {
+    setState(() {
+      logi = true;
+    });
+
+    final response = await AuthKTransfert.authBypass({"password": _passwordController.text});
+
+    if (response != null &&
+      response['etat'] == 0 &&
+      DateTime.parse(response['dateFinAbon']).isAfter(DateTime.now()))  {
+
+      DateTime expiryDate = DateTime.parse(response['dateFinAbon']);
+      DateTime dateDeb = DateTime.parse(response['dateDebutAbon']);
+      DateTime today = DateTime.now();
+    
+  
+      // print("📅 Date du téléphone : $today");
+      // print("📅 Date de début d'abonnement : $dateDeb");
+      // print("📅 Date de début fin d'abonnement : $expiryDate");
+
+
+      // 🔒 Vérification que la date du téléphone >= dateDeb
+      // if (today.isBefore(dateDeb)) {
+      //   // ❌ Date du téléphone trop ancienne
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('Veuillez corriger la date du téléphone.')),
+      //   );
+      //   return;
+      // }
+
+      if (!expiryDate.isBefore(today)) {
+        // ✅ licence valide, état 0, non expirée
+        await prefs.setBool('auth', true);
+        await prefs.setString('password', _passwordController.text);
+        await prefs.setString('dateFinAbon', expiryDate.toIso8601String());        
+        await prefs.setString('dateDebutAbon', dateDeb.toIso8601String());
       
-      if (!mounted) return;  // Vérification après l'opération asynchrone
 
-      if (response['response'] == "true") {
-        DateTime newExpiryDate = DateTime.parse(response['date_fin']);
-        prefs.setBool('auth', true);
-        prefs.setString('password', _passwordController.text);
-        prefs.setString('date_fin', newExpiryDate.toString());
-       // print(newExpiryDate.toString());
-        
-        DateTime today = DateTime.now();
-        if (today.isAfter(newExpiryDate)) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Mot de-passe incorrect ou licence expirée.')),
-            );
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Connexion réussie.')),
-            );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connexion réussie.')),
+        );
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
-          }
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
       } else {
-        if (mounted) {
-          verifAndprolonge(_passwordController.text);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Mot de-passe incorrect ou licence expirée.')),
-          );
-        }
+        // ❌ licence expirée
+        await prefs.setBool('auth', false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Licence expirée.')),
+        );
       }
-    } catch (e) {
-      //print("Erreur dans la connexion : $e");
-    } finally {
-      if (mounted) {
-        setState(() {
-          logi = false; // Masque le chargement
-        });
-      }
+    } else {
+      // ❌ état != 0 ou réponse fausse
+      await prefs.setBool('auth', false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Licence invalide ou déjà utilisée.')),
+      );
+    }
+  } catch (e) {
+    print("Erreur : $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur de connexion.')),
+    );
+  } finally {
+    if (mounted) {
+      setState(() {
+        logi = false;
+      });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
