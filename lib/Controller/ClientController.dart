@@ -115,17 +115,47 @@ void updateClient({
 
 
 
-   Future<void> pickImageCamera() async {
-    try {
-      var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-      if (returnedImage == null) return;
-      selectedImage = XFile(returnedImage.path);
-      final inputImage = InputImage.fromFilePath(returnedImage.path);
-      await recognizeText(inputImage);
-    } catch (e) {
-      print("Error picking image: $e");
-    }
+ Future<void> pickImageFromCameraOrGallery(BuildContext context) async {
+  try {
+    final ImageSource? source = await showDialog<ImageSource>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Choisir une source d\'image'),
+          content: Text('Sélectionnez la méthode d\'importation de l\'image :'),
+          actions: [
+            TextButton.icon(
+              icon: Icon(Icons.camera_alt),
+              label: Text('Caméra'),
+              onPressed: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            TextButton.icon(
+              icon: Icon(Icons.photo),
+              label: Text('Galerie'),
+              onPressed: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    final returnedImage = await ImagePicker().pickImage(source: source);
+    if (returnedImage == null) return;
+
+    selectedImage = XFile(returnedImage.path);
+    final inputImage = InputImage.fromFilePath(returnedImage.path);
+
+    await recognizeText(inputImage);
+  } catch (e) {
+    print("Erreur lors de la sélection de l'image : $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Erreur lors de la sélection de l'image")),
+    );
   }
+}
+
 
    // Reconnaître le texte à partir de l'image
   Future<void> recognizeText(InputImage inputImage) async {
@@ -161,10 +191,10 @@ void updateClient({
     String delivreeLe = dates.length >= 2 ? DateFormat('dd/MM/yyyy').format(dates[dates.length - 2]) : '';
 
 
-    print('Nom: $nom');
-    print('Prénoms: $prenoms');
-    print('Délivrée le: $delivreeLe');
-    print('Référence: $reference');
+    // print('Nom: $nom');
+    // print('Prénoms: $prenoms');
+    // print('Délivrée le: $delivreeLe');
+    // print('Référence: $reference');
 
     if (nom.isEmpty || prenoms.isEmpty || delivreeLe.isEmpty || reference.isEmpty) {
       this.recognizedText = '';

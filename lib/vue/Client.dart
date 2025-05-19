@@ -68,23 +68,6 @@ class _ClientPageState extends State<ClientPage> {
                 },
               ),
               SizedBox(height: 15),
-              
-              // TextFormField(
-              //   controller: widget.clientController.refCNIBController,
-              //   decoration: InputDecoration(
-              //     border: OutlineInputBorder(),
-              //     labelText: 'Réf CNIB',
-              //     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              //   ),
-              //   validator: (value) {
-              //     if (value == null || value.isEmpty) {
-              //       return 'Ce champ est requis';
-              //     }
-              //     widget.clientController.updateClient(refCNIB: value);
-              //     return null;
-              //   },
-              // ),
-              // SizedBox(height: 15),
 
               TextFormField(
                 controller: widget.clientController.numeroTelephoneController,
@@ -108,7 +91,8 @@ class _ClientPageState extends State<ClientPage> {
 
               ElevatedButton(
                   onPressed: () {
-                    widget.clientController.pickImageCamera();
+                    widget.clientController.pickImageFromCameraOrGallery(context);
+                    // clientController.pickImageFromCameraOrGallery(context);
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
