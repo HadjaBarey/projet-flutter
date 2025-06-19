@@ -311,7 +311,6 @@ Future<void> DateControleRecupere() async {
   }
   
 
-
   // Enregistrer les données dans la boîte Hive
   Future<void> saveData(BuildContext context) async {
   await _initializeBox(); // S'assurer que la boîte est ouverte
@@ -325,7 +324,6 @@ Future<void> DateControleRecupere() async {
     });
   }
 }
-
 
   // Image sélectionnée et texte reconnu
   late XFile selectedImage;

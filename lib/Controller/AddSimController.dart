@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kadoustransfert/Model/AddSimModel.dart';
+import 'package:kadoustransfert/Model/OrangeModel.dart';
 
 class AddSimController {
   final formKey = GlobalKey<FormState>();
@@ -99,16 +100,85 @@ class AddSimController {
       //print("Erreur lors de l'enregistrement : $e");
     }
   }
+Future<bool> markAsDeleted(BuildContext context, AddSimModel OpeSim) async {
+  final boxOrange = Hive.box<OrangeModel>('todobos');
 
-  Future<void> markAsDeleted(AddSimModel OpeSim) async {
-    if (todobos5 != null) {
-      await todobos5.put(OpeSim.idOperateur, OpeSim).then((value) {
-     //   print("Client marqué comme supprimé : $OpeSim");
-      }).catchError((error) {
-      //  print("Erreur lors de la mise à jour : $error");
-      });
-    }
+  bool isUsed = boxOrange.values.any((item) {
+    return item.operateur.toString() == OpeSim.idOperateur.toString();
+  });
+
+  if (isUsed) {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Suppression refusée"),
+        content: Text("L'opérateur ${OpeSim.LibOperateur} est utilisé ailleurs et ne peut pas être supprimé."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+    return false;
   }
+
+  try {
+    final copieOperateur = AddSimModel(
+      idOperateur: OpeSim.idOperateur,
+      LibOperateur: OpeSim.LibOperateur,
+      NumPhone: OpeSim.NumPhone,
+      CodeAgent: OpeSim.CodeAgent,
+      supprimer: 1,
+    );
+
+    await todobos5.put(copieOperateur.idOperateur, copieOperateur);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Suppression réussie"),
+        content: Text("L'opérateur ${copieOperateur.LibOperateur} a été marqué comme supprimé."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("OK"),
+          ),
+        ],
+      ),
+    );
+
+    return true;
+  } catch (error) {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Erreur"),
+        content: Text("Une erreur est survenue : $error"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("Fermer"),
+          ),
+        ],
+      ),
+    );
+    return false;
+  }
+}
+
+
+
+  // Future<void> markAsDeleted(AddSimModel OpeSim) async {
+  //   if (todobos5 != null) {
+  //     await todobos5.put(OpeSim.idOperateur, OpeSim).then((value) {
+  //    //   print("Client marqué comme supprimé : $OpeSim");
+  //     }).catchError((error) {
+  //     //  print("Erreur lors de la mise à jour : $error");
+  //     });
+  //   }
+  // }
 
   String? getCodeAgent(String operateur) {
     try {

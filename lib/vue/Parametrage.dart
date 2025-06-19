@@ -435,86 +435,87 @@ class _ParametrageState extends State<Parametrage> {
               ],
             ),
 
-
-            
             SizedBox(height: 60),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Premier bouton : Export backEnd
 
-Container(
-  width: 150,
-  height: 100,
-  decoration: BoxDecoration(
-    color: Colors.grey[300],
-    border: Border.all(color: Colors.black87, width: 0.0),
-    borderRadius: BorderRadius.circular(15.0),
-  ),
-  child: InkWell(
-    borderRadius: BorderRadius.circular(15.0),
-    onTap: () async {
-      if (isExportingBackEnd) return;
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(color: Colors.black87, width: 0.0),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () async {
+                      if (isExportingBackEnd) return;
 
-      final entreprise = await getEntrepriseFromHiveHos();
-      if (entreprise == null || entreprise.DateControle.isEmpty) {
-        showAlertDialog(context, "❗ Date de contrôle introuvable.");
-        return;
-      }
+                      final entreprise = await getEntrepriseFromHiveHos();
+                      if (entreprise == null ||
+                          entreprise.DateControle.isEmpty) {
+                        showAlertDialog(
+                            context, "❗ Date de contrôle introuvable.");
+                        return;
+                      }
 
-      bool confirm = await showDialog<bool>(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text('Confirmation'),
-              content: Text('Voulez-vous vraiment exporter les données pour la date : ${entreprise.DateControle} ?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text('Non'),
+                      bool confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Confirmation'),
+                              content: Text(
+                                  'Voulez-vous vraiment exporter les données pour la date : ${entreprise.DateControle} ?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: Text('Non'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: Text('Oui'),
+                                ),
+                              ],
+                            ),
+                          ) ??
+                          false;
+
+                      if (!confirm) return;
+
+                      setState(() {
+                        isExportingBackEnd = true;
+                      });
+
+                      try {
+                        await exportData(context);
+                      } catch (e) {
+                        showAlertDialog(
+                            context, "💥 Une erreur est survenue : $e");
+                      } finally {
+                        setState(() {
+                          isExportingBackEnd = false;
+                        });
+                      }
+                    },
+                    child: Center(
+                      child: isExportingBackEnd
+                          ? CircularProgressIndicator()
+                          : Text(
+                              'Export backEnd',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                    ),
+                  ),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text('Oui'),
-                ),
-              ],
-            ),
-          ) ??
-          false;
-
-      if (!confirm) return;
-
-      setState(() {
-        isExportingBackEnd = true;
-      });
-
-      try {
-        await exportData(context);
-      } catch (e) {
-        showAlertDialog(context, "💥 Une erreur est survenue : $e");
-      } finally {
-        setState(() {
-          isExportingBackEnd = false;
-        });
-      }
-    },
-    child: Center(
-      child: isExportingBackEnd
-          ? CircularProgressIndicator()
-          : Text(
-              'Export backEnd',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-    ),
-  ),
-),
-
-
-
 
 ///////////////////////////////// OPTION EXPORT DE FLUTTER VERS SPRING BOOT
 
@@ -686,124 +687,133 @@ Container(
 
                 // Deuxième bouton : Import backEnd
 
-             Container(
-  width: 150,
-  height: 100,
-  decoration: BoxDecoration(
-    color: Colors.grey[300],
-    border: Border.all(color: Colors.black87, width: 0.0),
-    borderRadius: BorderRadius.circular(15.0),
-  ),
-  child: InkWell(
-    borderRadius: BorderRadius.circular(15.0),
-    onTap: () async {
-      if (isImportingBackEnd) return;
-
-      showDatePickerDialog(context, (selectedDate) async {
-        setState(() {
-          isImportingBackEnd = true;
-        });
-
-        try {
-          bool confirm = await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Confirmation'),
-                content: Text(
-                  'Voulez-vous vraiment importer les données du serveur pour la date : $selectedDate ?',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('Non'),
+                Container(
+                  width: 150,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    border: Border.all(color: Colors.black87, width: 0.0),
+                    borderRadius: BorderRadius.circular(15.0),
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: Text('Oui'),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(15.0),
+                    onTap: () async {
+                      if (isImportingBackEnd) return;
+
+                      showDatePickerDialog(context, (selectedDate) async {
+                        setState(() {
+                          isImportingBackEnd = true;
+                        });
+
+                        try {
+                          bool confirm = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Confirmation'),
+                                content: Text(
+                                  'Voulez-vous vraiment importer les données du serveur pour la date : $selectedDate ?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: Text('Non'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: Text('Oui'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (!confirm) return;
+                          if (selectedDate.isEmpty ||
+                              selectedDate == "00000000") {
+                            print("🚨 Date invalide : $selectedDate");
+                            return;
+                          }
+
+                          // Ouverture des boîtes Hive sans bloquer si elles sont vides
+                          final boxEnt =
+                              await Hive.openBox<EntrepriseModel>('todobos2');
+                          final boxUser =
+                              await Hive.openBox<UsersKeyModel>('todobos7');
+
+                          final entreprise =
+                              boxEnt.isNotEmpty ? boxEnt.values.first : null;
+                          final user =
+                              boxUser.isNotEmpty ? boxUser.values.first : null;
+
+                          final numeroEntreprise =
+                              entreprise?.numeroTelEntreprise ?? "";
+                          final emailEntreprise =
+                              entreprise?.emailEntreprise ?? "";
+                          final numeroAleatoire = user?.numeroaleatoire ?? "";
+
+                          await fetchAndSaveFromBackend(
+                            context: context,
+                            numeroEntreprise: numeroEntreprise,
+                            dateOperation: selectedDate,
+                            emailEntreprise: emailEntreprise,
+                            numeroAleatoire: numeroAleatoire,
+                          );
+
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Données importées'),
+                              content: Text(
+                                'Les données ont été importées avec succès pour la date : $selectedDate',
+                              ),
+                              actions: [
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ],
+                            ),
+                          );
+                        } catch (e) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('Erreur'),
+                              content:
+                                  Text('❌ Erreur lors de l\'importation : $e'),
+                              actions: [
+                                TextButton(
+                                  child: Text('OK'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                              ],
+                            ),
+                          );
+                        } finally {
+                          setState(() {
+                            isImportingBackEnd = false;
+                          });
+                        }
+                      });
+                    },
+                    child: Center(
+                      child: isImportingBackEnd
+                          ? CircularProgressIndicator()
+                          : Text(
+                              'Import backEnd',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                    ),
                   ),
-                ],
-              );
-            },
-          );
-
-          if (!confirm) return;
-          if (selectedDate.isEmpty || selectedDate == "00000000") {
-            print("🚨 Date invalide : $selectedDate");
-            return;
-          }
-
-          // Ouverture des boîtes Hive sans bloquer si elles sont vides
-          final boxEnt = await Hive.openBox<EntrepriseModel>('todobos2');
-          final boxUser = await Hive.openBox<UsersKeyModel>('todobos7');
-
-          final entreprise = boxEnt.isNotEmpty ? boxEnt.values.first : null;
-          final user = boxUser.isNotEmpty ? boxUser.values.first : null;
-
-          final numeroEntreprise = entreprise?.numeroTelEntreprise ?? "";
-          final emailEntreprise = entreprise?.emailEntreprise ?? "";
-          final numeroAleatoire = user?.numeroaleatoire ?? "";
-
-          await fetchAndSaveFromBackend(
-            context: context,
-            numeroEntreprise: numeroEntreprise,
-            dateOperation: selectedDate,
-            emailEntreprise: emailEntreprise,
-            numeroAleatoire: numeroAleatoire,
-          );
-
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text('Données importées'),
-              content: Text(
-                'Les données ont été importées avec succès pour la date : $selectedDate',
-              ),
-              actions: [
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          );
-        } catch (e) {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text('Erreur'),
-              content: Text('❌ Erreur lors de l\'importation : $e'),
-              actions: [
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          );
-        } finally {
-          setState(() {
-            isImportingBackEnd = false;
-          });
-        }
-      });
-    },
-    child: Center(
-      child: isImportingBackEnd
-          ? CircularProgressIndicator()
-          : Text(
-              'Import backEnd',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-    ),
-  ),
-)
-
+                )
 
                 // Container(
                 //   width: 150,
@@ -1024,4 +1034,3 @@ void showAlertDialog(BuildContext context, String message) {
     ),
   );
 }
-

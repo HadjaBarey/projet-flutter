@@ -51,11 +51,12 @@ class _PageListAddSimState extends State<PageListAddSim> {
             TextButton(
               onPressed: () async {
                 try {
-                  setState(() {
-                    _OperateursList[index].supprimer = 1;
-                  });
+                  // setState(() {
+                  //   _OperateursList[index].supprimer = 1;
+                  // });
 
-                  await _controller.markAsDeleted(_OperateursList[index]);
+                 // await _controller.markAsDeleted(_OperateursList[index]);
+                 await _controller.markAsDeleted(context, _OperateursList[index]);
                   Navigator.of(context).pop();
                   await loadData();
                 } catch (e) {
