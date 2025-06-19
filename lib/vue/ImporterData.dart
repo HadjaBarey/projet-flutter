@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:hive/hive.dart';
-// Importation de tes modèles...
+
+// 📦 Modèles Hive
 import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
@@ -14,13 +15,13 @@ import 'package:kadoustransfert/Model/UtilisateurModel.dart';
 
 Future<void> importDataFromJson() async {
   try {
-    // Demander les bonnes autorisations pour Android 11+ (API 30+)
+    // 📲 Autorisations Android
     if (Platform.isAndroid) {
       if (await Permission.manageExternalStorage.request().isGranted ||
           await Permission.storage.request().isGranted) {
-        print("Autorisations de stockage accordées");
+        print("✅ Autorisations de stockage accordées");
       } else {
-        print("Autorisations refusées");
+        print("❌ Autorisations refusées");
         return;
       }
     }
@@ -29,13 +30,14 @@ Future<void> importDataFromJson() async {
     File file = File(sourceFilePath);
 
     if (!await file.exists()) {
-      print("Le fichier $sourceFilePath n'existe pas.");
+      print("❌ Le fichier $sourceFilePath n'existe pas.");
       return;
     }
 
     final fileContent = await file.readAsString();
     final data = jsonDecode(fileContent);
 
+    // 📂 Ouverture des boîtes Hive
     final box1 = await Hive.openBox<OrangeModel>('todobos');
     final box2 = await Hive.openBox<ClientModel>('todobos1');
     final box3 = await Hive.openBox<EntrepriseModel>('todobos2');
@@ -44,41 +46,65 @@ Future<void> importDataFromJson() async {
     final box6 = await Hive.openBox<AddSimModel>('todobos5');
     final box7 = await Hive.openBox<JournalCaisseModel>('todobos6');
 
-    Future<void> insertBatch<T>(Box<T> box, List<T> list) async {
+    // 🔁 Fonction générique avec détection de doublons
+    Future<void> insertBatchUnique<T>(
+      Box<T> box,
+      List<T> list,
+      bool Function(T existingItem, T newItem) isDuplicate,
+    ) async {
       for (var i = 0; i < list.length; i += 100) {
         final batch = list.sublist(i, (i + 100 > list.length) ? list.length : i + 100);
-        await box.addAll(batch);
+        final toInsert = <T>[];
+
+        for (var item in batch) {
+          final exists = box.values.any((existing) => isDuplicate(existing, item));
+          if (!exists) {
+            toInsert.add(item);
+          }
+        }
+
+        if (toInsert.isNotEmpty) {
+          await box.addAll(toInsert);
+        }
+
         await Future.delayed(Duration(milliseconds: 50));
       }
     }
 
+    // 🔽 Importation sans doublons
     if (data.containsKey('todobos')) {
       final list = (data['todobos'] as List).map((e) => OrangeModel.fromJSON(e)).toList();
-      await insertBatch(box1, list);
+      await insertBatchUnique(box1, list, (a, b) => a.idoperation == b.idoperation);
     }
+
     if (data.containsKey('todobos1')) {
       final list = (data['todobos1'] as List).map((e) => ClientModel.fromJSON(e)).toList();
-      await insertBatch(box2, list);
+      await insertBatchUnique(box2, list, (a, b) => a.idClient == b.idClient);
     }
+
     if (data.containsKey('todobos2')) {
       final list = (data['todobos2'] as List).map((e) => EntrepriseModel.fromJSON(e)).toList();
-      await insertBatch(box3, list);
+      await insertBatchUnique(box3, list, (a, b) => a.idEntreprise == b.idEntreprise);
     }
+
     if (data.containsKey('todobos3')) {
       final list = (data['todobos3'] as List).map((e) => OpTransactionModel.fromJSON(e)).toList();
-      await insertBatch(box4, list);
+      await insertBatchUnique(box4, list, (a, b) => a.idOpTransaction == b.idOpTransaction);
     }
+
     if (data.containsKey('todobos4')) {
       final list = (data['todobos4'] as List).map((e) => UtilisateurModel.fromJSON(e)).toList();
-      await insertBatch(box5, list);
+      await insertBatchUnique(box5, list, (a, b) => a.idUtilisateur == b.idUtilisateur);
     }
+
     if (data.containsKey('todobos5')) {
       final list = (data['todobos5'] as List).map((e) => AddSimModel.fromJSON(e)).toList();
-      await insertBatch(box6, list);
+      await insertBatchUnique(box6, list, (a, b) => a.idOperateur == b.idOperateur);
     }
+
     if (data.containsKey('todobos6')) {
       final list = (data['todobos6'] as List).map((e) => JournalCaisseModel.fromJSON(e)).toList();
-      await insertBatch(box7, list);
+      await insertBatchUnique(box7, list, (a, b) => a.idjournal == b.idjournal);
     }
 
     print('✅ Importation réussie !');

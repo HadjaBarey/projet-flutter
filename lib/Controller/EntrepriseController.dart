@@ -173,25 +173,6 @@ Future<void> saveEntrepriseData(BuildContext? context) async {
     }
   }
 
-  // Future<void> loadEntrepriseData(int idEntreprise) async {
-  //   final entreprise = todobos2.get(idEntreprise);
-  //   if (entreprise != null) {
-  //     Entreprise = entreprise;
-  //     idEntrepriseController.text = entreprise.idEntreprise.toString();
-  //     NomEntrepriseController.text = entreprise.NomEntreprise;
-  //     DirecteurEntrepriseController.text = entreprise.DirecteurEntreprise;
-  //     DateControleController.text = entreprise.DateControle;
-  //     dateControleText = DateControleController.text;
-  //   }
-  // }
-
-  // Future<void> loadMostRecentEntrepriseData() async {
-  //   if (todobos2.isNotEmpty) {
-  //     final lastEntreprise = todobos2.values.last;
-  //     await loadEntrepriseData(lastEntreprise.idEntreprise);
-  //   }
-  // }
-
   String getDateControle() {
     return dateControleText;
   }

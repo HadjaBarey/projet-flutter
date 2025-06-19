@@ -35,26 +35,27 @@ Future<void> exportDataToJson() async {
       final boxJournalCaisse = await Hive.openBox<JournalCaisseModel>('todobos6');
       final boxUsersKeyModel = await Hive.openBox<UsersKeyModel>('todobos7');
 
-        Future<List<Map<String, dynamic>>> batchExport(box) async {
-          List<Map<String, dynamic>> allData = [];
-          final items = box.values.toList();
-          for (int i = 0; i < items.length; i += 500) {
-            final batch = items.sublist(i, (i + 500 > items.length) ? items.length : i + 500);
-            allData.addAll(batch.map((e) => e.toJson()).cast<Map<String, dynamic>>());
-            await Future.delayed(Duration(milliseconds: 50));
-          }
-          return allData;
+      // Fonction générique pour supprimer les doublons
+      Future<List<Map<String, dynamic>>> batchExport(Box box, String Function(Map<String, dynamic>) getKey) async {
+        final items = box.values.toList();
+        final uniqueMap = <String, Map<String, dynamic>>{};
+        for (final item in items) {
+          final json = item.toJson();
+          final key = getKey(json);
+          uniqueMap[key] = json; // Remplace les doublons
         }
+        return uniqueMap.values.toList();
+      }
 
       final data = {
-        'todobos': await batchExport(boxOrangeModel),
-        'todobos1': await batchExport(boxClient),
-        'todobos2': await batchExport(boxEntreprise),
-        'todobos3': await batchExport(boxTransaction),
-        'todobos4': await batchExport(boxUtilisateur),
-        'todobos5': await batchExport(boxAddSim),
-        'todobos6': await batchExport(boxJournalCaisse),
-        'todobos7': await batchExport(boxUsersKeyModel),
+        'todobos': await batchExport(boxOrangeModel, (json) => json['idoperation'].toString()),
+        'todobos1': await batchExport(boxClient, (json) => json['idclient'].toString()),
+        'todobos2': await batchExport(boxEntreprise, (json) => json['identte'].toString()),
+        'todobos3': await batchExport(boxTransaction, (json) => json['idtrans'].toString()),
+        'todobos4': await batchExport(boxUtilisateur, (json) => json['iduser'].toString()),
+        'todobos5': await batchExport(boxAddSim, (json) => json['idOperateur'].toString()),
+        'todobos6': await batchExport(boxJournalCaisse, (json) => json['idjournal'].toString()),
+        'todobos7': await batchExport(boxUsersKeyModel, (json) => json['email'].toString()), // ou autre champ unique
       };
 
       await tempFile.writeAsString(jsonEncode(data));

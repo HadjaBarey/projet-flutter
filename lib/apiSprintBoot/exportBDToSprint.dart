@@ -83,6 +83,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
 
     // Supprimer les données existantes sur Spring Boot via l'API
     String deleteApiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/supprimer';
+   //String deleteApiUrl = 'https://kadoussconnect.com/transfertflutter/backend/delete_data.php';
     try {
       final deleteResponse = await http.delete(
         Uri.parse('$deleteApiUrl?telEntreprise=${entreprise.numeroTelEntreprise}&dateOp=$dateFiltre&emailEP=${entreprise.emailEntreprise}'),
@@ -103,6 +104,7 @@ Future<void> transfertDataToSpringBoot(List<OrangeModel> operations, String date
     }
 
     String apiUrl = 'http://192.168.100.6:8081/transaction/v1/OperationTranslation/create';
+  // String apiUrl = 'https://kadoussconnect.com/transfertflutter/backend/save_data.php';
 
     // Filtrer les opérations en fonction de la date saisie
     List<OrangeModel> operationsFiltrees = operations.where((operation) => operation.dateoperation == dateFiltre).toList();

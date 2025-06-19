@@ -150,7 +150,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
                       controller: entrepriseController.numeroTelEntrepriseController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: 'Numero Téléphone',
+                        labelText: 'Numero Agence',
                         labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       validator: (value) {
@@ -251,7 +251,7 @@ class _EntreprisePageState extends State<EntreprisePage> {
       final box = await getUsersKeyBox();
       showAddItemDialog(context, box);
     },
-    label: Text('Clée'),
+    label: Text('Numéro du Directeur'),
     icon: Icon(Icons.add),
     backgroundColor: Colors.blueGrey,
   ),

@@ -5,6 +5,7 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 import 'package:kadoustransfert/Model/OpTransactionModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
+import 'package:kadoustransfert/Model/UsersKeyModel.dart';
 import 'package:kadoustransfert/Model/UtilisateurModel.dart';
 
 Future<void> ViderBDPage() async {
@@ -16,6 +17,7 @@ Future<void> ViderBDPage() async {
     final box5 = await Hive.openBox<UtilisateurModel>('todobos4');
     final box6 = await Hive.openBox<AddSimModel>('todobos5');
     final box7 = await Hive.openBox<JournalCaisseModel>('todobos6');
+    final box8 = await Hive.openBox<UsersKeyModel>('todobos7');
 
     print('Ouverture des boîtes réussie.');
 
@@ -27,6 +29,7 @@ Future<void> ViderBDPage() async {
     // print('Contenu de todobos4 avant vidage: ${box5.values}');
     // print('Contenu de todobos5 avant vidage: ${box6.values}');
     // print('Contenu de todobos6 avant vidage: ${box7.values}');
+      print('Contenu de todobos6 avant vidage: ${box8.values}');
 
     await box1.clear();
    // print('Boîte todobos vidée.');
@@ -48,6 +51,9 @@ Future<void> ViderBDPage() async {
 
     await box7.clear();
    // print('Boîte todobos6 vidée.');
+
+    await box8.clear();
+   // print('Boîte todobos7 vidée.');
 
     // Vérification après vidage
     // print('Contenu de todobos après vidage: ${box1.values}');

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,12 +16,13 @@ class _LoginPageState extends State<LoginPage> {
   DateTime? madate;
   bool logi = false;
   DateTime today = DateTime.now();
-  
+
   @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
   }
+
 
   @override
   void initState() {
@@ -31,232 +33,169 @@ class _LoginPageState extends State<LoginPage> {
           _verification();
         }
       });
-    } catch(e) {
-     print("pas de boot");
+    } catch (e) {
+      print("Erreur initState : $e");
     }
   }
 
-
-
-Future<void> _verification() async {
-    if (!mounted) return;  // Vérification ajoutée pour éviter des problèmes si widget est démonté
-    
+  Future<void> _verification() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
- 
-    try {
-      String? savedDate = prefs.getString('dateFinAbon');
-      madate = savedDate != null ? DateTime.tryParse(savedDate) : null;
-      if (mounted) {
-        setState(() {
-          auth = prefs.getBool("auth") ?? false;
-        });
-      }
+    String? savedDate = prefs.getString('dateFinAbon');
+    madate = savedDate != null ? DateTime.tryParse(savedDate) : null;
 
-      if (madate == null || madate!.isBefore(DateTime.now())) {
-      //  print("Licence expirée ou inexistante.");
- await prefs.setBool("auth", false); // 👈 Désactivation forcée ici
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Votre licence a expiré ou est inexistante. Veuillez la renouveler.'),
-            ),
-          );
-        }
+    if (savedDate != null) {
+      DateTime parsed = DateTime.parse(savedDate);
+      DateTime dateFinAvecHeureMax = DateTime(parsed.year, parsed.month, parsed.day, 23, 59, 59);
+      print("🔎 Maintenant : ${DateTime.now()}");
+      print("✅ Licence valide jusqu'à : $dateFinAvecHeureMax");
+
+      if (DateTime.now().isBefore(dateFinAvecHeureMax)) {
+        print("🟢 Licence encore valide");
       } else {
-        if (auth && mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        }
+        print("🔴 Licence expirée");
       }
-    } catch (e, stacktrace) {
-      print("Erreur dans la vérification de la licence : $e");
-      print("Trace : $stacktrace");
+    } else {
+      print("⚠️ Aucune date de fin trouvée dans SharedPreferences");
+    }
+
+    setState(() {
+      auth = prefs.getBool("auth") ?? false;
+    });
+
+    if (madate == null || DateTime.now().isAfter(DateTime(madate!.year, madate!.month, madate!.day, 23, 59, 59))) {
+      await prefs.setBool("auth", false);
+    } else {
+      if (auth) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+      }
     }
   }
-
-
 
   Future<void> _verif() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      // Récupération de la valeur sauvegardée
       String? madatasave = prefs.getString("password");
-
-      if (madatasave != null && madatasave.isNotEmpty && mounted) {
-        // Appel de la méthode si la valeur est valide
-        verifAndprolonge(madatasave);
-      } else {
-        print("Aucune donnée sauvegardée pour 'password'.");
+      if (madatasave != null && madatasave.isNotEmpty) {
+        await verifAndprolonge(madatasave);
       }
-    } catch (e, stacktrace) {
-      // Gestion des erreurs et log des détails
-      print("Erreur lors de la récupération des données : $e");
-      print("Trace : $stacktrace");
+    } catch (e) {
+      print("Erreur dans _verif : $e");
     }
   }
 
   Future<void> verifAndprolonge(String password) async {
-    if (!mounted) return;  // Vérification ajoutée pour éviter des problèmes si widget est démonté
-    
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      if (mounted) {
-        setState(() {
-          logi = true; // Affiche un chargement
-        });
-      }
+      setState(() {
+        logi = true;
+      });
 
-      // Appeler l'authentification avec le mot de passe
       final response = await AuthKTransfert.authBypass({"password": password});
+      print("📥 Réponse brute du serveur : $response");
 
-      if (!mounted) return;  // Vérification après l'opération asynchrone
+      if (response != null && response.containsKey('dateFinAbon')) {
+        print("📅 Date reçue : ${response['dateFinAbon']}");
+        print("📅 Date reçue : ${response['formatabonnement']}");
+        DateTime parsed = DateTime.parse(response['dateFinAbon']);
+        DateTime newExpiryDate = DateTime(parsed.year, parsed.month, parsed.day, 23, 59, 59);
+        int format = response['formatabonnement'] ?? 0;
+        print("📅 Date après parsing : $newExpiryDate");
+        print("📅 format : $format");
 
-      if (response.containsKey('dateFinAbon')) {
-        DateTime today = DateTime.now();
-        DateTime newExpiryDate = DateTime.parse(response['dateFinAbon']);
+        if (newExpiryDate.isAfter(DateTime.now())) {
+          await prefs.setBool('auth', true);
+          await prefs.setString('password', password);
+          await prefs.setString('dateFinAbon', newExpiryDate.toIso8601String());
+          await prefs.setInt('formatabonnement', format);
 
-        if (newExpiryDate.isAfter(today)) {
-          // La licence est valide
-          prefs.setBool('auth', true);
-          prefs.setString('password', password);
-          prefs.setString('dateFinAbon', newExpiryDate.toIso8601String());
-          print("Licence valide jusqu'à $newExpiryDate");
 
-          if (mounted) {  // Vérification avant d'utiliser context
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Licence prolongée jusqu\'au $newExpiryDate.')),
-            );
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
-          }
-        } else {
-          // Licence expirée
-          prefs.setBool('auth', false);
-          print("La licence a expiré. Veuillez renouveler.");
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Licence expirée. Veuillez la renouveler.')),
-            );
-          }
-        }
-      } else if (response.containsKey('error')) {
-        // Erreur côté serveur ou mot de passe invalide
-        print("Erreur du serveur : ${response['error']}");
-        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur du serveur : ${response['error']}')),
+            SnackBar(content: Text('Licence prolongée jusqu\'au $newExpiryDate')),
+          );
+
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+        } else {
+          await prefs.setBool('auth', false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Licence expirée.')),
           );
         }
       } else {
-        // Réponse inattendue
-       // print("Mot de passe invalide ou réponse inconnue du serveur.");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Mot de passe invalide ou licence expirée.')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Licence invalide ou réponse inconnue.')),
+        );
       }
     } catch (e) {
-      // Gestion des erreurs réseau ou autres
-      print("Erreur de connexion : $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de connexion : $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          logi = false; // Masque le chargement
-        });
-      }
-    }
-  }
-
-//   // Connexion avec validation du mot de passe
-Future<void> connectmyUser() async {
-  if (!mounted) return;
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  try {
-    setState(() {
-      logi = true;
-    });
-
-    final response = await AuthKTransfert.authBypass({"password": _passwordController.text});
-
-    if (response != null &&
-      response['etat'] == 0 &&
-      DateTime.parse(response['dateFinAbon']).isAfter(DateTime.now()))  {
-
-      DateTime expiryDate = DateTime.parse(response['dateFinAbon']);
-      DateTime dateDeb = DateTime.parse(response['dateDebutAbon']);
-      DateTime today = DateTime.now();
-    
-  
-      // print("📅 Date du téléphone : $today");
-      // print("📅 Date de début d'abonnement : $dateDeb");
-      // print("📅 Date de début fin d'abonnement : $expiryDate");
-
-
-      // 🔒 Vérification que la date du téléphone >= dateDeb
-      // if (today.isBefore(dateDeb)) {
-      //   // ❌ Date du téléphone trop ancienne
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(content: Text('Veuillez corriger la date du téléphone.')),
-      //   );
-      //   return;
-      // }
-
-      if (!expiryDate.isBefore(today)) {
-        // ✅ licence valide, état 0, non expirée
-        await prefs.setBool('auth', true);
-        await prefs.setString('password', _passwordController.text);
-        await prefs.setString('dateFinAbon', expiryDate.toIso8601String());        
-        await prefs.setString('dateDebutAbon', dateDeb.toIso8601String());
-      
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connexion réussie.')),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else {
-        // ❌ licence expirée
-        await prefs.setBool('auth', false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Licence expirée.')),
-        );
-      }
-    } else {
-      // ❌ état != 0 ou réponse fausse
-      await prefs.setBool('auth', false);
+      print("Erreur verifAndprolonge : $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Licence invalide ou déjà utilisée.')),
+        SnackBar(content: Text('Erreur réseau : $e')),
       );
-    }
-  } catch (e) {
-    print("Erreur : $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erreur de connexion.')),
-    );
-  } finally {
-    if (mounted) {
+    } finally {
       setState(() {
         logi = false;
       });
     }
   }
-}
 
+  Future<void> connectmyUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() {
+        logi = true;
+      });
+
+      final response = await AuthKTransfert.authBypass({"password": _passwordController.text});
+      print("🔐 Réponse connexion : $response");
+
+      if (response != null &&
+          response['etat'] == 0 &&
+        DateTime.parse(response['dateFinAbon']).isAfter(DateTime.now())) {
+        DateTime parsed = DateTime.parse(response['dateFinAbon']);
+        DateTime expiryDate = DateTime(parsed.year, parsed.month, parsed.day, 23, 59, 59);
+        DateTime dateDeb = DateTime.parse(response['dateDebutAbon']);
+        int format = response['formatabonnement'] ?? 0;
+        
+        
+        
+        await prefs.setBool('auth', true);
+        await prefs.setString('password', _passwordController.text);
+        await prefs.setString('dateFinAbon', expiryDate.toIso8601String());
+        await prefs.setString('dateDebutAbon', dateDeb.toIso8601String());
+        await prefs.setInt('formatabonnement', format);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connexion réussie.')),
+        );
+
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+      } else {
+        await prefs.setBool('auth', false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Licence invalide ou expirée.')),
+        );
+      }
+    } catch (e) {
+      print("Erreur : $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de connexion.')),
+      );
+    } finally {
+      setState(() {
+        logi = false;
+      });
+    }
+  }
+
+  Future<void> resetSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth');
+    await prefs.remove('dateFinAbon');
+    await prefs.remove('password');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Données réinitialisées.')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -272,12 +211,8 @@ Future<void> connectmyUser() async {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Veuillez entrer votre licence',
-                      style: TextStyle(fontSize: 24.0),
-                    ),
+                    Text('Veuillez entrer votre licence', style: TextStyle(fontSize: 24.0)),
                     SizedBox(height: 20.0),
                     TextField(
                       controller: _passwordController,
@@ -293,6 +228,12 @@ Future<void> connectmyUser() async {
                       child: Text('Se connecter'),
                     ),
                     SizedBox(height: 20.0),
+                    // ElevatedButton(
+                    //   onPressed: resetSharedPreferences,
+                    //   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    //   child: Text('Réinitialiser licence'),
+                    // ),
+                    // SizedBox(height: 20.0),
                     Container(
                       padding: EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
@@ -300,12 +241,8 @@ Future<void> connectmyUser() async {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: Text(
-                        'Veuillez contacter le +226 70808881/77917802 pour acquérir une licence !',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        'Veuillez contacter le +226 70808881 / 77917802 pour acquérir une licence !',
+                        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -316,4 +253,3 @@ Future<void> connectmyUser() async {
     );
   }
 }
-
