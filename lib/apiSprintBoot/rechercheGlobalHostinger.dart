@@ -70,13 +70,13 @@ class _RechercheGlobalState extends State<RechercheGlobal> {
         if (parts.length == 3) {
           return '${parts[2]}-${parts[1]}-${parts[0]}';
         }
-        return dateFr; // fallback
+        return dateFr;
       }
 
       String dateDebut = convertirDatePourMySQL(dateDebutFr);
       String dateFin = convertirDatePourMySQL(dateFinFr);
 
-      final url = Uri.parse('https://kadoussconnect.com/transfertflutter/backend/listRechercher.php'); // 🔄 Remplace par ton vrai lien
+      final url = Uri.parse('https://kadoussconnect.com/transfertflutter/backend/listRechercher.php');
 
       final response = await http.post(
         url,
@@ -92,7 +92,30 @@ class _RechercheGlobalState extends State<RechercheGlobal> {
         final result = jsonDecode(response.body);
         if (result['success'] == true && result['data'] != null) {
           List<dynamic> data = result['data'];
-          return data.map((item) => OrangeModel.fromJSON(item)).toList();
+          return data.map((item) {
+            // 🔄 Convertir optionCreance int -> bool
+            if (item['optionCreance'] is int) {
+              item['optionCreance'] = item['optionCreance'] == 1;
+            }
+
+            // 📌 Renommer les clés selon OrangeModel
+            if (item.containsKey('numeroTelephone')) {
+              item['numero_telephone'] = item['numeroTelephone'];
+            }
+            if (item.containsKey('infoClient')) {
+              item['info_client'] = item['infoClient'];
+            }
+            if (item.containsKey('typeOperation')) {
+              item['typeoperation'] = item['typeOperation'];
+            }
+
+            // 📅 Reconvertir la date
+            if (item.containsKey('dateoperation')) {
+              item['dateoperation'] = _convertirDateEnFr(item['dateoperation']);
+            }
+
+            return OrangeModel.fromJSON(item);
+          }).toList();
         }
       }
 
@@ -105,10 +128,19 @@ class _RechercheGlobalState extends State<RechercheGlobal> {
     }
   }
 
+  String _convertirDateEnFr(String dateMySQL) {
+    try {
+      final date = DateTime.parse(dateMySQL);
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return dateMySQL; // Si la conversion échoue, on retourne la chaîne brute
+    }
+  }
+
   void _showAlertDialog(BuildContext context, String message) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext ctx) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: Row(
@@ -121,7 +153,7 @@ class _RechercheGlobalState extends State<RechercheGlobal> {
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(ctx).pop(),
               child: Text("OK", style: TextStyle(color: Colors.blue)),
             ),
           ],
@@ -244,4 +276,3 @@ class _RechercheGlobalState extends State<RechercheGlobal> {
     );
   }
 }
-

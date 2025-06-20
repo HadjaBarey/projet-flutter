@@ -100,6 +100,7 @@ class AddSimController {
       //print("Erreur lors de l'enregistrement : $e");
     }
   }
+  
 Future<bool> markAsDeleted(BuildContext context, AddSimModel OpeSim) async {
   final boxOrange = Hive.box<OrangeModel>('todobos');
 

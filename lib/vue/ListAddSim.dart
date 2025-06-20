@@ -111,19 +111,19 @@ class _PageListAddSimState extends State<PageListAddSim> {
                     'Opérateur: ${Sim.LibOperateur}',
                     style: const TextStyle(fontSize: 16),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Code Agent: ${Sim.CodeAgent}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        'N° Téléphone: ${Sim.NumPhone}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
+                  // subtitle: Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.start,
+                  //   children: [
+                  //     Text(
+                  //       'Code Agent: ${Sim.CodeAgent}',
+                  //       style: const TextStyle(fontSize: 14),
+                  //     ),
+                  //     Text(
+                  //       'N° Téléphone: ${Sim.NumPhone}',
+                  //       style: const TextStyle(fontSize: 14),
+                  //     ),
+                  //   ],
+                  // ),
                   onTap: () {
                     _handleRowClicked(Sim);
                   },
