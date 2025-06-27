@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
-
+import 'package:kadoustransfert/Model/AddSimModel.dart';
+import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/UsersKeyModel.dart';
@@ -22,11 +23,20 @@ Future<Box<T>> openBoxSafe<T>(String boxName) async {
   return await Hive.openBox<T>(boxName);
 }
 
+
 Future<List<OrangeModel>> getFilteredOperationsFromHive(String dateControle) async {
   final box = await openBoxSafe<OrangeModel>('todobos');
   final allOperations = box.values.toList();
   return allOperations.where((op) => op.dateoperation == dateControle).toList();
 }
+
+
+Future<List<AddSimModel>> getOperateursFromHive() async {
+  final box = await openBoxSafe<AddSimModel>('todobos5');
+  final allOperateurs = box.values.toList();
+  return allOperateurs;
+}
+
 
 Future<EntrepriseModel?> getEntrepriseFromHiveHos() async {
   final box = await openBoxSafe<EntrepriseModel>('todobos2');
@@ -52,130 +62,12 @@ Future<UsersKeyModel?> getUserKeyFromHiveHos() async {
   return null;
 }
 
-Future<bool> deleteDataBeforeImport({
-  required BuildContext context,
-  required String telEntreprise,
-  required String dateOp,
-  required String emailEP,
-}) async {
-  final deleteUrl = 'https://kadoussconnect.com/transfertflutter/backend/delete_data.php';
-  final fullUrl = '$deleteUrl?telEntreprise=$telEntreprise&dateOp=$dateOp&emailEP=$emailEP';
-
-  final response = await secureHttpGet(context: context, url: fullUrl);
-
-  if (response != null && response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    if (data['status'] == 'success') {
-      return true;
-    } else {
-      print("❌ Message backend : ${data['message']}");
-      return false;
-    }
-  } else {
-    print("❌ Erreur HTTP : ${response?.statusCode}");
-    return true; // On continue même si la suppression échoue
-  }
+Future<List<JournalCaisseModel>> getJournalCaissesFromHive(String dateControle) async {
+  final box = await openBoxSafe<JournalCaisseModel>('todobos6');
+  final allJournalCaisse = box.values.toList();
+  return allJournalCaisse.where((journal) => journal.dateJournal == dateControle).toList();
 }
 
-Future<bool> saveDataToPhp({
-  required BuildContext context,
-  required List<OrangeModel> operations,
-  required EntrepriseModel entreprise,
-}) async {
-  final postUrl = 'https://kadoussconnect.com/transfertflutter/backend/save_data.php';
-
-  final userKey = await getUserKeyFromHiveHos();
-  final userKeyValue = userKey?.numeroaleatoire ?? '';
-
-  final jsonToSend = operations.map((op) {
-    final map = op.toJson();
-    map['numeroTelEntreprise'] = entreprise.numeroTelEntreprise;
-    map['emailEntreprise'] = entreprise.emailEntreprise;
-    map['DateControle'] = entreprise.DateControle;
-    map['numeroaleatoire'] = userKeyValue;
-    return map;
-  }).toList();
-
-  print("📤 Données à envoyer (JSON encodé) :");
-  print(json.encode(jsonToSend));
-
-  final response = await secureHttpPost(
-    context: context,
-    url: postUrl,
-    headers: {'Content-Type': 'application/json'},
-    body: json.encode(jsonToSend),
-  );
-
-  if (response != null && response.statusCode == 200) {
-    print("✅ Données envoyées avec succès : ${response.body}");
-    return true;
-  } else {
-    print("❌ Échec envoi : ${response?.statusCode}");
-    return false;
-  }
-}
-
-Future<void> exportData(BuildContext context) async {
-  if (!await checkInternetBeforeApiCall(context)) return;
-
-  final entreprise = await getEntrepriseFromHiveHos();
-  if (entreprise == null || entreprise.numeroTelEntreprise.isEmpty || entreprise.DateControle.isEmpty) {
-    showAlertDialog(context, "❗ Le numéro ou la date de contrôle de l'entreprise est manquant.");
-    return;
-  }
-
-  final confirm = await showDialog<bool>(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Confirmation'),
-      content: Text('Voulez-vous vraiment exporter les données pour la date : ${entreprise.DateControle} ?'),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Non')),
-        TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Oui')),
-      ],
-    ),
-  );
-
-  if (confirm != true) return;
-
-  final operationsFiltrees = await getFilteredOperationsFromHive(entreprise.DateControle);
-  if (operationsFiltrees.isEmpty) {
-    showAlertDialog(context, "❗ Aucune donnée trouvée pour la date ${entreprise.DateControle}");
-    return;
-  }
-
-  // 🔄 Conversion de la date pour la requête SQL
-  final dateSQL = convertirDateFormat(entreprise.DateControle);
-
-  print("📌 Avant suppression :");
-  print("telEntreprise = ${entreprise.numeroTelEntreprise}");
-  print("date = ${entreprise.DateControle}");
-  print("email = ${entreprise.emailEntreprise}");
-
-  final deleted = await deleteDataBeforeImport(
-    context: context,
-    telEntreprise: entreprise.numeroTelEntreprise,
-    dateOp: dateSQL,
-    emailEP: entreprise.emailEntreprise,
-  );
-
-  // if (!deleted) {
-  //   showAlertDialog(context, "❌ Échec suppression des anciennes données.");
-  //   return;
-  // }
-
-  final saved = await saveDataToPhp(
-    context: context,
-    operations: operationsFiltrees,
-    entreprise: entreprise,
-  );
-
-  if (saved) {
-    showAlertDialog(context, "✅ Données exportées avec succès pour la date : ${entreprise.DateControle}");
-  } else {
-    showAlertDialog(context, "❌ Échec de l'envoi des données.");
-  }
-}
 
 void showAlertDialog(BuildContext context, String message) {
   showDialog(
@@ -193,7 +85,6 @@ void showAlertDialog(BuildContext context, String message) {
   );
 }
 
-// --- Fonctions complémentaires ---
 
 // Vérifie la connexion internet avant un appel API
 Future<bool> checkInternetBeforeApiCall(BuildContext context) async {
@@ -217,6 +108,7 @@ Future<bool> checkInternetBeforeApiCall(BuildContext context) async {
   }
 }
 
+
 // Requête HTTP GET sécurisée
 Future<http.Response?> secureHttpGet({
   required BuildContext context,
@@ -231,6 +123,7 @@ Future<http.Response?> secureHttpGet({
     return null;
   }
 }
+
 
 // Requête HTTP POST sécurisée
 Future<http.Response?> secureHttpPost({
@@ -247,3 +140,177 @@ Future<http.Response?> secureHttpPost({
     return null;
   }
 }
+
+
+Future<void> exportVersBackend({
+  required BuildContext context,
+  required bool isCaisse, // true = caisse, false = orange
+}) async {
+  if (!await checkInternetBeforeApiCall(context)) return;
+
+  final entreprise = await getEntrepriseFromHiveHos();
+  if (entreprise == null ||
+      entreprise.numeroTelEntreprise.isEmpty ||
+      entreprise.DateControle.isEmpty) {
+    showAlertDialog(context, "❗ Le numéro ou la date de contrôle est manquant.");
+    return;
+  }
+
+  final dateSQL = convertirDateFormat(entreprise.DateControle);
+  final userKey = await getUserKeyFromHiveHos();
+  final userKeyValue = userKey?.numeroaleatoire ?? '';
+
+  // 🔗 URLs backend
+  final deleteUrl = isCaisse
+      ? 'https://kadoussconnect.com/transfertflutter/backend/deleteCaisse.php'
+      : 'https://kadoussconnect.com/transfertflutter/backend/delete_data.php';
+
+  final postUrl = isCaisse
+      ? 'https://kadoussconnect.com/transfertflutter/backend/saveCaisse.php'
+      : 'https://kadoussconnect.com/transfertflutter/backend/save_data.php';
+
+  // 🔗 URLs opérateurs
+  final deleteOperateurUrl = 'https://kadoussconnect.com/transfertflutter/backend/deleteOperateur.php';
+  final saveOperateurUrl = 'https://kadoussconnect.com/transfertflutter/backend/saveOperateur.php';
+
+  // 🔄 Suppression des données anciennes pour Orange ou Caisse
+  final fullDeleteUrl =
+      '$deleteUrl?telEntreprise=${entreprise.numeroTelEntreprise}&dateOp=$dateSQL&emailEP=${entreprise.emailEntreprise}';
+
+  final deleteResponse = await secureHttpGet(context: context, url: fullDeleteUrl);
+  if (deleteResponse != null && deleteResponse.statusCode == 200) {
+    final result = jsonDecode(deleteResponse.body);
+    if (result['status'] != 'success') {
+      print("⚠️ Suppression partielle : ${result['message']}");
+    }
+  }
+
+  // 🔄 Suppression opérateurs (aucun paramètre requis)
+  await secureHttpGet(context: context, url: deleteOperateurUrl);
+
+  // 📦 Données à exporter (Caisse ou Orange)
+  final filteredData = isCaisse
+      ? await openBoxSafe<JournalCaisseModel>('todobos6').then((box) =>
+          box.values.where((op) => op.dateJournal == entreprise.DateControle).toList())
+      : await openBoxSafe<OrangeModel>('todobos').then((box) =>
+          box.values.where((op) => op.dateoperation == entreprise.DateControle).toList());
+
+  final List<Map<String, dynamic>> jsonToSend = [];
+
+  for (var op in filteredData) {
+    final map = (isCaisse ? (op as JournalCaisseModel).toJson() : (op as OrangeModel).toJson());
+    map['numeroTelEntreprise'] = entreprise.numeroTelEntreprise;
+    map['emailEntreprise'] = entreprise.emailEntreprise;
+    map['DateControle'] = entreprise.DateControle;
+    map['numeroaleatoire'] = userKeyValue;
+    jsonToSend.add(map);
+  }
+
+  // 📤 Envoi des données Caisse ou Orange
+  final postResponse = await secureHttpPost(
+    context: context,
+    url: postUrl,
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode(jsonToSend),
+  );
+
+  // 📦 Récupération opérateurs (aucun filtre)
+  final operateurs = await getOperateursFromHive();
+  final List<Map<String, dynamic>> jsonOperateurs = operateurs.map((op) {
+    final map = op.toJson();
+    map['numeroTelEntreprise'] = entreprise.numeroTelEntreprise;
+    map['emailEntreprise'] = entreprise.emailEntreprise;
+    map['DateControle'] = entreprise.DateControle;
+    map['numeroaleatoire'] = userKeyValue;
+    return map;
+  }).toList();
+
+  // 📤 Envoi des opérateurs
+  final postOperateur = await secureHttpPost(
+    context: context,
+    url: saveOperateurUrl,
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode(jsonOperateurs),
+  );
+
+  // ✅ Résultat
+  if ((postResponse != null && postResponse.statusCode == 200) &&
+      (postOperateur != null && postOperateur.statusCode == 200)) {
+    showAlertDialog(context, "✅ Données exportées avec succès.");
+  } else {
+    showAlertDialog(context, "❌ Échec de l'envoi des données.");
+  }
+}
+
+
+
+// Future<void> exportVersBackend({
+//   required BuildContext context,
+//   required bool isCaisse, // true = caisse, false = orange
+// }) async {
+//   if (!await checkInternetBeforeApiCall(context)) return;
+
+//   final entreprise = await getEntrepriseFromHiveHos();
+//   if (entreprise == null ||
+//       entreprise.numeroTelEntreprise.isEmpty ||
+//       entreprise.DateControle.isEmpty) {
+//     showAlertDialog(context, "❗ Le numéro ou la date de contrôle est manquant.");
+//     return;
+//   }
+
+//   final dateSQL = convertirDateFormat(entreprise.DateControle);
+
+//   final userKey = await getUserKeyFromHiveHos();
+//   final userKeyValue = userKey?.numeroaleatoire ?? '';
+
+//   final deleteUrl = isCaisse
+//       ? 'https://kadoussconnect.com/transfertflutter/backend/deleteCaisse.php'
+//       : 'https://kadoussconnect.com/transfertflutter/backend/delete_data.php';
+
+//   final postUrl = isCaisse
+//       ? 'https://kadoussconnect.com/transfertflutter/backend/saveCaisse.php'
+//       : 'https://kadoussconnect.com/transfertflutter/backend/save_data.php';
+
+//   final filteredData = isCaisse
+//       ? await openBoxSafe<JournalCaisseModel>('todobos6').then((box) =>
+//           box.values.where((op) => op.dateJournal == entreprise.DateControle).toList())
+//       : await openBoxSafe<OrangeModel>('todobos').then((box) =>
+//           box.values.where((op) => op.dateoperation == entreprise.DateControle).toList());
+
+//   final fullDeleteUrl =
+//       '$deleteUrl?telEntreprise=${entreprise.numeroTelEntreprise}&dateOp=$dateSQL&emailEP=${entreprise.emailEntreprise}';
+
+//   final deleteResponse = await secureHttpGet(context: context, url: fullDeleteUrl);
+
+//   if (deleteResponse != null && deleteResponse.statusCode == 200) {
+//     final result = jsonDecode(deleteResponse.body);
+//     if (result['status'] != 'success') {
+//       print("⚠️ Suppression partielle : ${result['message']}");
+//     }
+//   }
+
+//   // Construction des données à envoyer
+//   final List<Map<String, dynamic>> jsonToSend = [];
+
+//   for (var op in filteredData) {
+//     final map = (isCaisse ? (op as JournalCaisseModel).toJson() : (op as OrangeModel).toJson());
+//     map['numeroTelEntreprise'] = entreprise.numeroTelEntreprise;
+//     map['emailEntreprise'] = entreprise.emailEntreprise;
+//     map['DateControle'] = entreprise.DateControle;
+//     map['numeroaleatoire'] = userKeyValue;
+//     jsonToSend.add(map);
+//   }
+
+//   final postResponse = await secureHttpPost(
+//     context: context,
+//     url: postUrl,
+//     headers: {'Content-Type': 'application/json'},
+//     body: json.encode(jsonToSend),
+//   );
+
+//   if (postResponse != null && postResponse.statusCode == 200) {
+//     showAlertDialog(context, "✅ Données exportées avec succès pour la date : ${entreprise.DateControle}");
+//   } else {
+//     showAlertDialog(context, "❌ Échec de l'envoi des données.");
+//   }
+// }

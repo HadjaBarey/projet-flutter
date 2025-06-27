@@ -332,26 +332,6 @@ Future<void> DateControleRecupere() async {
   }
 }
 
-
-// Future<void> saveData(BuildContext context) async {
-//   await _initializeBox(); // S'assurer que la boîte est ouverte
-//   if (todobos != null) {
-//     try {
-//       // Enregistrer localement dans Hive
-//       await todobos!.put(depos.idoperation, depos);
-//       showErrorDialog(context, 'Opération enregistrée avec succès.');
-
-//       // Envoyer les données à Spring Boot après l'enregistrement local
-//       await OperationTransactionService.sendOperationTransactionData(depos);
-      
-//     } catch (error) {
-//       // Affichez le showDialog en cas d'erreur
-//       showErrorDialog(context, 'Erreur lors de l\'enregistrement. Veuillez reprendre l\'opération!');
-//     }
-//   }
-// }
-
-
   // Image sélectionnée et texte reconnu
   late XFile selectedImage;
   String recognizedText = '';
@@ -395,27 +375,6 @@ Future<void> DateControleRecupere() async {
   return deposits;
 }
 
-
-
-  // Sélectionner une image à partir de la caméra
-
-//   Future<void> pickImageCamera(BuildContext context) async {
-//   try {
-//     var returnedImage = await ImagePicker().pickImage(source: ImageSource.camera);
-//     if (returnedImage == null) return;
-//     selectedImage = XFile(returnedImage.path);
-//     final inputImage = InputImage.fromFilePath(returnedImage.path);
-//     if (scan == 2) {
-//       await recognizeText(context, inputImage);
-//     } else {
-//       await detecterText(context, inputImage);
-//     }
-
-//   } catch (e) {
-//     // Gestion des erreurs
-//     print("Error picking image: $e");
-//   }
-// }
 
 Future<void> pickImageCamera(BuildContext context) async {
   try {
@@ -571,7 +530,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 
 
     // Mettre à jour le champ ScanMessage en fonction du résultat
-    if (isRetrait && isSansCompte) {     
+    if (isRetrait || isSansCompte) {     
       typeOperationController.text = '2'; // Mettre à jour le champ de texte      
     } else {     
       typeOperationController.text = '1'; // Réinitialiser le champ de texte     

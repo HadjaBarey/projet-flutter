@@ -301,7 +301,6 @@ Future<void> DateControleRecupere() async {
         supprimer: depos.supprimer,
         iddette: depos.iddette,
         optionCreance: optionCreance,  // Correction ici
-        //optionCreance :depos.optionCreance,
         scanmessage :scanMessage,
         numeroIndependant :numeroIndependant,
         idtrans :idTrans,
@@ -546,7 +545,7 @@ if (montantController.text.isEmpty || numeroTelephoneController.text.isEmpty || 
       selectedOption = 3;
     }
 
-    if (isRetrait && isSansCompte) {     
+    if (isRetrait || isSansCompte) {     
       typeOperationController.text = '2';      
     } else {     
       typeOperationController.text = '1';     

@@ -109,22 +109,24 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setInt('formatabonnement', format);
 
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Licence prolongée jusqu\'au $newExpiryDate')),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(content: Text('Licence prolongée jusqu\'au $newExpiryDate')),
+          // );
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-        } else {
-          await prefs.setBool('auth', false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Licence expirée.')),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Licence invalide ou réponse inconnue.')),
-        );
-      }
+        } 
+        // else {
+        //   await prefs.setBool('auth', false);
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(content: Text('Licence expirée.')),
+        //   );
+        // }
+      } 
+      // else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('Licence invalide ou réponse inconnue.')),
+      //   );
+      // }
     } catch (e) {
       print("Erreur verifAndprolonge : $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -228,12 +230,6 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text('Se connecter'),
                     ),
                     SizedBox(height: 20.0),
-                    // ElevatedButton(
-                    //   onPressed: resetSharedPreferences,
-                    //   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    //   child: Text('Réinitialiser licence'),
-                    // ),
-                    // SizedBox(height: 20.0),
                     Container(
                       padding: EdgeInsets.all(16.0),
                       decoration: BoxDecoration(

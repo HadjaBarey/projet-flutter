@@ -3,12 +3,12 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
-import 'package:kadoustransfert/Model/OrangeModel.dart';
+//import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:kadoustransfert/Model/UsersKeyModel.dart';
-import 'package:kadoustransfert/Model/UtilisateurModel.dart';
-import 'package:kadoustransfert/apiSprintBoot/connexionToken.dart';
+//import 'package:kadoustransfert/Model/UtilisateurModel.dart';
+//import 'package:kadoustransfert/apiSprintBoot/connexionToken.dart';
 import 'package:kadoustransfert/apiSprintBoot/exportFlutterHostinger.dart';
-import 'package:kadoustransfert/apiSprintBoot/importBDToFlutter.dart';
+// import 'package:kadoustransfert/apiSprintBoot/importBDToFlutter.dart';
 import 'package:kadoustransfert/apiSprintBoot/importHostingerFlutter.dart';
 import 'package:kadoustransfert/vue/CopyData.dart';
 import 'package:kadoustransfert/vue/Entreprise.dart';
@@ -18,7 +18,7 @@ import 'package:kadoustransfert/vue/ListClient.dart';
 import 'package:kadoustransfert/vue/SynchroniseAddSim.dart';
 import 'package:kadoustransfert/vue/SynchroniseEntreprise.dart';
 import 'package:kadoustransfert/vue/ViderBD.dart';
-import 'package:kadoustransfert/apiSprintBoot/exportBDToSprint.dart';
+// import 'package:kadoustransfert/apiSprintBoot/exportBDToSprint.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Parametrage extends StatefulWidget {
@@ -441,81 +441,81 @@ class _ParametrageState extends State<Parametrage> {
               children: [
                 // Premier bouton : Export backEnd
 
-                Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(color: Colors.black87, width: 0.0),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () async {
-                      if (isExportingBackEnd) return;
+Container(
+  width: 150,
+  height: 100,
+  decoration: BoxDecoration(
+    color: Colors.grey[300],
+    border: Border.all(color: Colors.black87, width: 0.0),
+    borderRadius: BorderRadius.circular(15.0),
+  ),
+  child: InkWell(
+    borderRadius: BorderRadius.circular(15.0),
+    onTap: () async {
+      if (isExportingBackEnd) return;
 
-                      final entreprise = await getEntrepriseFromHiveHos();
-                      if (entreprise == null ||
-                          entreprise.DateControle.isEmpty) {
-                        showAlertDialog(
-                            context, "❗ Date de contrôle introuvable.");
-                        return;
-                      }
+      final entreprise = await getEntrepriseFromHiveHos();
+      if (entreprise == null || entreprise.DateControle.isEmpty) {
+        showAlertDialog(context, "❗ Date de contrôle introuvable.");
+        return;
+      }
 
-                      bool confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: Text('Confirmation'),
-                              content: Text(
-                                  'Voulez-vous vraiment exporter les données pour la date : ${entreprise.DateControle} ?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: Text('Non'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: Text('Oui'),
-                                ),
-                              ],
-                            ),
-                          ) ??
-                          false;
-
-                      if (!confirm) return;
-
-                      setState(() {
-                        isExportingBackEnd = true;
-                      });
-
-                      try {
-                        await exportData(context);
-                      } catch (e) {
-                        showAlertDialog(
-                            context, "💥 Une erreur est survenue : $e");
-                      } finally {
-                        setState(() {
-                          isExportingBackEnd = false;
-                        });
-                      }
-                    },
-                    child: Center(
-                      child: isExportingBackEnd
-                          ? CircularProgressIndicator()
-                          : Text(
-                              'Export backEnd',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                    ),
-                  ),
+      bool confirm = await showDialog<bool>(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text('Confirmation'),
+              content: Text(
+                  'Voulez-vous vraiment exporter les données pour la date : ${entreprise.DateControle} ?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('Non'),
                 ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('Oui'),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+
+      if (!confirm) return;
+
+      setState(() {
+        isExportingBackEnd = true;
+      });
+
+      try {
+        // ✅ Appel des deux fonctions en parallèle
+        await Future.wait([
+          exportVersBackend(context: context, isCaisse: true),
+          exportVersBackend(context: context, isCaisse: false),
+        ]);
+      } catch (e) {
+        showAlertDialog(context, "💥 Une erreur est survenue : $e");
+      } finally {
+        setState(() {
+          isExportingBackEnd = false;
+        });
+      }
+    },
+    child: Center(
+      child: isExportingBackEnd
+          ? CircularProgressIndicator()
+          : Text(
+              'Export backEnd',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+    ),
+  ),
+),
+
 
 ///////////////////////////////// OPTION EXPORT DE FLUTTER VERS SPRING BOOT
 
