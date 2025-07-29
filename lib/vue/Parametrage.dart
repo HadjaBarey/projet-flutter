@@ -245,7 +245,7 @@ class _ParametrageState extends State<Parametrage> {
                     },
                     child: Center(
                       child: Text(
-                        'Add Sim',
+                        'Opérateur mobile',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 18.0,
@@ -338,7 +338,7 @@ class _ParametrageState extends State<Parametrage> {
                       child: isLoading
                           ? CircularProgressIndicator() // Indicateur de chargement circulaire
                           : Text(
-                              'Export Data',
+                              'Enregistrer Téléphone',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18.0,
@@ -421,7 +421,7 @@ class _ParametrageState extends State<Parametrage> {
                       child: isImporting
                           ? CircularProgressIndicator()
                           : Text(
-                              'Import Data',
+                              'Récupérer Téléphone',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18.0,
@@ -504,7 +504,7 @@ Container(
       child: isExportingBackEnd
           ? CircularProgressIndicator()
           : Text(
-              'Export backEnd',
+              'Enregistrer Internet',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 18.0,
@@ -803,7 +803,7 @@ Container(
                       child: isImportingBackEnd
                           ? CircularProgressIndicator()
                           : Text(
-                              'Import backEnd',
+                              'Récupérer Internet',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18.0,
@@ -944,57 +944,57 @@ Container(
                 // ),
               ],
             ),
-            SizedBox(height: 60),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Container(
-                  width: 150,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.black87,
-                      width: 0.0,
-                    ),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(15.0),
-                    onTap: () async {
-                      ViderBDPage();
-                      // Afficher une confirmation à l'utilisateur
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text('testttttttt'),
-                          content: Text('test succès.'),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    child: Center(
-                      child: Text(
-                        'Vider ma base',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
+            // SizedBox(height: 60),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
+            //     Container(
+            //       width: 150,
+            //       height: 100,
+            //       decoration: BoxDecoration(
+            //         color: Colors.grey[300],
+            //         border: Border.all(
+            //           color: Colors.black87,
+            //           width: 0.0,
+            //         ),
+            //         borderRadius: BorderRadius.circular(15.0),
+            //       ),
+            //       child: InkWell(
+            //         borderRadius: BorderRadius.circular(15.0),
+            //         onTap: () async {
+            //           ViderBDPage();
+            //           // Afficher une confirmation à l'utilisateur
+            //           showDialog(
+            //             context: context,
+            //             builder: (_) => AlertDialog(
+            //               title: Text('testttttttt'),
+            //               content: Text('test succès.'),
+            //               actions: <Widget>[
+            //                 TextButton(
+            //                   child: Text('OK'),
+            //                   onPressed: () {
+            //                     Navigator.of(context).pop();
+            //                   },
+            //                 ),
+            //               ],
+            //             ),
+            //           );
+            //         },
+            //         child: Center(
+            //           child: Text(
+            //             'Vider ma base',
+            //             style: TextStyle(
+            //               color: Colors.black,
+            //               fontSize: 18.0,
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //             textAlign: TextAlign.center,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // )
           ],
         ),
       ),

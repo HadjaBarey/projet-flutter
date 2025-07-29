@@ -440,7 +440,9 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     // Expressions régulières pour rechercher "transfere" et "numero"
     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',multiLine: true);
-    RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
+    RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{20,25})', multiLine: true);
+
+    // RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
 
     
     // Recherche des mots clés dans le texte

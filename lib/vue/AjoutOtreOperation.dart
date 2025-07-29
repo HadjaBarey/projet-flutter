@@ -293,25 +293,25 @@ class _AjoutOtreOperationPageState extends State<AjoutOtreOperationPage> {
                       SizedBox(width: 16), // Espacement entre le bouton et le texte Crédit?
 
                       // Texte Crédit? et Checkbox
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Crédit?',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 8),
-                          Checkbox(
-                            value: isChecked,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                isChecked = value ?? false;
-                                controller.updateOptionCreance(isChecked);
-                              });
-                            },
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   mainAxisSize: MainAxisSize.min,
+                      //   children: [
+                      //     Text(
+                      //       'Crédit?',
+                      //       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      //     ),
+                      //     SizedBox(width: 8),
+                      //     Checkbox(
+                      //       value: isChecked,
+                      //       onChanged: (bool? value) {
+                      //         setState(() {
+                      //           isChecked = value ?? false;
+                      //           controller.updateOptionCreance(isChecked);
+                      //         });
+                      //       },
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
 
