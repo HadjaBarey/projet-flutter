@@ -430,7 +430,9 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     // Expression régulière pour extraire le montant
     RegExp montantRegExp = RegExp(r'(?:montant:?\s*|Montant\s*)[\n\r]*\s*([\d\s]+(?:[\.,]\d{2})?)',caseSensitive: false);
     RegExp numeroRegExp = RegExp(r"(?:numero:\s*|réussi\s+pour|code\s+d'agent:|code\s+agent:?)\s*[\n\r]*\s*(\d+)",caseSensitive: false);
-    RegExp idTransRegExp = RegExp( r'(?:ID Trans|Txn ID|TID|ID):\s*([\w.]{20,22}) ', caseSensitive : false, multiLine : true, );
+    RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]+)', multiLine: true);
+
+    //RegExp idTransRegExp = RegExp( r'(?:ID Trans|Txn ID|TID|ID):\s*([\w.]{20,22}) ', caseSensitive : false, multiLine : true, );
 
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage);
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
