@@ -217,11 +217,11 @@ class _TransactionMoovPageState extends State<TransactionMoovPage> {
                     labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez renseigner ce champ SVP!'; // Si le champ est vide
-                    } else if (value.length != 20 && value.length != 22) {
-                      return 'L\'ID Transaction doit contenir 20 ou 22 caractères'; // Vérifie si la longueur est différente de 20 ou 22
-                    }
+                    // if (value == null || value.isEmpty) {
+                    //   return 'Veuillez renseigner ce champ SVP!'; // Si le champ est vide
+                    // } else if (value.length != 20 && value.length != 22) {
+                    //   return 'L\'ID Transaction doit contenir 20 ou 22 caractères'; // Vérifie si la longueur est différente de 20 ou 22
+                    // }
                     controller.updateDepos(idTrans: value);
                     return null; // Validation réussie
                   },

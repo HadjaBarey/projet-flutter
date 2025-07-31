@@ -420,14 +420,13 @@ Future<void> pickImageCamera(BuildContext context) async {
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
   try {
-   // print("Début de la détection de texte..."); // Log de début
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
     if (recognizedText.blocks.isEmpty) {
-     // print("Aucun texte détecté."); // Log si aucun texte n'est détecté
-      scanMessageController.text = ''; // Réinitialiser le champ de texte
+      scanMessageController.text = '';
       return 0;
     }
+
     String extractedMessage = '';
     for (TextBlock block in recognizedText.blocks) {
       for (TextLine line in block.lines) {
@@ -435,113 +434,89 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       }
     }
 
-   print("Texte extrait : $extractedMessage");
+    print("Texte extrait : $extractedMessage");
 
-    // Expressions régulières pour rechercher "transfere" et "numero"
-    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
-    RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',multiLine: true);
-    RegExp idTransRegExp = RegExp(
-  r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})',
-  multiLine: true);
+    // Expressions régulières
+   // RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{1,2})?)', multiLine: true);
+     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
+    RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
+    RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
 
-   // RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?):\s*([\w.]{20,25})', multiLine: true);
-
-
-    // RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
-
-    
-    // Recherche des mots clés dans le texte
     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
     Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
 
-    // Variables pour stocker les valeurs extraites
     String montant = '';
     String numero = '';
     String trans = '';
 
     final montantMatch = matchesTransfere.isNotEmpty ? matchesTransfere.first : null;
+
     if (montantMatch != null) {
-      montant = montantMatch.group(1) ?? '';
+      String montantTexte = montantMatch.group(1) ?? '';
 
-      // Supprimer les virgules du montant pour la conversion
-      String montantSansVirgules = montant.replaceAll(',', '');
+      // Nettoyage : supprimer virgules et espaces
+      String montantNettoye = montantTexte.replaceAll(',', '').replaceAll(' ', '');
 
-      // Convertir le montant en entier
-      int montantInt = int.parse(montantSansVirgules.split('.')[0]);
+      double? montantDouble = double.tryParse(montantNettoye);
+      int montantInt = montantDouble != null ? montantDouble.floor() : 0;
 
-      // Remplacer le montant dans le texte extrait
-      extractedMessage = extractedMessage.replaceFirst(montant, montantInt.toString());
+      montant = montantInt.toString();
+
+      // Remplacer l'ancien montant (texte) dans le message par le montant entier
+      extractedMessage = extractedMessage.replaceFirst(montantTexte, montant);
     }
 
-    // Récupérer le numéro de téléphone
+
     if (matchesNumero.isNotEmpty) {
-      numero =  matchesNumero.first.group(1) ?? '';
+      numero = matchesNumero.first.group(1) ?? '';
     }
 
-
-      // Récupérer le numéro de téléphone
     if (matchesiDTrans.isNotEmpty) {
       trans = matchesiDTrans.first.group(1) ?? '';
     }
 
-    // Si les champs montant ou numéro sont vides après le scan
     if (montant.isEmpty || numero.isEmpty) {
-      montantController.text = ''; // Réinitialiser le champ montant
-      numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
-      scanMessageController.text = ''; // Réinitialiser le champ message
+      montantController.text = '';
+      numeroTelephoneController.text = '';
+      scanMessageController.text = '';
       idTransController.text = '';
-      // Afficher une boîte de dialogue sur l'appareil Android
       showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
-      return 0; // Arrêter la fonction ici
+      return 0;
     }
 
-    // print("Montant extrait : $montant"); // Log du montant extrait
-    // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
-    // print("Numéro ID Trans : $trans"); // Log du numéro extrait
-
-    //controle du message scan dans l'option enregistrer et update
-
-     if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
+    if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
       montantController.text = montant;
       numeroTelephoneController.text = numero;
       idTransController.text = trans;
       updateInfoClientController();
       scanMessageController.text = 'Message Scanné';
-     
-    } else {
-      
-    }if (montantController.text == montant && numeroTelephoneController.text == numero &&  idTransController.text == trans){     
-         recognizedText2  = 'Message Scanné';        
-      } else {
-        recognizedText2= '';
-      }
-
-    // Déterminer le type d'opération en fonction des mots-clés
-    List<String> keywordsDepos = ['Transfert de','transfert'];
-    bool isDepos = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
-
-    List<String> keywordsRetrait = ['recu'];
-    bool isRetrait  = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
-
-    List<String> keywordsSansCompte = [''];
-    bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
-
-     if (isDepos) {
-      selectedOption= 1;
-    } else if (isRetrait) {
-      selectedOption= 2;
-    } else if (isSansCompte) {
-      selectedOption= 3;
     }
 
+    if (montantController.text == montant && numeroTelephoneController.text == numero && idTransController.text == trans) {
+      recognizedText2 = 'Message Scanné';
+    } else {
+      recognizedText2 = '';
+    }
 
-    // Mettre à jour le champ ScanMessage en fonction du résultat
-    if (isRetrait || isSansCompte) {     
-      typeOperationController.text = '2'; // Mettre à jour le champ de texte      
-    } else {     
-      typeOperationController.text = '1'; // Réinitialiser le champ de texte     
-    }  
+    // 💡 Détection type d'opération
+    final lowerText = extractedMessage.toLowerCase();
+    List<String> keywordsDepos = ['transfert de','Transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
+    List<String> keywordsRetrait = ['Vous avez reçu','Vous avez recu','recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
+    List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
+
+    if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
+      selectedOption = 1;
+    } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
+      selectedOption = 2;
+    } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
+      selectedOption = 3;
+    } else {
+      selectedOption = 0;
+    }
+
+    // ✅ Mise à jour du champ avec la valeur réelle
+    typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
 
   } catch (e) {
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
@@ -551,6 +526,142 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   }
   return 0;
 }
+
+
+// Future<int> detecterText(BuildContext context, InputImage inputImage) async {
+//   final textRecognizer = GoogleMlKit.vision.textRecognizer();
+//   try {
+//    // print("Début de la détection de texte..."); // Log de début
+//     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+//     if (recognizedText.blocks.isEmpty) {
+//      // print("Aucun texte détecté."); // Log si aucun texte n'est détecté
+//       scanMessageController.text = ''; // Réinitialiser le champ de texte
+//       return 0;
+//     }
+//     String extractedMessage = '';
+//     for (TextBlock block in recognizedText.blocks) {
+//       for (TextLine line in block.lines) {
+//         extractedMessage += line.text + ' ';
+//       }
+//     }
+
+//    print("Texte extrait : $extractedMessage");
+
+//     // Expressions régulières pour rechercher "transfere" et "numero"
+//     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
+//     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',multiLine: true);
+//     RegExp idTransRegExp = RegExp(
+//   r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})',
+//   multiLine: true);
+
+//    // RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?):\s*([\w.]{20,25})', multiLine: true);
+
+
+//     // RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
+
+    
+//     // Recherche des mots clés dans le texte
+//     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
+//     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
+//     Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
+
+//     // Variables pour stocker les valeurs extraites
+//     String montant = '';
+//     String numero = '';
+//     String trans = '';
+
+//     final montantMatch = matchesTransfere.isNotEmpty ? matchesTransfere.first : null;
+//     if (montantMatch != null) {
+//       montant = montantMatch.group(1) ?? '';
+
+//       // Supprimer les virgules du montant pour la conversion
+//       String montantSansVirgules = montant.replaceAll(',', '');
+
+//       // Convertir le montant en entier
+//       int montantInt = int.parse(montantSansVirgules.split('.')[0]);
+
+//       // Remplacer le montant dans le texte extrait
+//       extractedMessage = extractedMessage.replaceFirst(montant, montantInt.toString());
+//     }
+
+//     // Récupérer le numéro de téléphone
+//     if (matchesNumero.isNotEmpty) {
+//       numero =  matchesNumero.first.group(1) ?? '';
+//     }
+
+
+//       // Récupérer le numéro de téléphone
+//     if (matchesiDTrans.isNotEmpty) {
+//       trans = matchesiDTrans.first.group(1) ?? '';
+//     }
+
+//     // Si les champs montant ou numéro sont vides après le scan
+//     if (montant.isEmpty || numero.isEmpty) {
+//       montantController.text = ''; // Réinitialiser le champ montant
+//       numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
+//       scanMessageController.text = ''; // Réinitialiser le champ message
+//       idTransController.text = '';
+//       // Afficher une boîte de dialogue sur l'appareil Android
+//       showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
+//       return 0; // Arrêter la fonction ici
+//     }
+
+//     // print("Montant extrait : $montant"); // Log du montant extrait
+//     // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
+//     // print("Numéro ID Trans : $trans"); // Log du numéro extrait
+
+//     //controle du message scan dans l'option enregistrer et update
+
+//      if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
+//       montantController.text = montant;
+//       numeroTelephoneController.text = numero;
+//       idTransController.text = trans;
+//       updateInfoClientController();
+//       scanMessageController.text = 'Message Scanné';
+     
+//     } else {
+      
+//     }if (montantController.text == montant && numeroTelephoneController.text == numero &&  idTransController.text == trans){     
+//          recognizedText2  = 'Message Scanné';        
+//       } else {
+//         recognizedText2= '';
+//       }
+
+//     // Déterminer le type d'opération en fonction des mots-clés
+//     List<String> keywordsDepos = ['Transfert de','transfert'];
+//     bool isDepos = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+//     List<String> keywordsRetrait = ['recu'];
+//     bool isRetrait  = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+//     List<String> keywordsSansCompte = [''];
+//     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
+
+//      if (isDepos) {
+//       selectedOption= 1;
+//     } else if (isRetrait) {
+//       selectedOption= 2;
+//     } else if (isSansCompte) {
+//       selectedOption= 3;
+//     }
+
+
+//     // Mettre à jour le champ ScanMessage en fonction du résultat
+//     if (isRetrait || isSansCompte) {     
+//       typeOperationController.text = '2'; // Mettre à jour le champ de texte      
+//     } else {     
+//       typeOperationController.text = '1'; // Réinitialiser le champ de texte     
+//     }  
+
+//   } catch (e) {
+//     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
+//     return 0;
+//   } finally {
+//     textRecognizer.close();
+//   }
+//   return 0;
+// }
 
 
 
