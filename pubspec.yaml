@@ -51,23 +51,22 @@ dependencies:
   connectivity_plus: ^5.0.2
   collection: ^1.18.0
   device_info_plus: ^10.1.2
+  telephony: ^0.2.0
 
 
-
+  #sms_advanced: ^1.1.0 
   #share_plus: ^4.0.4
-
   # rename_app: ^1.6.1
   # ussd_service: ^0.1.1
   # flutter_sms_inbox: ^1.0.3
   # sms_receiver: ^0.4.2
-  # telephony: ^0.2.0
   #url_launcher: ^6.0.20
   #cupertino_icons: ^1.0.2
   #velocity_x: ^4.1.1
   #google_fonts: ^6.1.0
 
 
-  # sms_advanced: ^1.1.0
+
   # sms: ^0.2.0
   #
   flutter_localizations:

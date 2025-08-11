@@ -8,12 +8,15 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'call_service.dart'; // Importez le service d'appel
 import 'package:kadoustransfert/Controller/OpTransactionController.dart';
 import 'package:kadoustransfert/Controller/AddSimController.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
 import 'package:collection/collection.dart'; // Importez le package collection
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
+import 'package:telephony/telephony.dart'; // Ajoute en haut avec les autres imports
+
 
 
 
@@ -25,6 +28,7 @@ class OrangeController {
   final TextEditingController numeroTelephoneController = TextEditingController();
   final TextEditingController scanMessageController = TextEditingController();
   final TextEditingController idTransController = TextEditingController();
+  final Telephony telephony = Telephony.instance;
 
   // Instance du service d'appel
   final CallService callService = CallService();
@@ -392,6 +396,46 @@ Future<void> pickImageCamera(BuildContext context) async {
               child: Text('Galerie'),
               onPressed: () => Navigator.pop(context, ImageSource.gallery),
             ),
+
+            TextButton(
+              child: Text('CNIB'),
+              onPressed: () async {
+                Navigator.pop(context); // ferme le modal
+
+                final XFile? imageFile = await ImagePicker().pickImage(source: ImageSource.camera);
+                if (imageFile != null) {
+                  final InputImage image = InputImage.fromFilePath(imageFile.path);
+
+                  final infos = await extraireNomDepuisCnib(context,image);
+
+                  if (infos.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Impossible de lire les infos sur la CNIB')),
+                    );
+                    return;
+                  }
+
+                  // On utilise juste nom + prenoms pour la recherche dans les SMS
+                  final nomComplet = "${infos['nom']} ${infos['prenoms']}";
+
+                  await verifierDernierSms(
+                    context,
+                    nomComplet,
+                    montantController,
+                    numeroTelephoneController,
+                    idTransController,
+                    typeOperationController,
+                    infoClientController // ajouté ici
+                  );
+
+                  // Remplir le champ infoClientController avec nom + prenoms + reference
+                  infoClientController.text = "${infos['nom']} ${infos['prenoms']} - Ref: ${infos['reference']}";
+
+                  
+                }
+              },
+            )
+
           ],
         );
       },
@@ -416,6 +460,269 @@ Future<void> pickImageCamera(BuildContext context) async {
 }
 
 
+Future<Map<String, String>> extraireNomDepuisCnib(
+  BuildContext context,
+  InputImage inputImage,
+) async {
+  final textRecognizer = GoogleMlKit.vision.textRecognizer();
+  final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+  if (recognizedText.blocks.isEmpty) {
+    if (context.mounted) {  // à partir de Flutter 3.7+ tu peux faire ça
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Aucun texte détecté")),
+      );
+    }
+    return {};
+  }
+
+  String extractedText = '';
+  for (TextBlock block in recognizedText.blocks) {
+    for (TextLine line in block.lines) {
+      extractedText += line.text + '\n';
+    }
+  }
+
+  String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
+  String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
+  String reference = extractInfo(extractedText, r'\b(B\d+(\s?\d+)*)\b');
+
+  if (nom.isEmpty || prenoms.isEmpty || reference.isEmpty) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Impossible d'extraire toutes les informations")),
+      );
+    }
+    return {};
+  }
+  return {
+    "nom": nom,
+    "prenoms": prenoms,
+    "reference": reference,
+  };
+}
+
+
+Future<void> verifierDernierSms(
+  BuildContext context,
+  String nomScanne,
+  TextEditingController montantController,
+  TextEditingController numeroTelephoneController,
+  TextEditingController idTransController,
+  TextEditingController typeOperationController,
+  TextEditingController infoClientController,
+) async {
+  // Fonction pour fusionner lignes et compacter espaces
+  String fusionnerLignesEtCompacterEspaces(String texte) {
+    String result = texte.replaceAll(RegExp(r'[\r\n]+'), ' ');
+    result = result.replaceAll(RegExp(r'\s+'), ' ');
+    return result.trim();
+  }
+
+  // 1) permission SMS
+  var status = await Permission.sms.status;
+  if (!status.isGranted) {
+    status = await Permission.sms.request();
+    if (!status.isGranted) {
+   //   _showMessageDialog(context, "Permission SMS refusée");
+      print('[MonApp] Permission SMS refusée');
+      return;
+    }
+  }
+  print('[MonApp] Permission SMS accordée');
+
+  // 2) récupérer SMS (triés du plus récent au plus ancien)
+  List<SmsMessage> messages = await telephony.getInboxSms(
+    columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
+    sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
+  );
+
+  print('[MonApp] Nombre total de SMS récupérés : ${messages.length}');
+
+  // 3) limiter aux 5 derniers
+  if (messages.length > 1) {
+    messages = messages.sublist(0, 1);
+  }
+
+  print('[MonApp] --- Les ${messages.length} SMS les plus récents ---');
+  for (int i = 0; i < messages.length; i++) {
+    final preview = messages[i].body != null
+        ? (messages[i].body!.length > 120 ? messages[i].body!.substring(0, 120) + '...' : messages[i].body)
+        : 'aucun corps';
+    print('[MonApp] SMS #$i : Expéditeur="${messages[i].address}", Message="$preview"');
+  }
+  print('[MonApp] ----------------------------------');
+
+  // 4) expéditeurs autorisés (tout en minuscules)
+  final expediteursAutorises = [
+    "+22676839388",
+    "orangemoney",
+    "orange money",
+    "orange-money",
+    "orange",
+  ].map((e) => e.toLowerCase()).toList();
+
+  SmsMessage? smsTrouve;
+  String bodyNormalise = '';
+
+  // 5) recherche du premier SMS valide
+  for (final sms in messages) {
+    final address = sms.address?.toLowerCase() ?? '';
+    String body = sms.body ?? '';
+
+    // Fusionner lignes et compacter espaces
+    body = fusionnerLignesEtCompacterEspaces(body);
+
+    final bodyLower = body.toLowerCase();
+
+    final bool fromAuthorized = expediteursAutorises.any((exp) => address.contains(exp));
+    final bool containsTransfer = bodyLower.contains('transfert recu') ||
+    bodyLower.contains('transfert de') ||
+    bodyLower.contains('vous avez transféré') ||
+    bodyLower.contains('transfert') ||
+    bodyLower.contains('vous avez reçu') ||
+    bodyLower.contains('vous avez recu') ||
+    bodyLower.contains('reçu') ||
+    bodyLower.contains('recu');
+
+    if (fromAuthorized && containsTransfer) {
+      smsTrouve = sms;
+      bodyNormalise = body;
+      print('[MonApp] SMS OrangeMoney trouvé (expéditeur="$address")');
+      break;
+    }
+  }
+
+  if (smsTrouve == null) {
+   // _showMessageDialog(context, "Aucun SMS OrangeMoney trouvé dans les 5 derniers messages.");
+    print('[MonApp] Aucun SMS OrangeMoney trouvé');
+    return;
+  }
+
+  print('[MonApp] SMS trouvé (body fusionné): $bodyNormalise');
+
+  // 6) vérification nom scanné (tolérance inversion prénom/nom)
+  final bodyLower = bodyNormalise.toLowerCase();
+  final tokensNom = nomScanne
+      .toLowerCase()
+      .split(RegExp(r'\s+'))
+      .where((t) => t.trim().length > 1)
+      .toList();
+
+  final bool nameMatches = tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
+
+  if (!nameMatches) {
+   // _showMessageDialog(context, "Le nom scanné ne correspond pas au SMS trouvé.");
+    print('[MonApp] Nom "$nomScanne" non trouvé dans le message');
+    return;
+  }
+  print('[MonApp] Nom "$nomScanne" trouvé dans le message');
+
+  // 7) Extraction des données via RegExp
+  //final regMontant = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d+)?)', multiLine: true);
+  final regMontant = RegExp(
+  r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
+  caseSensitive: false,
+);
+
+  final regNumero = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
+  final regId = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
+
+  final montantMatch = regMontant.firstMatch(bodyNormalise);
+  final numeroMatch = regNumero.firstMatch(bodyNormalise);
+  final idMatch = regId.firstMatch(bodyNormalise);
+
+  String montant = montantMatch?.group(1) ?? '';
+  String numero = numeroMatch?.group(1) ?? '';
+  String idTrans = idMatch?.group(1) ?? '';
+
+  // Nettoyage montant : retirer espaces et virgules
+  if (montantMatch != null) {
+    String montantTexte = montantMatch.group(1) ?? '';
+    String montantNettoye = montantTexte.replaceAll(',', '').replaceAll(' ', '');
+    double? montantDouble = double.tryParse(montantNettoye);
+    int montantInt = montantDouble != null ? montantDouble.floor() : 0;
+    montant = montantInt.toString();
+
+    // Optionnel : remplacer montant dans bodyNormalise (si besoin)
+    // bodyNormalise = bodyNormalise.replaceFirst(montantTexte, montant);
+  }
+
+  if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
+  //  _showMessageDialog(context, "Impossible d'extraire toutes les données du SMS.");
+    print('[MonApp] Extraction données échouée: montant="$montant", numéro="$numero", idTrans="$idTrans"');
+    return;
+  }
+  print('[MonApp] Extraction réussie: montant="$montant", numéro="$numero", idTrans="$idTrans"');
+
+  // 8) détection type opération
+  final lowerText = bodyNormalise.toLowerCase();
+  List<String> keywordsDepos = ['transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
+  List<String> keywordsRetrait = ['vous avez reçu', 'recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
+  List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
+
+  int selectedOption = 0;
+  if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
+    selectedOption = 1;
+  } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
+    selectedOption = 2;
+  } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
+    selectedOption = 3;
+  }
+    // Mettre à jour le contrôleur et les champs
+    if (selectedOption != 0) {
+      updateSelectedOption(selectedOption); // ← met à jour les radios
+    }
+
+  // 9) vérification doublon Hive
+  final box = await Hive.openBox('transferts');
+  final existe = box.values.any((e) {
+    if (e is Map && e.containsKey('idTransaction')) {
+      return e['idTransaction'] == idTrans;
+    }
+    return false;
+  });
+
+  if (existe) {
+//    _showMessageDialog(context, "Ce transfert a déjà été enregistré.");
+    print('[MonApp] Transfert déjà enregistré (idTrans="$idTrans")');
+    return;
+  }
+
+  // 10) remplir contrôleurs
+  montantController.text = montant;
+  numeroTelephoneController.text = numero;
+  idTransController.text = idTrans;
+  scanMessageController.text = 'Message Scanné';
+  typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
+
+  print('[MonApp] Type Operation : ${typeOperationController.text}');
+
+//  _showMessageDialog(context, "Données récupérées avec succès.");
+  print('[MonApp] Données remplies avec succès');
+}
+
+
+  void _showMessageDialog(BuildContext context, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text(''),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   final textRecognizer = GoogleMlKit.vision.textRecognizer();
@@ -437,8 +744,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     print("Texte extrait : $extractedMessage");
 
     // Expressions régulières
-   // RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{1,2})?)', multiLine: true);
-     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
+    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
     RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
 
@@ -519,6 +825,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
 
   } catch (e) {
+    if (!context.mounted) return 0; // ✅ Ajout ici aussi
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
     return 0;
   } finally {
@@ -526,143 +833,6 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
   }
   return 0;
 }
-
-
-// Future<int> detecterText(BuildContext context, InputImage inputImage) async {
-//   final textRecognizer = GoogleMlKit.vision.textRecognizer();
-//   try {
-//    // print("Début de la détection de texte..."); // Log de début
-//     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-
-//     if (recognizedText.blocks.isEmpty) {
-//      // print("Aucun texte détecté."); // Log si aucun texte n'est détecté
-//       scanMessageController.text = ''; // Réinitialiser le champ de texte
-//       return 0;
-//     }
-//     String extractedMessage = '';
-//     for (TextBlock block in recognizedText.blocks) {
-//       for (TextLine line in block.lines) {
-//         extractedMessage += line.text + ' ';
-//       }
-//     }
-
-//    print("Texte extrait : $extractedMessage");
-
-//     // Expressions régulières pour rechercher "transfere" et "numero"
-//     RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
-//     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',multiLine: true);
-//     RegExp idTransRegExp = RegExp(
-//   r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})',
-//   multiLine: true);
-
-//    // RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?):\s*([\w.]{20,25})', multiLine: true);
-
-
-//     // RegExp idTransRegExp = RegExp(r'(?:ID Trans|ID):\s*([\w.]{22})', multiLine: true);
-
-    
-//     // Recherche des mots clés dans le texte
-//     Iterable<RegExpMatch> matchesTransfere = montantRegExp.allMatches(extractedMessage.replaceAll(',', '').replaceAll('.', ','));
-//     Iterable<RegExpMatch> matchesNumero = numeroRegExp.allMatches(extractedMessage);
-//     Iterable<RegExpMatch> matchesiDTrans = idTransRegExp.allMatches(extractedMessage);
-
-//     // Variables pour stocker les valeurs extraites
-//     String montant = '';
-//     String numero = '';
-//     String trans = '';
-
-//     final montantMatch = matchesTransfere.isNotEmpty ? matchesTransfere.first : null;
-//     if (montantMatch != null) {
-//       montant = montantMatch.group(1) ?? '';
-
-//       // Supprimer les virgules du montant pour la conversion
-//       String montantSansVirgules = montant.replaceAll(',', '');
-
-//       // Convertir le montant en entier
-//       int montantInt = int.parse(montantSansVirgules.split('.')[0]);
-
-//       // Remplacer le montant dans le texte extrait
-//       extractedMessage = extractedMessage.replaceFirst(montant, montantInt.toString());
-//     }
-
-//     // Récupérer le numéro de téléphone
-//     if (matchesNumero.isNotEmpty) {
-//       numero =  matchesNumero.first.group(1) ?? '';
-//     }
-
-
-//       // Récupérer le numéro de téléphone
-//     if (matchesiDTrans.isNotEmpty) {
-//       trans = matchesiDTrans.first.group(1) ?? '';
-//     }
-
-//     // Si les champs montant ou numéro sont vides après le scan
-//     if (montant.isEmpty || numero.isEmpty) {
-//       montantController.text = ''; // Réinitialiser le champ montant
-//       numeroTelephoneController.text = ''; // Réinitialiser le champ numéro
-//       scanMessageController.text = ''; // Réinitialiser le champ message
-//       idTransController.text = '';
-//       // Afficher une boîte de dialogue sur l'appareil Android
-//       showErrorDialog(context, 'Impossible de renseigner les champs. Veuillez réessayer.');
-//       return 0; // Arrêter la fonction ici
-//     }
-
-//     // print("Montant extrait : $montant"); // Log du montant extrait
-//     // print("Numéro de téléphone extrait : $numero"); // Log du numéro extrait
-//     // print("Numéro ID Trans : $trans"); // Log du numéro extrait
-
-//     //controle du message scan dans l'option enregistrer et update
-
-//      if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
-//       montantController.text = montant;
-//       numeroTelephoneController.text = numero;
-//       idTransController.text = trans;
-//       updateInfoClientController();
-//       scanMessageController.text = 'Message Scanné';
-     
-//     } else {
-      
-//     }if (montantController.text == montant && numeroTelephoneController.text == numero &&  idTransController.text == trans){     
-//          recognizedText2  = 'Message Scanné';        
-//       } else {
-//         recognizedText2= '';
-//       }
-
-//     // Déterminer le type d'opération en fonction des mots-clés
-//     List<String> keywordsDepos = ['Transfert de','transfert'];
-//     bool isDepos = keywordsDepos.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
-
-//     List<String> keywordsRetrait = ['recu'];
-//     bool isRetrait  = keywordsRetrait.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
-
-//     List<String> keywordsSansCompte = [''];
-//     bool isSansCompte = keywordsSansCompte.any((keyword) => extractedMessage.toLowerCase().contains(keyword.toLowerCase()));
-
-//      if (isDepos) {
-//       selectedOption= 1;
-//     } else if (isRetrait) {
-//       selectedOption= 2;
-//     } else if (isSansCompte) {
-//       selectedOption= 3;
-//     }
-
-
-//     // Mettre à jour le champ ScanMessage en fonction du résultat
-//     if (isRetrait || isSansCompte) {     
-//       typeOperationController.text = '2'; // Mettre à jour le champ de texte      
-//     } else {     
-//       typeOperationController.text = '1'; // Réinitialiser le champ de texte     
-//     }  
-
-//   } catch (e) {
-//     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
-//     return 0;
-//   } finally {
-//     textRecognizer.close();
-//   }
-//   return 0;
-// }
-
 
 
   // Reconnaître le texte à partir de l'image
