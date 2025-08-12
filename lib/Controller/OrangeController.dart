@@ -386,62 +386,55 @@ Future<void> pickImageCamera(BuildContext context) async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Sélectionnez la source de l\'image'),
+          title: Text('Sélectionnez une option'),
           actions: [
             TextButton(
-              child: Text('Caméra'),
+              child: Text('Message'),
               onPressed: () => Navigator.pop(context, ImageSource.camera),
             ),
             TextButton(
               child: Text('Galerie'),
               onPressed: () => Navigator.pop(context, ImageSource.gallery),
             ),
-
             TextButton(
               child: Text('CNIB'),
               onPressed: () async {
-                Navigator.pop(context); // ferme le modal
+                Navigator.pop(context, null); // ferme le modal sans source classique
 
+                // Lance traitement spécifique CNIB
                 final XFile? imageFile = await ImagePicker().pickImage(source: ImageSource.camera);
-                if (imageFile != null) {
-                  final InputImage image = InputImage.fromFilePath(imageFile.path);
+                if (imageFile == null) return;
 
-                  final infos = await extraireNomDepuisCnib(context,image);
+                final InputImage image = InputImage.fromFilePath(imageFile.path);
+                final infos = await extraireNomDepuisCnib(context, image);
 
-                  if (infos.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Impossible de lire les infos sur la CNIB')),
-                    );
-                    return;
-                  }
-
-                  // On utilise juste nom + prenoms pour la recherche dans les SMS
-                  final nomComplet = "${infos['nom']} ${infos['prenoms']}";
-
-                  await verifierDernierSms(
-                    context,
-                    nomComplet,
-                    montantController,
-                    numeroTelephoneController,
-                    idTransController,
-                    typeOperationController,
-                    infoClientController // ajouté ici
-                  );
-
-                  // Remplir le champ infoClientController avec nom + prenoms + reference
-                  infoClientController.text = "${infos['nom']} ${infos['prenoms']} - Ref: ${infos['reference']}";
-
-                  
+                if (infos.isEmpty) {
+                  // Erreur déjà gérée dans extraireNomDepuisCnib
+                  return;
                 }
-              },
-            )
 
+                final nomComplet = "${infos['nom']} ${infos['prenoms']}";
+
+                await verifierDernierSms(
+                  context,
+                  nomComplet,
+                  montantController,
+                  numeroTelephoneController,
+                  idTransController,
+                  typeOperationController,
+                  infoClientController,
+                );
+
+                // Remplir le champ infoClientController avec les infos CNIB
+                infoClientController.text = "${infos['nom']} ${infos['prenoms']} - Ref: ${infos['reference']}";
+              },
+            ),
           ],
         );
       },
     );
 
-    if (source == null) return;
+    if (source == null) return; // Si CNIB ou annulation, on arrête ici
 
     final XFile? returnedImage = await ImagePicker().pickImage(source: source);
     if (returnedImage == null) return;
@@ -468,7 +461,7 @@ Future<Map<String, String>> extraireNomDepuisCnib(
   final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
   if (recognizedText.blocks.isEmpty) {
-    if (context.mounted) {  // à partir de Flutter 3.7+ tu peux faire ça
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Aucun texte détecté")),
       );
@@ -489,18 +482,218 @@ Future<Map<String, String>> extraireNomDepuisCnib(
 
   if (nom.isEmpty || prenoms.isEmpty || reference.isEmpty) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Impossible d'extraire toutes les informations")),
-      );
+      showErrorDialog(context, 'Veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
     }
     return {};
   }
+
   return {
     "nom": nom,
     "prenoms": prenoms,
     "reference": reference,
   };
 }
+
+
+
+// Future<void> verifierDernierSms(
+//   BuildContext context,
+//   String nomScanne,
+//   TextEditingController montantController,
+//   TextEditingController numeroTelephoneController,
+//   TextEditingController idTransController,
+//   TextEditingController typeOperationController,
+//   TextEditingController infoClientController,
+// ) async {
+//   // Fonction pour fusionner lignes et compacter espaces
+//   String fusionnerLignesEtCompacterEspaces(String texte) {
+//     String result = texte.replaceAll(RegExp(r'[\r\n]+'), ' ');
+//     result = result.replaceAll(RegExp(r'\s+'), ' ');
+//     return result.trim();
+//   }
+
+//   // 1) permission SMS
+//   var status = await Permission.sms.status;
+//   if (!status.isGranted) {
+//     status = await Permission.sms.request();
+//     if (!status.isGranted) {
+//    //   _showMessageDialog(context, "Permission SMS refusée");
+//       print('[MonApp] Permission SMS refusée');
+//       return;
+//     }
+//   }
+//   print('[MonApp] Permission SMS accordée');
+
+//   // 2) récupérer SMS (triés du plus récent au plus ancien)
+//   List<SmsMessage> messages = await telephony.getInboxSms(
+//     columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
+//     sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
+//   );
+
+//   print('[MonApp] Nombre total de SMS récupérés : ${messages.length}');
+
+//   // 3) limiter aux 5 derniers
+//   if (messages.length > 10) {
+//     messages = messages.sublist(0, 10);
+//   }
+
+//   print('[MonApp] --- Les ${messages.length} SMS les plus récents ---');
+//   for (int i = 0; i < messages.length; i++) {
+//     final preview = messages[i].body != null
+//         ? (messages[i].body!.length > 120 ? messages[i].body!.substring(0, 120) + '...' : messages[i].body)
+//         : 'aucun corps';
+//     print('[MonApp] SMS #$i : Expéditeur="${messages[i].address}", Message="$preview"');
+//   }
+//   print('[MonApp] ----------------------------------');
+
+//   // 4) expéditeurs autorisés (tout en minuscules)
+//   final expediteursAutorises = [
+//     "+22676839388",
+//     "orangemoney",
+//     "orange money",
+//     "orange-money",
+//     "orange",
+//   ].map((e) => e.toLowerCase()).toList();
+
+//   SmsMessage? smsTrouve;
+//   String bodyNormalise = '';
+
+//   // 5) recherche du premier SMS valide
+//   for (final sms in messages) {
+//     final address = sms.address?.toLowerCase() ?? '';
+//     String body = sms.body ?? '';
+
+//     // Fusionner lignes et compacter espaces
+//     body = fusionnerLignesEtCompacterEspaces(body);
+
+//     final bodyLower = body.toLowerCase();
+
+//     final bool fromAuthorized = expediteursAutorises.any((exp) => address.contains(exp));
+//     final bool containsTransfer = bodyLower.contains('transfert recu') ||
+//     bodyLower.contains('transfert de') ||
+//     bodyLower.contains('vous avez transféré') ||
+//     bodyLower.contains('transfert') ||
+//     bodyLower.contains('vous avez reçu') ||
+//     bodyLower.contains('vous avez recu') ||
+//     bodyLower.contains('reçu') ||
+//     bodyLower.contains('recu');
+
+//     if (fromAuthorized && containsTransfer) {
+//       smsTrouve = sms;
+//       bodyNormalise = body;
+//       print('[MonApp] SMS OrangeMoney trouvé (expéditeur="$address")');
+//       break;
+//     }
+//   }
+
+//   if (smsTrouve == null) {
+//    // _showMessageDialog(context, "Aucun SMS OrangeMoney trouvé dans les 5 derniers messages.");
+//     print('[MonApp] Aucun SMS OrangeMoney trouvé');
+//     return;
+//   }
+
+//   print('[MonApp] SMS trouvé (body fusionné): $bodyNormalise');
+
+//   // 6) vérification nom scanné (tolérance inversion prénom/nom)
+//   final bodyLower = bodyNormalise.toLowerCase();
+//   final tokensNom = nomScanne
+//       .toLowerCase()
+//       .split(RegExp(r'\s+'))
+//       .where((t) => t.trim().length > 1)
+//       .toList();
+
+//   final bool nameMatches = tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
+
+//   if (!nameMatches) {
+//    // _showMessageDialog(context, "Le nom scanné ne correspond pas au SMS trouvé.");
+//     print('[MonApp] Nom "$nomScanne" non trouvé dans le message');
+//     return;
+//   }
+//   print('[MonApp] Nom "$nomScanne" trouvé dans le message');
+
+//   // 7) Extraction des données via RegExp
+//   //final regMontant = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d+)?)', multiLine: true);
+//   final regMontant = RegExp(
+//   r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
+//   caseSensitive: false,
+// );
+
+//   final regNumero = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
+//   final regId = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
+
+//   final montantMatch = regMontant.firstMatch(bodyNormalise);
+//   final numeroMatch = regNumero.firstMatch(bodyNormalise);
+//   final idMatch = regId.firstMatch(bodyNormalise);
+
+//   String montant = montantMatch?.group(1) ?? '';
+//   String numero = numeroMatch?.group(1) ?? '';
+//   String idTrans = idMatch?.group(1) ?? '';
+
+//   // Nettoyage montant : retirer espaces et virgules
+//   if (montantMatch != null) {
+//     String montantTexte = montantMatch.group(1) ?? '';
+//     String montantNettoye = montantTexte.replaceAll(',', '').replaceAll(' ', '');
+//     double? montantDouble = double.tryParse(montantNettoye);
+//     int montantInt = montantDouble != null ? montantDouble.floor() : 0;
+//     montant = montantInt.toString();
+
+//     // Optionnel : remplacer montant dans bodyNormalise (si besoin)
+//     // bodyNormalise = bodyNormalise.replaceFirst(montantTexte, montant);
+//   }
+
+//   if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
+//   //  _showMessageDialog(context, "Impossible d'extraire toutes les données du SMS.");
+//     print('[MonApp] Extraction données échouée: montant="$montant", numéro="$numero", idTrans="$idTrans"');
+//     return;
+//   }
+//   print('[MonApp] Extraction réussie: montant="$montant", numéro="$numero", idTrans="$idTrans"');
+
+//   // 8) détection type opération
+//   final lowerText = bodyNormalise.toLowerCase();
+//   List<String> keywordsDepos = ['transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
+//   List<String> keywordsRetrait = ['vous avez reçu', 'recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
+//   List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
+
+//   int selectedOption = 0;
+//   if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
+//     selectedOption = 1;
+//   } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
+//     selectedOption = 2;
+//   } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
+//     selectedOption = 3;
+//   }
+//     // Mettre à jour le contrôleur et les champs
+//     if (selectedOption != 0) {
+//       updateSelectedOption(selectedOption); // ← met à jour les radios
+//     }
+
+//   // 9) vérification doublon Hive
+//   final box = await Hive.openBox('transferts');
+//   final existe = box.values.any((e) {
+//     if (e is Map && e.containsKey('idTransaction')) {
+//       return e['idTransaction'] == idTrans;
+//     }
+//     return false;
+//   });
+
+//   if (existe) {
+// //    _showMessageDialog(context, "Ce transfert a déjà été enregistré.");
+//     print('[MonApp] Transfert déjà enregistré (idTrans="$idTrans")');
+//     return;
+//   }
+
+//   // 10) remplir contrôleurs
+//   montantController.text = montant;
+//   numeroTelephoneController.text = numero;
+//   idTransController.text = idTrans;
+//   scanMessageController.text = 'Message Scanné';
+//   typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
+
+//   print('[MonApp] Type Operation : ${typeOperationController.text}');
+
+// //  _showMessageDialog(context, "Données récupérées avec succès.");
+//   print('[MonApp] Données remplies avec succès');
+// }
 
 
 Future<void> verifierDernierSms(
@@ -512,7 +705,6 @@ Future<void> verifierDernierSms(
   TextEditingController typeOperationController,
   TextEditingController infoClientController,
 ) async {
-  // Fonction pour fusionner lignes et compacter espaces
   String fusionnerLignesEtCompacterEspaces(String texte) {
     String result = texte.replaceAll(RegExp(r'[\r\n]+'), ' ');
     result = result.replaceAll(RegExp(r'\s+'), ' ');
@@ -524,7 +716,6 @@ Future<void> verifierDernierSms(
   if (!status.isGranted) {
     status = await Permission.sms.request();
     if (!status.isGranted) {
-   //   _showMessageDialog(context, "Permission SMS refusée");
       print('[MonApp] Permission SMS refusée');
       return;
     }
@@ -537,23 +728,19 @@ Future<void> verifierDernierSms(
     sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
   );
 
+  if (messages.isEmpty) {
+    print('[MonApp] Aucun SMS disponible');
+    return;
+  }
+
   print('[MonApp] Nombre total de SMS récupérés : ${messages.length}');
 
-  // 3) limiter aux 5 derniers
-  if (messages.length > 1) {
-    messages = messages.sublist(0, 1);
+  // 3) limiter aux 10 derniers
+  if (messages.length > 10) {
+    messages = messages.sublist(0, 10);
   }
 
-  print('[MonApp] --- Les ${messages.length} SMS les plus récents ---');
-  for (int i = 0; i < messages.length; i++) {
-    final preview = messages[i].body != null
-        ? (messages[i].body!.length > 120 ? messages[i].body!.substring(0, 120) + '...' : messages[i].body)
-        : 'aucun corps';
-    print('[MonApp] SMS #$i : Expéditeur="${messages[i].address}", Message="$preview"');
-  }
-  print('[MonApp] ----------------------------------');
-
-  // 4) expéditeurs autorisés (tout en minuscules)
+  // 4) expéditeurs autorisés
   final expediteursAutorises = [
     "+22676839388",
     "orangemoney",
@@ -562,71 +749,61 @@ Future<void> verifierDernierSms(
     "orange",
   ].map((e) => e.toLowerCase()).toList();
 
-  SmsMessage? smsTrouve;
-  String bodyNormalise = '';
-
-  // 5) recherche du premier SMS valide
-  for (final sms in messages) {
-    final address = sms.address?.toLowerCase() ?? '';
-    String body = sms.body ?? '';
-
-    // Fusionner lignes et compacter espaces
-    body = fusionnerLignesEtCompacterEspaces(body);
-
-    final bodyLower = body.toLowerCase();
-
-    final bool fromAuthorized = expediteursAutorises.any((exp) => address.contains(exp));
-    final bool containsTransfer = bodyLower.contains('transfert recu') ||
-    bodyLower.contains('transfert de') ||
-    bodyLower.contains('vous avez transféré') ||
-    bodyLower.contains('transfert') ||
-    bodyLower.contains('vous avez reçu') ||
-    bodyLower.contains('vous avez recu') ||
-    bodyLower.contains('reçu') ||
-    bodyLower.contains('recu');
-
-    if (fromAuthorized && containsTransfer) {
-      smsTrouve = sms;
-      bodyNormalise = body;
-      print('[MonApp] SMS OrangeMoney trouvé (expéditeur="$address")');
-      break;
-    }
-  }
-
-  if (smsTrouve == null) {
-   // _showMessageDialog(context, "Aucun SMS OrangeMoney trouvé dans les 5 derniers messages.");
-    print('[MonApp] Aucun SMS OrangeMoney trouvé');
-    return;
-  }
-
-  print('[MonApp] SMS trouvé (body fusionné): $bodyNormalise');
-
-  // 6) vérification nom scanné (tolérance inversion prénom/nom)
-  final bodyLower = bodyNormalise.toLowerCase();
+  // 5) filtrer par expéditeur autorisé + transfert + nom scanné
   final tokensNom = nomScanne
       .toLowerCase()
       .split(RegExp(r'\s+'))
       .where((t) => t.trim().length > 1)
       .toList();
 
-  final bool nameMatches = tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
+  List<SmsMessage> candidats = [];
+  for (final sms in messages) {
+    final address = sms.address?.toLowerCase() ?? '';
+    String body = fusionnerLignesEtCompacterEspaces(sms.body ?? '');
+    final bodyLower = body.toLowerCase();
 
-  if (!nameMatches) {
-   // _showMessageDialog(context, "Le nom scanné ne correspond pas au SMS trouvé.");
-    print('[MonApp] Nom "$nomScanne" non trouvé dans le message');
+    final bool fromAuthorized =
+        expediteursAutorises.any((exp) => address.contains(exp));
+    final bool containsTransfer =
+        bodyLower.contains('transfert recu') ||
+        bodyLower.contains('transfert de') ||
+        bodyLower.contains('vous avez transféré') ||
+        bodyLower.contains('transfert') ||
+        bodyLower.contains('vous avez reçu') ||
+        bodyLower.contains('vous avez recu') ||
+        bodyLower.contains('reçu') ||
+        bodyLower.contains('recu');
+
+    final bool nameMatches =
+        tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
+
+    if (fromAuthorized && containsTransfer && nameMatches) {
+      candidats.add(sms);
+    }
+  }
+
+  if (candidats.isEmpty) {
+    print('[MonApp] Aucun SMS correspondant au nom "$nomScanne" trouvé');
     return;
   }
-  print('[MonApp] Nom "$nomScanne" trouvé dans le message');
+
+  // 6) choisir le plus récent
+  candidats.sort((a, b) => (b.date ?? 0).compareTo(a.date ?? 0));
+  final smsTrouve = candidats.first;
+  final bodyNormalise = fusionnerLignesEtCompacterEspaces(smsTrouve.body ?? '');
+
+  print('[MonApp] SMS trouvé (plus récent) : $bodyNormalise');
 
   // 7) Extraction des données via RegExp
-  //final regMontant = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d+)?)', multiLine: true);
   final regMontant = RegExp(
-  r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
-  caseSensitive: false,
-);
-
+    r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
+    caseSensitive: false,
+  );
   final regNumero = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
-  final regId = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
+  final regId = RegExp(
+    r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})',
+    multiLine: true,
+  );
 
   final montantMatch = regMontant.firstMatch(bodyNormalise);
   final numeroMatch = regNumero.firstMatch(bodyNormalise);
@@ -636,23 +813,18 @@ Future<void> verifierDernierSms(
   String numero = numeroMatch?.group(1) ?? '';
   String idTrans = idMatch?.group(1) ?? '';
 
-  // Nettoyage montant : retirer espaces et virgules
   if (montantMatch != null) {
-    String montantTexte = montantMatch.group(1) ?? '';
-    String montantNettoye = montantTexte.replaceAll(',', '').replaceAll(' ', '');
+    String montantNettoye =
+        montant.replaceAll(',', '').replaceAll(' ', '');
     double? montantDouble = double.tryParse(montantNettoye);
-    int montantInt = montantDouble != null ? montantDouble.floor() : 0;
-    montant = montantInt.toString();
-
-    // Optionnel : remplacer montant dans bodyNormalise (si besoin)
-    // bodyNormalise = bodyNormalise.replaceFirst(montantTexte, montant);
+    montant = montantDouble != null ? montantDouble.floor().toString() : '';
   }
 
   if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
-  //  _showMessageDialog(context, "Impossible d'extraire toutes les données du SMS.");
-    print('[MonApp] Extraction données échouée: montant="$montant", numéro="$numero", idTrans="$idTrans"');
+    print('[MonApp] Extraction échouée');
     return;
   }
+
   print('[MonApp] Extraction réussie: montant="$montant", numéro="$numero", idTrans="$idTrans"');
 
   // 8) détection type opération
@@ -669,10 +841,9 @@ Future<void> verifierDernierSms(
   } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
     selectedOption = 3;
   }
-    // Mettre à jour le contrôleur et les champs
-    if (selectedOption != 0) {
-      updateSelectedOption(selectedOption); // ← met à jour les radios
-    }
+  if (selectedOption != 0) {
+    updateSelectedOption(selectedOption);
+  }
 
   // 9) vérification doublon Hive
   final box = await Hive.openBox('transferts');
@@ -682,10 +853,8 @@ Future<void> verifierDernierSms(
     }
     return false;
   });
-
   if (existe) {
-//    _showMessageDialog(context, "Ce transfert a déjà été enregistré.");
-    print('[MonApp] Transfert déjà enregistré (idTrans="$idTrans")');
+    print('[MonApp] Transfert déjà enregistré');
     return;
   }
 
@@ -696,32 +865,9 @@ Future<void> verifierDernierSms(
   scanMessageController.text = 'Message Scanné';
   typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
 
-  print('[MonApp] Type Operation : ${typeOperationController.text}');
-
-//  _showMessageDialog(context, "Données récupérées avec succès.");
   print('[MonApp] Données remplies avec succès');
 }
 
-
-  void _showMessageDialog(BuildContext context, String message) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text(''),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
 
 
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {

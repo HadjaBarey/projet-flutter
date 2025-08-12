@@ -10,6 +10,8 @@ import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:telephony/telephony.dart';
 //import 'package:velocity_x/velocity_x.dart';
 import 'call_service.dart'; // Importez le service d'appel
 import 'package:kadoustransfert/Controller/OpTransactionController.dart';
@@ -27,6 +29,7 @@ class MoovController {
   final TextEditingController montantController = TextEditingController();
   final TextEditingController numeroTelephoneController = TextEditingController();
   final TextEditingController scanMessageController = TextEditingController();
+  final Telephony telephony = Telephony.instance;
 //1
 
   // Instance du service d'appel
@@ -384,6 +387,40 @@ Future<void> pickImageCamera(BuildContext context) async {
               child: Text('Galerie'),
               onPressed: () => Navigator.pop(context, ImageSource.gallery),
             ),
+
+            TextButton(
+              child: Text('CNIB'),
+              onPressed: () async {
+                Navigator.pop(context, null); // ferme le modal sans source classique
+
+                // Lance traitement spécifique CNIB
+                final XFile? imageFile = await ImagePicker().pickImage(source: ImageSource.camera);
+                if (imageFile == null) return;
+
+                final InputImage image = InputImage.fromFilePath(imageFile.path);
+                final infos = await extraireNomDepuisCnib(context, image);
+
+                if (infos.isEmpty) {
+                  // Erreur déjà gérée dans extraireNomDepuisCnib
+                  return;
+                }
+
+                final nomComplet = "${infos['nom']} ${infos['prenoms']}";
+
+                await verifierDernierSms(
+                  context,
+                  nomComplet,
+                  montantController,
+                  numeroTelephoneController,
+                  idTransController,
+                  typeOperationController,
+                  infoClientController,
+                );
+
+                // Remplir le champ infoClientController avec les infos CNIB
+                infoClientController.text = "${infos['nom']} ${infos['prenoms']} - Ref: ${infos['reference']}";
+              },
+            ),
           ],
         );
       },
@@ -405,6 +442,213 @@ Future<void> pickImageCamera(BuildContext context) async {
     print("Erreur lors de la sélection de l'image : $e");
     showErrorDialog(context, 'Une erreur est survenue lors de la sélection de l\'image.');
   }
+}
+
+Future<Map<String, String>> extraireNomDepuisCnib(
+  BuildContext context,
+  InputImage inputImage,
+) async {
+  final textRecognizer = GoogleMlKit.vision.textRecognizer();
+  final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+  if (recognizedText.blocks.isEmpty) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Aucun texte détecté")),
+      );
+    }
+    return {};
+  }
+
+  String extractedText = '';
+  for (TextBlock block in recognizedText.blocks) {
+    for (TextLine line in block.lines) {
+      extractedText += line.text + '\n';
+    }
+  }
+
+  String nom = extractInfo(extractedText, r'Nom:\s*(.*)');
+  String prenoms = extractInfo(extractedText, r'Prénoms:\s*(.*)');
+  String reference = extractInfo(extractedText, r'\b(B\d+(\s?\d+)*)\b');
+
+  if (nom.isEmpty || prenoms.isEmpty || reference.isEmpty) {
+    if (context.mounted) {
+      showErrorDialog(context, 'Veuillez reprendre votre photo car une ou plusieurs informations sont manquantes.');
+    }
+    return {};
+  }
+
+  return {
+    "nom": nom,
+    "prenoms": prenoms,
+    "reference": reference,
+  };
+}
+
+
+Future<void> verifierDernierSms(
+  BuildContext context,
+  String nomScanne,
+  TextEditingController montantController,
+  TextEditingController numeroTelephoneController,
+  TextEditingController idTransController,
+  TextEditingController typeOperationController,
+  TextEditingController infoClientController,
+) async {
+  // Fonction pour fusionner lignes et compacter espaces
+  String fusionnerLignesEtCompacterEspaces(String texte) {
+    String result = texte.replaceAll(RegExp(r'[\r\n]+'), ' ');
+    result = result.replaceAll(RegExp(r'\s+'), ' ');
+    return result.trim();
+  }
+
+  // 1) permission SMS
+  var status = await Permission.sms.status;
+  if (!status.isGranted) {
+    status = await Permission.sms.request();
+    if (!status.isGranted) {
+      print('[MonApp] Permission SMS refusée');
+      return;
+    }
+  }
+
+  // 2) récupérer SMS (plus récents d'abord)
+  List<SmsMessage> messages = await telephony.getInboxSms(
+    columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
+    sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
+  );
+
+  // garder seulement les 10 derniers
+  if (messages.length > 10) {
+    messages = messages.sublist(0, 10);
+  }
+
+  // 3) expéditeurs autorisés
+  final expediteursAutorises = [
+    "+22676839388",
+    "MOOVMONEY",
+    "MoovMoney",
+    "MOOV MONEY",
+    "Moov Money",
+  ].map((e) => e.toLowerCase()).toList();
+
+  SmsMessage? smsTrouve;
+  String bodyNormalise = '';
+
+  // découper nom scanné en mots
+  final tokensNom = nomScanne
+      .toLowerCase()
+      .split(RegExp(r'\s+'))
+      .where((t) => t.trim().length > 1)
+      .toList();
+
+  // 4) rechercher le plus récent correspondant au nom scanné
+  for (final sms in messages) {
+    final address = sms.address?.toLowerCase() ?? '';
+    String body = fusionnerLignesEtCompacterEspaces(sms.body ?? '');
+    final bodyLower = body.toLowerCase();
+
+    final fromAuthorized = expediteursAutorises.any((exp) => address.contains(exp));
+    final containsTransfer = bodyLower.contains("dépot") ||
+        bodyLower.contains("depot") ||
+        bodyLower.contains("retrait initie") ||
+        bodyLower.contains("retrait");
+
+    final nameMatches = tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
+
+    if (fromAuthorized && containsTransfer && nameMatches) {
+      smsTrouve = sms;
+      bodyNormalise = body;
+      break; // on prend le premier trouvé car la liste est déjà triée par date DESC
+    }
+  }
+
+  if (smsTrouve == null) {
+    print('[MonApp] Aucun SMS correspondant trouvé pour "$nomScanne"');
+    return;
+  }
+
+  // 5) extraction montant (sans décimales)
+  final montantRegExp = RegExp(
+    r'(?:montant:?\s*|Montant\s*)\s*([\d\s]+(?:[\.,]\d{2})?)',
+    caseSensitive: false,
+  );
+  String montant = '';
+  final matchesMontant = montantRegExp.allMatches(bodyNormalise);
+  if (matchesMontant.isNotEmpty) {
+    montant = matchesMontant.first.group(1) ?? '';
+    String montantNettoye = montant.replaceAll(RegExp(r'[^\d,]'), '');
+    if (montantNettoye.contains(',')) {
+      montantNettoye = montantNettoye.split(',')[0];
+    }
+    montantNettoye = montantNettoye.replaceAll(' ', '');
+    montant = (int.tryParse(montantNettoye) ?? 0).toString();
+  }
+
+  // 6) extraction numéro
+  final numeroRegExp = RegExp(
+    r"(?:numero:\s*|réussi\s+pour|code\s+d'agent:|code\s+agent:?)\s*(\d+)",
+    caseSensitive: false,
+  );
+  String numero = '';
+  final matchesNumero = numeroRegExp.allMatches(bodyNormalise);
+  if (matchesNumero.isNotEmpty) {
+    numero = matchesNumero.first.group(1) ?? '';
+    if (numero.length > 8 && numero.startsWith('226')) {
+      numero = numero.substring(3);
+    }
+    if (numero.length > 8) {
+      numero = numero.substring(0, 8);
+    }
+  }
+
+  // 7) extraction ID transaction
+  final idTransRegExp = RegExp(
+    r'(?:TID|ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]+)',
+    caseSensitive: false,
+    multiLine: true,
+  );
+  String idTrans = '';
+  final matchesIdTrans = idTransRegExp.allMatches(bodyNormalise);
+  if (matchesIdTrans.isNotEmpty) {
+    idTrans = matchesIdTrans.first.group(1) ?? '';
+  }
+
+  if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
+    print('[MonApp] Extraction échouée: montant="$montant", numéro="$numero", idTrans="$idTrans"');
+    return;
+  }
+
+  // 8) type opération
+  final lowerText = bodyNormalise.toLowerCase();
+  int selectedOption = 0;
+  if (['dépot', 'depot'].any((kw) => lowerText.contains(kw))) {
+    selectedOption = 1;
+  } else if (['retrait initie', 'retrait'].any((kw) => lowerText.contains(kw))) {
+    selectedOption = 2;
+  } else if (['sans compte', 'non client', 'envoi sans compte']
+      .any((kw) => lowerText.contains(kw))) {
+    selectedOption = 3;
+  }
+  if (selectedOption != 0) {
+    updateSelectedOption(selectedOption);
+  }
+
+  // 9) vérif doublon Hive
+  final box = await Hive.openBox('transferts');
+  if (box.values.any((e) => e is Map && e['idTransaction'] == idTrans)) {
+    print('[MonApp] Transfert déjà enregistré (idTrans="$idTrans")');
+    return;
+  }
+
+  // 10) remplir contrôleurs
+  montantController.text = montant;
+  numeroTelephoneController.text = numero;
+  idTransController.text = idTrans;
+  typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
+  scanMessageController.text = 'Message Scanné';
+
+  print('[MonApp] Extraction OK : montant=$montant, numéro=$numero, idTrans=$idTrans');
 }
 
 
