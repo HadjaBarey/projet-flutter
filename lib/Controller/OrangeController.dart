@@ -156,10 +156,12 @@ Future<void> _initializeEntreprisesBox() async {
   EntrepriseBox = Hive.box<EntrepriseModel>("todobos2");
 }
 
-//gestion des option a cocher//////////
+ValueNotifier<int> selectedOptionNotifier = ValueNotifier<int>(1);
+
 void updateSelectedOption(int value) {
-  selectedOption = value;
-  if (selectedOption == 1) {
+  selectedOption = value;  // selectedOption doit être une variable membre de la classe (OrangeController)
+  selectedOptionNotifier.value = value;
+  if (value == 1) {
     typeOperationController.text = '1';
     scanMessageController.text = '';
     numeroIndependantController.text = '';
@@ -167,8 +169,8 @@ void updateSelectedOption(int value) {
     montantController.text = '';
     numeroTelephoneController.text = '';
     idTransController.text = '';
-    optionCreanceController.value = false; // Mettez à jour la valeur directement
-  } else if (selectedOption == 2) {
+    optionCreanceController.value = false;
+  } else if (value == 2) {
     typeOperationController.text = '2';
     scanMessageController.text = '';
     numeroIndependantController.text = '';
@@ -176,8 +178,8 @@ void updateSelectedOption(int value) {
     montantController.text = '';
     numeroTelephoneController.text = '';
     idTransController.text = '';
-    optionCreanceController.value = false; // Mettez à jour la valeur directement
-  } else if (selectedOption == 3) {
+    optionCreanceController.value = false;
+  } else if (value == 3) {
     typeOperationController.text = '2';
     scanMessageController.text = 'Message Scanné';
     numeroIndependantController.text = '';
@@ -185,9 +187,10 @@ void updateSelectedOption(int value) {
     montantController.text = '';
     numeroTelephoneController.text = '';
     idTransController.text = '';
-    optionCreanceController.value = false; // Mettez à jour la valeur directement
+    optionCreanceController.value = false;
   }
 }
+
 
 
 //////controle de la date /////////////
@@ -494,209 +497,7 @@ Future<Map<String, String>> extraireNomDepuisCnib(
   };
 }
 
-
-
-// Future<void> verifierDernierSms(
-//   BuildContext context,
-//   String nomScanne,
-//   TextEditingController montantController,
-//   TextEditingController numeroTelephoneController,
-//   TextEditingController idTransController,
-//   TextEditingController typeOperationController,
-//   TextEditingController infoClientController,
-// ) async {
-//   // Fonction pour fusionner lignes et compacter espaces
-//   String fusionnerLignesEtCompacterEspaces(String texte) {
-//     String result = texte.replaceAll(RegExp(r'[\r\n]+'), ' ');
-//     result = result.replaceAll(RegExp(r'\s+'), ' ');
-//     return result.trim();
-//   }
-
-//   // 1) permission SMS
-//   var status = await Permission.sms.status;
-//   if (!status.isGranted) {
-//     status = await Permission.sms.request();
-//     if (!status.isGranted) {
-//    //   _showMessageDialog(context, "Permission SMS refusée");
-//       print('[MonApp] Permission SMS refusée');
-//       return;
-//     }
-//   }
-//   print('[MonApp] Permission SMS accordée');
-
-//   // 2) récupérer SMS (triés du plus récent au plus ancien)
-//   List<SmsMessage> messages = await telephony.getInboxSms(
-//     columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
-//     sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
-//   );
-
-//   print('[MonApp] Nombre total de SMS récupérés : ${messages.length}');
-
-//   // 3) limiter aux 5 derniers
-//   if (messages.length > 10) {
-//     messages = messages.sublist(0, 10);
-//   }
-
-//   print('[MonApp] --- Les ${messages.length} SMS les plus récents ---');
-//   for (int i = 0; i < messages.length; i++) {
-//     final preview = messages[i].body != null
-//         ? (messages[i].body!.length > 120 ? messages[i].body!.substring(0, 120) + '...' : messages[i].body)
-//         : 'aucun corps';
-//     print('[MonApp] SMS #$i : Expéditeur="${messages[i].address}", Message="$preview"');
-//   }
-//   print('[MonApp] ----------------------------------');
-
-//   // 4) expéditeurs autorisés (tout en minuscules)
-//   final expediteursAutorises = [
-//     "+22676839388",
-//     "orangemoney",
-//     "orange money",
-//     "orange-money",
-//     "orange",
-//   ].map((e) => e.toLowerCase()).toList();
-
-//   SmsMessage? smsTrouve;
-//   String bodyNormalise = '';
-
-//   // 5) recherche du premier SMS valide
-//   for (final sms in messages) {
-//     final address = sms.address?.toLowerCase() ?? '';
-//     String body = sms.body ?? '';
-
-//     // Fusionner lignes et compacter espaces
-//     body = fusionnerLignesEtCompacterEspaces(body);
-
-//     final bodyLower = body.toLowerCase();
-
-//     final bool fromAuthorized = expediteursAutorises.any((exp) => address.contains(exp));
-//     final bool containsTransfer = bodyLower.contains('transfert recu') ||
-//     bodyLower.contains('transfert de') ||
-//     bodyLower.contains('vous avez transféré') ||
-//     bodyLower.contains('transfert') ||
-//     bodyLower.contains('vous avez reçu') ||
-//     bodyLower.contains('vous avez recu') ||
-//     bodyLower.contains('reçu') ||
-//     bodyLower.contains('recu');
-
-//     if (fromAuthorized && containsTransfer) {
-//       smsTrouve = sms;
-//       bodyNormalise = body;
-//       print('[MonApp] SMS OrangeMoney trouvé (expéditeur="$address")');
-//       break;
-//     }
-//   }
-
-//   if (smsTrouve == null) {
-//    // _showMessageDialog(context, "Aucun SMS OrangeMoney trouvé dans les 5 derniers messages.");
-//     print('[MonApp] Aucun SMS OrangeMoney trouvé');
-//     return;
-//   }
-
-//   print('[MonApp] SMS trouvé (body fusionné): $bodyNormalise');
-
-//   // 6) vérification nom scanné (tolérance inversion prénom/nom)
-//   final bodyLower = bodyNormalise.toLowerCase();
-//   final tokensNom = nomScanne
-//       .toLowerCase()
-//       .split(RegExp(r'\s+'))
-//       .where((t) => t.trim().length > 1)
-//       .toList();
-
-//   final bool nameMatches = tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
-
-//   if (!nameMatches) {
-//    // _showMessageDialog(context, "Le nom scanné ne correspond pas au SMS trouvé.");
-//     print('[MonApp] Nom "$nomScanne" non trouvé dans le message');
-//     return;
-//   }
-//   print('[MonApp] Nom "$nomScanne" trouvé dans le message');
-
-//   // 7) Extraction des données via RegExp
-//   //final regMontant = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d+)?)', multiLine: true);
-//   final regMontant = RegExp(
-//   r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
-//   caseSensitive: false,
-// );
-
-//   final regNumero = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
-//   final regId = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
-
-//   final montantMatch = regMontant.firstMatch(bodyNormalise);
-//   final numeroMatch = regNumero.firstMatch(bodyNormalise);
-//   final idMatch = regId.firstMatch(bodyNormalise);
-
-//   String montant = montantMatch?.group(1) ?? '';
-//   String numero = numeroMatch?.group(1) ?? '';
-//   String idTrans = idMatch?.group(1) ?? '';
-
-//   // Nettoyage montant : retirer espaces et virgules
-//   if (montantMatch != null) {
-//     String montantTexte = montantMatch.group(1) ?? '';
-//     String montantNettoye = montantTexte.replaceAll(',', '').replaceAll(' ', '');
-//     double? montantDouble = double.tryParse(montantNettoye);
-//     int montantInt = montantDouble != null ? montantDouble.floor() : 0;
-//     montant = montantInt.toString();
-
-//     // Optionnel : remplacer montant dans bodyNormalise (si besoin)
-//     // bodyNormalise = bodyNormalise.replaceFirst(montantTexte, montant);
-//   }
-
-//   if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
-//   //  _showMessageDialog(context, "Impossible d'extraire toutes les données du SMS.");
-//     print('[MonApp] Extraction données échouée: montant="$montant", numéro="$numero", idTrans="$idTrans"');
-//     return;
-//   }
-//   print('[MonApp] Extraction réussie: montant="$montant", numéro="$numero", idTrans="$idTrans"');
-
-//   // 8) détection type opération
-//   final lowerText = bodyNormalise.toLowerCase();
-//   List<String> keywordsDepos = ['transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
-//   List<String> keywordsRetrait = ['vous avez reçu', 'recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
-//   List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
-
-//   int selectedOption = 0;
-//   if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
-//     selectedOption = 1;
-//   } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
-//     selectedOption = 2;
-//   } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
-//     selectedOption = 3;
-//   }
-//     // Mettre à jour le contrôleur et les champs
-//     if (selectedOption != 0) {
-//       updateSelectedOption(selectedOption); // ← met à jour les radios
-//     }
-
-//   // 9) vérification doublon Hive
-//   final box = await Hive.openBox('transferts');
-//   final existe = box.values.any((e) {
-//     if (e is Map && e.containsKey('idTransaction')) {
-//       return e['idTransaction'] == idTrans;
-//     }
-//     return false;
-//   });
-
-//   if (existe) {
-// //    _showMessageDialog(context, "Ce transfert a déjà été enregistré.");
-//     print('[MonApp] Transfert déjà enregistré (idTrans="$idTrans")');
-//     return;
-//   }
-
-//   // 10) remplir contrôleurs
-//   montantController.text = montant;
-//   numeroTelephoneController.text = numero;
-//   idTransController.text = idTrans;
-//   scanMessageController.text = 'Message Scanné';
-//   typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
-
-//   print('[MonApp] Type Operation : ${typeOperationController.text}');
-
-// //  _showMessageDialog(context, "Données récupérées avec succès.");
-//   print('[MonApp] Données remplies avec succès');
-// }
-
-
-Future<void> verifierDernierSms(
+Future<bool> verifierDernierSms(
   BuildContext context,
   String nomScanne,
   TextEditingController montantController,
@@ -711,36 +512,41 @@ Future<void> verifierDernierSms(
     return result.trim();
   }
 
-  // 1) permission SMS
   var status = await Permission.sms.status;
   if (!status.isGranted) {
     status = await Permission.sms.request();
     if (!status.isGranted) {
-      print('[MonApp] Permission SMS refusée');
-      return;
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('Permission refusée'),
+          content: Text('Permission SMS refusée. Impossible de vérifier les messages.'),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+        ),
+      );
+      return false;
     }
   }
-  print('[MonApp] Permission SMS accordée');
 
-  // 2) récupérer SMS (triés du plus récent au plus ancien)
   List<SmsMessage> messages = await telephony.getInboxSms(
     columns: [SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
     sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
   );
 
   if (messages.isEmpty) {
-    print('[MonApp] Aucun SMS disponible');
-    return;
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Aucun SMS'),
+        content: Text('Aucun SMS disponible.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+      ),
+    );
+    return false;
   }
 
-  print('[MonApp] Nombre total de SMS récupérés : ${messages.length}');
+  if (messages.length > 10) messages = messages.sublist(0, 10);
 
-  // 3) limiter aux 10 derniers
-  if (messages.length > 10) {
-    messages = messages.sublist(0, 10);
-  }
-
-  // 4) expéditeurs autorisés
   final expediteursAutorises = [
     "+22676839388",
     "orangemoney",
@@ -749,57 +555,84 @@ Future<void> verifierDernierSms(
     "orange",
   ].map((e) => e.toLowerCase()).toList();
 
-  // 5) filtrer par expéditeur autorisé + transfert + nom scanné
-  final tokensNom = nomScanne
-      .toLowerCase()
-      .split(RegExp(r'\s+'))
-      .where((t) => t.trim().length > 1)
-      .toList();
+  final tokensNom = nomScanne.toLowerCase().split(RegExp(r'\s+')).where((t) => t.trim().length > 1).toList();
 
-  List<SmsMessage> candidats = [];
+  // 1. Filtrer les SMS autorisés (sans filtre nom)
+  List<SmsMessage> smsAutorises = [];
   for (final sms in messages) {
     final address = sms.address?.toLowerCase() ?? '';
-    String body = fusionnerLignesEtCompacterEspaces(sms.body ?? '');
-    final bodyLower = body.toLowerCase();
+    final body = fusionnerLignesEtCompacterEspaces(sms.body ?? '').toLowerCase();
 
-    final bool fromAuthorized =
-        expediteursAutorises.any((exp) => address.contains(exp));
-    final bool containsTransfer =
-        bodyLower.contains('transfert recu') ||
-        bodyLower.contains('transfert de') ||
-        bodyLower.contains('vous avez transféré') ||
-        bodyLower.contains('transfert') ||
-        bodyLower.contains('vous avez reçu') ||
-        bodyLower.contains('vous avez recu') ||
-        bodyLower.contains('reçu') ||
-        bodyLower.contains('recu');
+    bool fromAuthorized = expediteursAutorises.any((exp) => address.contains(exp));
+    bool containsTransfer = body.contains('transfert') || body.contains('reçu') || body.contains('recu');
 
-    final bool nameMatches =
-        tokensNom.isNotEmpty && tokensNom.any((t) => bodyLower.contains(t));
-
-    if (fromAuthorized && containsTransfer && nameMatches) {
-      candidats.add(sms);
+    if (fromAuthorized && containsTransfer) {
+      smsAutorises.add(sms);
     }
   }
 
-  if (candidats.isEmpty) {
-    print('[MonApp] Aucun SMS correspondant au nom "$nomScanne" trouvé');
-    return;
+  if (smsAutorises.isEmpty) {
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Aucun SMS autorisé'),
+        content: Text('Aucun SMS autorisé trouvé parmi les 10 derniers messages.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+      ),
+    );
+    return false;
   }
 
-  // 6) choisir le plus récent
-  candidats.sort((a, b) => (b.date ?? 0).compareTo(a.date ?? 0));
-  final smsTrouve = candidats.first;
-  final bodyNormalise = fusionnerLignesEtCompacterEspaces(smsTrouve.body ?? '');
+  // 2. Chercher ceux qui contiennent le nom scanné
+  List<SmsMessage> smsAvecNom = [];
+  for (final sms in smsAutorises) {
+    final body = fusionnerLignesEtCompacterEspaces(sms.body ?? '').toLowerCase();
+    bool nameMatches = tokensNom.isNotEmpty && tokensNom.any((t) => body.contains(t));
+    if (nameMatches) {
+      smsAvecNom.add(sms);
+    }
+  }
 
-  print('[MonApp] SMS trouvé (plus récent) : $bodyNormalise');
+  SmsMessage smsChoisi;
 
-  // 7) Extraction des données via RegExp
+  if (smsAvecNom.isNotEmpty) {
+    // Prendre le plus récent avec nom
+    smsAvecNom.sort((a, b) => (b.date ?? 0).compareTo(a.date ?? 0));
+    smsChoisi = smsAvecNom.first;
+  } else {
+    // Sinon, prendre le plus récent parmi les SMS autorisés sans nom
+    smsAutorises.sort((a, b) => (b.date ?? 0).compareTo(a.date ?? 0));
+    smsChoisi = smsAutorises.first;
+  }
+
+  final bodyNormalise = fusionnerLignesEtCompacterEspaces(smsChoisi.body ?? '');
+
+  // -------------------
+  // 1) Détection type opération - immédiatement après avoir le texte
+  final lowerText = bodyNormalise.toLowerCase();
+  //int selectedOption = 0;
+  if (['transfert de', 'vous avez transféré', 'envoyé', 'transfert'].any((kw) => lowerText.contains(kw))) {
+    selectedOption = 1;
+  } else if (['vous avez reçu', 'recu', 'reçu', 'crédit', 'retrait'].any((kw) => lowerText.contains(kw))) {
+    selectedOption = 2;
+  } else if (['sans compte', 'non client', 'envoi sans compte'].any((kw) => lowerText.contains(kw))) {
+    selectedOption = 3;
+  }
+
+  print('Before updateSelectedOption: $selectedOption');
+  updateSelectedOption(selectedOption);
+  print('After updateSelectedOption');
+
+
+  // 2) Extraction RegExp des données
   final regMontant = RegExp(
     r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
     caseSensitive: false,
   );
-  final regNumero = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
+  final regNumero = RegExp(
+    r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',
+    multiLine: true,
+  );
   final regId = RegExp(
     r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})',
     multiLine: true,
@@ -814,60 +647,48 @@ Future<void> verifierDernierSms(
   String idTrans = idMatch?.group(1) ?? '';
 
   if (montantMatch != null) {
-    String montantNettoye =
-        montant.replaceAll(',', '').replaceAll(' ', '');
-    double? montantDouble = double.tryParse(montantNettoye);
+    montant = montant.replaceAll(',', '').replaceAll(' ', '');
+    double? montantDouble = double.tryParse(montant);
     montant = montantDouble != null ? montantDouble.floor().toString() : '';
   }
 
   if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
-    print('[MonApp] Extraction échouée');
-    return;
-  }
-
-  print('[MonApp] Extraction réussie: montant="$montant", numéro="$numero", idTrans="$idTrans"');
-
-  // 8) détection type opération
-  final lowerText = bodyNormalise.toLowerCase();
-  List<String> keywordsDepos = ['transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
-  List<String> keywordsRetrait = ['vous avez reçu', 'recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
-  List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
-
-  int selectedOption = 0;
-  if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
-    selectedOption = 1;
-  } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
-    selectedOption = 2;
-  } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
-    selectedOption = 3;
-  }
-  if (selectedOption != 0) {
-    updateSelectedOption(selectedOption);
-  }
-
-  // 9) vérification doublon Hive
-  final box = await Hive.openBox('transferts');
-  final existe = box.values.any((e) {
-    if (e is Map && e.containsKey('idTransaction')) {
-      return e['idTransaction'] == idTrans;
-    }
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Extraction échouée'),
+        content: Text('Impossible d\'extraire toutes les informations nécessaires du SMS choisi.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+      ),
+    );
     return false;
-  });
-  if (existe) {
-    print('[MonApp] Transfert déjà enregistré');
-    return;
   }
 
-  // 10) remplir contrôleurs
+  // Vérification doublon Hive
+  final box = await Hive.openBox('transferts');
+  final existe = box.values.any((e) => e is Map && e['idTransaction'] == idTrans);
+  if (existe) {
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Doublon détecté'),
+        content: Text('Ce transfert a déjà été enregistré.'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+      ),
+    );
+    return false;
+  }
+
+  // 3) Remplissage des champs **immédiat**
   montantController.text = montant;
   numeroTelephoneController.text = numero;
   idTransController.text = idTrans;
-  scanMessageController.text = 'Message Scanné';
   typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
+  scanMessageController.text = 'Message Scanné';
 
   print('[MonApp] Données remplies avec succès');
+  return true;
 }
-
 
 
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {
@@ -890,7 +711,7 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     print("Texte extrait : $extractedMessage");
 
     // Expressions régulières
-    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)',multiLine: true);
+    RegExp montantRegExp = RegExp(r'(?:transfere|recu|de|reçu)\s*[\n\r]*\s*(\d+(?:[\.,]\d{-1})?)', multiLine: true);
     RegExp numeroRegExp = RegExp(r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})', multiLine: true);
     RegExp idTransRegExp = RegExp(r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})', multiLine: true);
 
@@ -903,22 +724,14 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
     String trans = '';
 
     final montantMatch = matchesTransfere.isNotEmpty ? matchesTransfere.first : null;
-
     if (montantMatch != null) {
       String montantTexte = montantMatch.group(1) ?? '';
-
-      // Nettoyage : supprimer virgules et espaces
       String montantNettoye = montantTexte.replaceAll(',', '').replaceAll(' ', '');
-
       double? montantDouble = double.tryParse(montantNettoye);
       int montantInt = montantDouble != null ? montantDouble.floor() : 0;
-
       montant = montantInt.toString();
-
-      // Remplacer l'ancien montant (texte) dans le message par le montant entier
       extractedMessage = extractedMessage.replaceFirst(montantTexte, montant);
     }
-
 
     if (matchesNumero.isNotEmpty) {
       numero = matchesNumero.first.group(1) ?? '';
@@ -937,24 +750,10 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       return 0;
     }
 
-    if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
-      montantController.text = montant;
-      numeroTelephoneController.text = numero;
-      idTransController.text = trans;
-      updateInfoClientController();
-      scanMessageController.text = 'Message Scanné';
-    }
-
-    if (montantController.text == montant && numeroTelephoneController.text == numero && idTransController.text == trans) {
-      recognizedText2 = 'Message Scanné';
-    } else {
-      recognizedText2 = '';
-    }
-
-    // 💡 Détection type d'opération
+    // 💡 Détection type d'opération AVANT remplissage
     final lowerText = extractedMessage.toLowerCase();
-    List<String> keywordsDepos = ['transfert de','Transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
-    List<String> keywordsRetrait = ['Vous avez reçu','Vous avez recu','recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
+    List<String> keywordsDepos = ['transfert de', 'Transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
+    List<String> keywordsRetrait = ['Vous avez reçu', 'Vous avez recu', 'recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
     List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
 
     if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
@@ -967,11 +766,28 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
       selectedOption = 0;
     }
 
-    // ✅ Mise à jour du champ avec la valeur réelle
-    typeOperationController.text = selectedOption != 0 ? selectedOption.toString() : '';
+    // ✅ On met à jour immédiatement pour éviter de vider après coup
+    updateSelectedOption(selectedOption);
+
+    // 📌 Remplissage des champs APRÈS updateSelectedOption()
+    if (montantController.text.isEmpty && numeroTelephoneController.text.isEmpty) {
+      montantController.text = montant;
+      numeroTelephoneController.text = numero;
+      idTransController.text = trans;
+      updateInfoClientController();
+      scanMessageController.text = 'Message Scanné';
+    }
+
+    if (montantController.text == montant &&
+        numeroTelephoneController.text == numero &&
+        idTransController.text == trans) {
+      recognizedText2 = 'Message Scanné';
+    } else {
+      recognizedText2 = '';
+    }
 
   } catch (e) {
-    if (!context.mounted) return 0; // ✅ Ajout ici aussi
+    if (!context.mounted) return 0;
     showErrorDialog(context, 'Veuillez reprendre votre photo SVP!');
     return 0;
   } finally {

@@ -62,47 +62,33 @@ class _DeposOrangePageState extends State<DeposOrangePage> {
                 ),
                 SizedBox(height: 10),
 
-                // Section pour choisir l'option
-
-                Row(
-                  children: [
-                    Radio<int>(
-                      value: 1,
-                      groupValue: controller.selectedOption,
-                      onChanged: (value) {
-                        setState(() {
-                           controller.updateSelectedOption(value ?? 1);
-                        });
-                      },
-                    ),
-                    Text('Depos'),
-
-                    SizedBox(width: 20),
-
-                    Radio<int>(
-                    value: 2,
-                    groupValue: controller.selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        controller.updateSelectedOption(value ?? 2);
-                      });
-                    },
-                  ),
-                    Text('Retrait'),
-
-                    Radio<int>(
-                    value: 3,
-                    groupValue: controller.selectedOption,
-                    onChanged: (value) {
-                      setState(() {
-                        controller.updateSelectedOption(value ?? 2);
-                      });
-                    },
-                  ),
-                    Text('Sans Compte'),
-                  ],
-                ),
-
+ValueListenableBuilder<int>(
+  valueListenable: controller.selectedOptionNotifier,
+  builder: (context, value, _) {
+    return Row(
+      children: [
+        Radio<int>(
+          value: 1,
+          groupValue: value,
+          onChanged: (v) => setState(() => controller.updateSelectedOption(v ?? 1)),
+        ),
+        Text('Depot'),
+        Radio<int>(
+          value: 2,
+          groupValue: value,
+          onChanged: (v) => setState(() => controller.updateSelectedOption(v ?? 2)),
+        ),
+        Text('Retrait'),
+        Radio<int>(
+          value: 3,
+          groupValue: value,
+          onChanged: (v) => setState(() => controller.updateSelectedOption(v ?? 3)),
+        ),
+        Text('Sans Compte'),
+      ],
+    );
+  }
+),
 
                 Offstage(
                   offstage: true, // Mettre à false si nécessaire
