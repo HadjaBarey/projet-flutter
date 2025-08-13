@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+//import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/OrangeModel.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'call_service.dart'; // Importez le service d'appel
+ // Importez le service d'appel
 import 'package:kadoustransfert/Controller/OpTransactionController.dart';
 import 'package:kadoustransfert/Controller/AddSimController.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
@@ -31,7 +32,7 @@ class OrangeController {
   final Telephony telephony = Telephony.instance;
 
   // Instance du service d'appel
-  final CallService callService = CallService();
+ // final CallService callService = CallService();
   final OpTransactionController opTransactionController = OpTransactionController(); // Initialisez votre OpTransactionController
   final AddSimController LibOperateurController = AddSimController(); // Initialisez votre AddSimController
 
@@ -460,7 +461,9 @@ Future<Map<String, String>> extraireNomDepuisCnib(
   BuildContext context,
   InputImage inputImage,
 ) async {
-  final textRecognizer = GoogleMlKit.vision.textRecognizer();
+//
+//  final textRecognizer = GoogleMlKit.vision.textRecognizer();
+final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
   final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
   if (recognizedText.blocks.isEmpty) {
@@ -515,17 +518,17 @@ Future<bool> verifierDernierSms(
   var status = await Permission.sms.status;
   if (!status.isGranted) {
     status = await Permission.sms.request();
-    if (!status.isGranted) {
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text('Permission refusée'),
-          content: Text('Permission SMS refusée. Impossible de vérifier les messages.'),
-          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
-        ),
-      );
-      return false;
-    }
+    // if (!status.isGranted) {
+    //   await showDialog(
+    //     context: context,
+    //     builder: (_) => AlertDialog(
+    //       title: Text('Permission refusée'),
+    //       content: Text('Permission SMS refusée. Impossible de vérifier les messages.'),
+    //       actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+    //     ),
+    //   );
+    //   return false;
+    // }
   }
 
   List<SmsMessage> messages = await telephony.getInboxSms(
@@ -548,7 +551,8 @@ Future<bool> verifierDernierSms(
   if (messages.length > 10) messages = messages.sublist(0, 10);
 
   final expediteursAutorises = [
-    "+22676839388",
+   "+22676839388",
+   // "+22677917802",
     "orangemoney",
     "orange money",
     "orange-money",
@@ -692,7 +696,8 @@ Future<bool> verifierDernierSms(
 
 
 Future<int> detecterText(BuildContext context, InputImage inputImage) async {
-  final textRecognizer = GoogleMlKit.vision.textRecognizer();
+  //final textRecognizer = GoogleMlKit.vision.textRecognizer();
+final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
   try {
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
@@ -799,8 +804,8 @@ Future<int> detecterText(BuildContext context, InputImage inputImage) async {
 
   // Reconnaître le texte à partir de l'image
 Future<void> recognizeText(BuildContext context, InputImage inputImage) async {
-  final textRecognizer = GoogleMlKit.vision.textRecognizer();
-
+ // final textRecognizer = GoogleMlKit.vision.textRecognizer();
+final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
   final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
   if (recognizedText.blocks.isEmpty) {

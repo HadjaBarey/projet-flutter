@@ -3,7 +3,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Model/ClientModel.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+//import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+
 
 class ClientController {
   final formKey = GlobalKey<FormState>();
@@ -159,7 +161,8 @@ void updateClient({
 
    // Reconnaître le texte à partir de l'image
   Future<void> recognizeText(InputImage inputImage) async {
-    final textRecognizer = GoogleMlKit.vision.textRecognizer();
+   // final textRecognizer = GoogleMlKit.vision.textRecognizer();
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
