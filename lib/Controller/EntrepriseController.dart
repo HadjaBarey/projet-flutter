@@ -1,9 +1,13 @@
+import 'dart:convert'; // ✅ pour jsonEncode, jsonDecode
+import 'package:http/http.dart' as http; //
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Model/AddSimModel.dart';
 import 'package:kadoustransfert/Model/EntrepriseModel.dart';
 import 'package:kadoustransfert/Model/JournalCaisseModel.dart';
+
 
 class EntrepriseController {
   final formKey = GlobalKey<FormState>();
@@ -16,6 +20,10 @@ class EntrepriseController {
   TextEditingController DateControleController = TextEditingController();
   TextEditingController numeroTelEntrepriseController = TextEditingController();
   TextEditingController emailEntrepriseController = TextEditingController();
+
+    // Variables licence (affichées en rouge)
+    String? password;
+    String? datefin;
 
   EntrepriseModel Entreprise = EntrepriseModel(
     idEntreprise: 1,
@@ -225,7 +233,6 @@ Future<void> saveEntrepriseData(BuildContext? context) async {
   }
 
 }
-
 
 Future<void> loadEntrepriseData() async {
   var box = await Hive.openBox<EntrepriseModel>('todobos2');

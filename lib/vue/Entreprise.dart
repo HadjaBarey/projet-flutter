@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:kadoustransfert/Controller/EntrepriseController.dart';
 import 'package:kadoustransfert/vue/UsersKey.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // ✅ Pour récupérer password et date
 
 class EntreprisePage extends StatefulWidget {
   final EntrepriseController entrepriseController;
@@ -17,17 +18,42 @@ class EntreprisePage extends StatefulWidget {
 class _EntreprisePageState extends State<EntreprisePage> {
   late EntrepriseController entrepriseController;
 
+  String? password;
+  String? dateFin;
+
   @override
   void initState() {
     super.initState();
     entrepriseController = widget.entrepriseController;
+    _loadLicenceInfo(); // ✅ Charger password et date
     // Assurez-vous que les données sont chargées avant de construire l'UI
   }
 
+
+  Future<void> _loadLicenceInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? pwd = prefs.getString("password");
+    String? date = prefs.getString("dateFinAbon");
+
+    if (date != null) {
+      DateTime parsed = DateTime.parse(date);
+      String formatted = DateFormat('dd/MM/yyyy').format(parsed);
+      setState(() {
+        password = pwd;
+        dateFin = formatted;
+      });
+    } else {
+      setState(() {
+        password = pwd;
+        dateFin = "Non définie";
+      });
+    }
+  }
+
   Future<void> loadEntreprise() async {
-    //await entrepriseController.initializeBox();
     await entrepriseController.loadEntrepriseData();
   }
+
 
   // Méthode pour incrémenter la date
  void incrementDate(BuildContext context) async {
@@ -111,7 +137,42 @@ class _EntreprisePageState extends State<EntreprisePage> {
                         enabled: false,
                       ),
                     ),
+
+                    const SizedBox(height: 10),
+
+                    // ✅ Zone affichage Licence
+                    if (password != null && dateFin != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.red.shade50,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Licence : $password",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                            Text(
+                              "Expire le : $dateFin",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     SizedBox(height: 15),
+                    
+              
                     TextFormField(
                       controller: entrepriseController.NomEntrepriseController,
                       decoration: InputDecoration(

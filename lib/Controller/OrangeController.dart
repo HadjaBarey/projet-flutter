@@ -575,17 +575,17 @@ Future<bool> verifierDernierSms(
     }
   }
 
-  if (smsAutorises.isEmpty) {
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Aucun SMS autorisé'),
-        content: Text('Aucun SMS autorisé trouvé parmi les 10 derniers messages.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
-      ),
-    );
-    return false;
-  }
+  // if (smsAutorises.isEmpty) {
+  //   await showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: Text('Aucun SMS autorisé'),
+  //       content: Text('Aucun SMS autorisé trouvé parmi les 10 derniers messages.'),
+  //       actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+  //     ),
+  //   );
+  //   return false;
+  // }
 
   // 2. Chercher ceux qui contiennent le nom scanné
   List<SmsMessage> smsAvecNom = [];
@@ -611,32 +611,57 @@ Future<bool> verifierDernierSms(
 
   final bodyNormalise = fusionnerLignesEtCompacterEspaces(smsChoisi.body ?? '');
 
-  // -------------------
-  // 1) Détection type opération - immédiatement après avoir le texte
-  final lowerText = bodyNormalise.toLowerCase();
-  //int selectedOption = 0;
-  if (['transfert de', 'vous avez transféré', 'envoyé', 'transfert'].any((kw) => lowerText.contains(kw))) {
-    selectedOption = 1;
-  } else if (['vous avez reçu', 'recu', 'reçu', 'crédit', 'retrait'].any((kw) => lowerText.contains(kw))) {
-    selectedOption = 2;
-  } else if (['sans compte', 'non client', 'envoi sans compte'].any((kw) => lowerText.contains(kw))) {
-    selectedOption = 3;
-  }
+      // -------------------
+    // 1) Détection type opération - immédiatement après avoir le texte
+    final lowerText = bodyNormalise.toLowerCase();
+
+    int selectedOption = 0; // 0 = inconnu, 1 = dépôt, 2 = retrait, 3 = sans compte
+
+    // Vérifier d'abord "Transfert reçu de"
+    if (lowerText.contains('transfert reçu de') || lowerText.contains('transfert recu de')) {
+      selectedOption = 2;
+    }
+    // Puis "Transfert de" (mais pas "reçu")
+    else if (lowerText.contains('transfert de') && !lowerText.contains('reçu')) {
+      selectedOption = 1;
+    }
+    // Autres cas (dépôt)
+    else if (lowerText.contains('vous avez transféré') || lowerText.contains('envoyé')) {
+      selectedOption = 1;
+    }
+    // Autres cas (retrait)
+    else if (lowerText.contains('vous avez reçu') || 
+            lowerText.contains('vous avez recu') || 
+            lowerText.contains('a reçu') || 
+            lowerText.contains('retrait') || 
+            lowerText.contains('crédit')) {
+      selectedOption = 2;
+    }
+    // Sans compte
+    else if (lowerText.contains('sans compte') || 
+            lowerText.contains('non client') || 
+            lowerText.contains('envoi sans compte')) {
+      selectedOption = 3;
+    }
+
+    print("👉 Option détectée: $selectedOption");
+
 
   print('Before updateSelectedOption: $selectedOption');
   updateSelectedOption(selectedOption);
   print('After updateSelectedOption');
 
 
-  // 2) Extraction RegExp des données
   final regMontant = RegExp(
-    r'(?:transfere|recu|reçu|vous avez recu|vous avez reçu)\s*([\d\s,]+(?:[.,]\d{1,2})?)',
+    r'(?:transfert\s+(?:reçu\s+de|de)|vous avez transféré|vous avez recu|vous avez reçu|envoyé)\s*([\d\s,.]+)',
     caseSensitive: false,
   );
+
   final regNumero = RegExp(
     r'(?:numero|du|au)\s*[\n\r]*\s*(\d{8})',
     multiLine: true,
   );
+  
   final regId = RegExp(
     r'(?:ID\s*(?:Trans)?|Trans\s*ID?|Trans)\s*:\s*([A-Za-z0-9.,]{10,30})',
     multiLine: true,
@@ -656,17 +681,17 @@ Future<bool> verifierDernierSms(
     montant = montantDouble != null ? montantDouble.floor().toString() : '';
   }
 
-  if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Extraction échouée'),
-        content: Text('Impossible d\'extraire toutes les informations nécessaires du SMS choisi.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
-      ),
-    );
-    return false;
-  }
+  // if (montant.isEmpty || numero.isEmpty || idTrans.isEmpty) {
+  //   await showDialog(
+  //     context: context,
+  //     builder: (_) => AlertDialog(
+  //       title: Text('Extraction échouée'),
+  //       content: Text('Impossible d\'extraire toutes les informations nécessaires du SMS choisi.'),
+  //       actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))],
+  //     ),
+  //   );
+  //   return false;
+  // }
 
   // Vérification doublon Hive
   final box = await Hive.openBox('transferts');
@@ -756,20 +781,60 @@ final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
     }
 
     // 💡 Détection type d'opération AVANT remplissage
-    final lowerText = extractedMessage.toLowerCase();
-    List<String> keywordsDepos = ['transfert de', 'Transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
-    List<String> keywordsRetrait = ['Vous avez reçu', 'Vous avez recu', 'recu', 'reçu', 'a reçu', 'crédit', 'retrait'];
-    List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
+    // final lowerText = extractedMessage.toLowerCase();
+    // List<String> keywordsDepos = ['transfert de', 'Transfert de', 'vous avez transféré', 'envoyé', 'transfert'];
+    // List<String> keywordsRetrait = ['Vous avez reçu', 'Vous avez recu', 'recu', 'Transfert reçu de', 'a reçu', 'Transfert recu de', 'retrait'];
+    // List<String> keywordsSansCompte = ['sans compte', 'non client', 'envoi sans compte'];
 
-    if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
-      selectedOption = 1;
-    } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
-      selectedOption = 2;
-    } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
-      selectedOption = 3;
-    } else {
-      selectedOption = 0;
-    }
+    // if (keywordsDepos.any((kw) => lowerText.contains(kw))) {
+    //   selectedOption = 1;
+    // } else if (keywordsRetrait.any((kw) => lowerText.contains(kw))) {
+    //   selectedOption = 2;
+    // } else if (keywordsSansCompte.any((kw) => lowerText.contains(kw))) {
+    //   selectedOption = 3;
+    // } else {
+    //   selectedOption = 0;
+    // }
+
+    // 💡 Détection type d'opération AVANT remplissage
+      final lowerText = extractedMessage.toLowerCase();
+
+      String typeOperation = 'inconnu';
+      int selectedOption = 0; // 0 = inconnu, 1 = dépôt, 2 = retrait, 3 = sans compte
+
+      // Vérifier d'abord "Transfert reçu de"
+      if (lowerText.contains('transfert reçu de') || lowerText.contains('transfert recu de')) {
+        typeOperation = 'retrait';
+        selectedOption = 2;
+      }
+      // Puis "Transfert de" (mais pas "reçu")
+      else if (lowerText.contains('transfert de') && !lowerText.contains('reçu')) {
+        typeOperation = 'depot';
+        selectedOption = 1;
+      }
+      // Autres cas (dépôt)
+      else if (lowerText.contains('vous avez transféré') || lowerText.contains('envoyé')) {
+        typeOperation = 'depot';
+        selectedOption = 1;
+      }
+      // Autres cas (retrait)
+      else if (lowerText.contains('vous avez reçu') || 
+              lowerText.contains('vous avez recu') || 
+              lowerText.contains('a reçu') || 
+              lowerText.contains('retrait')) {
+        typeOperation = 'retrait';
+        selectedOption = 2;
+      }
+      // Sans compte
+      else if (lowerText.contains('sans compte') || 
+              lowerText.contains('non client') || 
+              lowerText.contains('envoi sans compte')) {
+        typeOperation = 'sans_compte';
+        selectedOption = 3;
+      }
+
+      print("👉 Type d'opération détecté: $typeOperation (option: $selectedOption)");
+
 
     // ✅ On met à jour immédiatement pour éviter de vider après coup
     updateSelectedOption(selectedOption);

@@ -382,7 +382,7 @@ Future<void> pickImageCamera(BuildContext context) async {
           title: Text('Sélectionnez la source de l\'image'),
           actions: [
             TextButton(
-              child: Text('Caméra'),
+              child: Text('Message'),
               onPressed: () => Navigator.pop(context, ImageSource.camera),
             ),
             TextButton(
